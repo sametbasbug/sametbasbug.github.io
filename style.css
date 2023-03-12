@@ -8,7 +8,7 @@ body{
 #sayfa{
     width: 900px;
     min-height: 600px;
-    border-style: solid;
+    border-style: none;
     border-width: 1px;
     margin: auto;
 }
@@ -17,6 +17,17 @@ body{
     height: 100px;
     background-color: white;
     margin: auto;
+}
+#ustyazi{
+    width: 400px;
+    height: 50px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 20px;
+    font-weight: bolder;
+    border-style: none;
+    position: absolute;
+    right: 675px;
+    top: 25px;
 }
 #logo{
     width: 100px;
@@ -91,13 +102,13 @@ body{
 }
 #icerik{
     width: 600px;
-    min-height: 400px;
+    min-height: 600px;
     background-color: white;
     float: left;
 }
 #yanmenu{
     width: 300px;
-    min-height: 400px;
+    min-height: 600px;
     background-color: royalblue;
     float: left;
 }
