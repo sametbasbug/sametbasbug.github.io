@@ -25,8 +25,9 @@ body{
     font-size: 20px;
     font-weight: bolder;
     border-style: none;
-    position: absolute;
-    right: 675px;
+    position: relative;
+    text-align: center;
+    left: 100px;
     top: 25px;
 }
 #logo{
@@ -36,7 +37,7 @@ body{
     border-width: 1px;
     background-color: white;
     position: relative;
-    top: 10px;
+    bottom: 40px;
     left: 10px;
     float: left;
 }
@@ -52,7 +53,6 @@ body{
     background-color: white;
     float: right;
     position: relative;
-    top: 50px;
     right: 10px;
 }
 #sosyal1{
@@ -82,7 +82,7 @@ body{
     margin-left: 15px;
     position: relative;
     top: 10px;
-    left: 180px;
+    left: 80px;
     text-align: center;
 }
 #anamenu ul a{
