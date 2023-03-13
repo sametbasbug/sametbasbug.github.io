@@ -30,6 +30,15 @@ body{
     left: 100px;
     top: 25px;
 }
+#ziyaret{
+    border-style: none;
+    width: 115px;
+    height: 25px;
+    position: relative;
+    float: left;
+    left: 550px;
+    top: -10px;
+}
 #logo{
     width: 100px;
     height: 80px;
@@ -38,7 +47,7 @@ body{
     background-color: white;
     position: relative;
     bottom: 40px;
-    left: 10px;
+    left: -85px;
     float: left;
 }
 #logo1{
@@ -82,7 +91,7 @@ body{
     margin-left: 15px;
     position: relative;
     top: 10px;
-    left: 80px;
+    left: -15px;
     text-align: center;
 }
 #anamenu ul a{
