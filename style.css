@@ -18,6 +18,12 @@ body{
     background-color: white;
     margin: auto;
 }
+#bitcoin{
+    width: 300px;
+    position: relative;
+    margin: auto;
+    top: 10px;
+}
 #ustyazi{
     width: 400px;
     height: 50px;
