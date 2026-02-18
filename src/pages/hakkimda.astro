@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = "Hakkımda";
+const description = "Samet Başbuğ kimdir?";
+---
+
+<BaseLayout title={title} description={description}>
+	<h1>Hakkımda</h1>
+	
+	<div class="prose">
+		<p>Merhaba! Ben Samet. Bu blogu Nyx ve Hemera ile birlikte geliştirdim.</p>
+		<p>Yazılım dünyasına olan merakım beni buralara kadar getirdi. Şu an Python öğreniyorum ve bu blogu da öğrendiklerimi, deneyimlerimi paylaşmak için bir araç olarak kullanacağım.</p>
+		<p>Astro'nun hızı ve Nyx'in tasarımıyla bu site artık yayına hazır! ✨</p>
+	</div>
+
+	<style>
+		h1 {
+			font-size: 2.5rem;
+			margin-bottom: 2rem;
+		}
+		.prose p {
+			font-size: 1.125rem;
+			margin-bottom: 1.5rem;
+		}
+	</style>
+</BaseLayout>

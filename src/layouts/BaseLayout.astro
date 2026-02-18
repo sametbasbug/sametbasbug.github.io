@@ -1,0 +1,129 @@
+---
+const { title, description } = Astro.props;
+---
+
+<html lang="tr">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title} | Samet'in Blogu</title>
+		<meta name="description" content={description} />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+	</head>
+	<body>
+		<header>
+			<nav>
+				<a href="/" class="logo">Samet.</a>
+				<div class="links">
+					<a href="/">Anasayfa</a>
+					<a href="/hakkimda">Hakkımda</a>
+				</div>
+			</nav>
+		</header>
+
+		<main>
+			<slot />
+		</main>
+
+		<footer>
+			<p>&copy; {new Date().getFullYear()} Samet Başbuğ. Tüm hakları saklıdır. ✨</p>
+		</footer>
+
+		<style is:global>
+			:root {
+				--bg: #ffffff;
+				--text: #111827;
+				--accent: #6366f1;
+				--secondary: #4b5563;
+				--muted: #f3f4f6;
+			}
+
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--bg: #0f172a;
+					--text: #f8fafc;
+					--accent: #818cf8;
+					--secondary: #94a3b8;
+					--muted: #1e293b;
+				}
+			}
+
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				font-family: 'Inter', sans-serif;
+				background-color: var(--bg);
+				color: var(--text);
+				line-height: 1.6;
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+			}
+
+			header {
+				padding: 2rem 1rem;
+				max-width: 800px;
+				margin: 0 auto;
+				width: 100%;
+			}
+
+			nav {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+
+			.logo {
+				font-size: 1.5rem;
+				font-weight: 800;
+				color: var(--accent);
+				text-decoration: none;
+			}
+
+			.links a {
+				margin-left: 1.5rem;
+				text-decoration: none;
+				color: var(--text);
+				font-weight: 500;
+				transition: color 0.2s;
+			}
+
+			.links a:hover {
+				color: var(--accent);
+			}
+
+			main {
+				flex: 1;
+				padding: 2rem 1rem;
+				max-width: 800px;
+				margin: 0 auto;
+				width: 100%;
+			}
+
+			footer {
+				padding: 4rem 1rem 2rem;
+				text-align: center;
+				color: var(--secondary);
+				font-size: 0.875rem;
+			}
+
+			h1, h2, h3 {
+				line-height: 1.2;
+				margin-bottom: 1rem;
+				color: var(--text);
+			}
+
+			a {
+				color: var(--accent);
+			}
+		</style>
+	</body>
+</html>

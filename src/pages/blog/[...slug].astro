@@ -1,0 +1,90 @@
+---
+import { type CollectionEntry, getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog');
+	return posts.map((post) => ({
+		params: { slug: post.slug },
+		props: post,
+	}));
+}
+type Props = CollectionEntry<'blog'>;
+
+const post = Astro.props;
+const { Content } = await post.render();
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+	<article>
+		<header>
+			<div class="meta">
+				<time datetime={post.data.pubDate.toISOString()}>
+					{post.data.pubDate.toLocaleDateString('tr-TR', {
+						year: 'numeric',
+						month: 'long',
+						day: 'numeric',
+					})}
+				</time>
+			</div>
+			<h1>{post.data.title}</h1>
+			{post.data.heroImage && <img width={1020} height={510} src={post.data.heroImage} alt="" />}
+		</header>
+		<div class="prose">
+			<Content />
+		</div>
+	</article>
+
+	<style>
+		article {
+			margin-top: 2rem;
+		}
+
+		header {
+			margin-bottom: 3rem;
+			text-align: center;
+		}
+
+		.meta {
+			color: var(--secondary);
+			margin-bottom: 1rem;
+			font-size: 0.875rem;
+		}
+
+		h1 {
+			font-size: 2.5rem;
+			margin-bottom: 2rem;
+		}
+
+		img {
+			border-radius: 1rem;
+			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+			margin-top: 1rem;
+			max-width: 100%;
+			height: auto;
+		}
+
+		.prose {
+			font-size: 1.125rem;
+			color: var(--text);
+		}
+
+		/* Markdown styling */
+		.prose :global(h2) { font-size: 1.75rem; margin-top: 2.5rem; }
+		.prose :global(h3) { font-size: 1.5rem; margin-top: 2rem; }
+		.prose :global(p) { margin-bottom: 1.5rem; }
+		.prose :global(blockquote) {
+			border-left: 4px solid var(--accent);
+			padding-left: 1.5rem;
+			font-style: italic;
+			color: var(--secondary);
+			margin: 2rem 0;
+		}
+		.prose :global(code) {
+			background: var(--muted);
+			padding: 0.2rem 0.4rem;
+			border-radius: 0.3rem;
+			font-size: 0.875em;
+		}
+	</style>
+</BaseLayout>
