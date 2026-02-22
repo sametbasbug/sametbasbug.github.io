@@ -1,11 +1,12 @@
 ---
+import { ViewTransitions } from 'astro:transitions';
 const { title, description } = Astro.props;
 ---
 
 <html lang="tr">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/jpeg" href="/yenifavicon.jpg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title} | Samet'in Blogu</title>
@@ -13,14 +14,38 @@ const { title, description } = Astro.props;
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+		<ViewTransitions />
 	</head>
 	<body>
-		<header>
+		<div id="progress-bar"></div>
+		<div id="reading-progress"></div>
+		
+		<!-- Back to Top Button -->
+		<button id="back-to-top" class="back-to-top" aria-label="Başa Dön">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+		</button>
+		
+		<!-- Lightbox Overlay -->
+		<div id="lightbox" class="lightbox">
+			<img id="lightbox-img" src="" alt="" />
+		</div>
+
+		<header transition:persist id="main-header">
 			<nav>
-				<a href="/" class="logo">Samet.</a>
-				<div class="links">
-					<a href="/">Anasayfa</a>
-					<a href="/hakkimda">Hakkımda</a>
+				<a href="/" class="logo"><span class="logo-text">Samet'in Blogu</span></a>
+				<div class="nav-right">
+					<div class="links">
+						<a href="/">Anasayfa</a>
+						<a href="/hakkimda">Hakkımda</a>
+					</div>
+					<div class="theme-switch-wrapper">
+						<button id="theme-toggle" class="theme-switch" aria-label="Temayı Değiştir">
+							<div class="switch-handle">
+								<span class="sun-icon">☀️</span>
+								<span class="moon-icon">🌙</span>
+							</div>
+						</button>
+					</div>
 				</div>
 			</nav>
 		</header>
@@ -29,101 +54,321 @@ const { title, description } = Astro.props;
 			<slot />
 		</main>
 
-		<footer>
+		<footer transition:persist id="main-footer">
 			<p>&copy; {new Date().getFullYear()} Samet Başbuğ. Tüm hakları saklıdır. ✨</p>
 		</footer>
 
-		<style is:global>
-			:root {
-				--bg: #ffffff;
-				--text: #111827;
-				--accent: #6366f1;
-				--secondary: #4b5563;
-				--muted: #f3f4f6;
+		<script is:inline>
+			// Tema Yönetimi
+			const getTheme = () => {
+				if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+					return localStorage.getItem('theme');
+				}
+				if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+					return 'dark';
+				}
+				return 'light';
+			};
+
+			const setTheme = (theme) => {
+				document.documentElement.setAttribute('data-theme', theme);
+				localStorage.setItem('theme', theme);
+			};
+
+			function applyTheme() {
+				setTheme(getTheme());
 			}
 
-			@media (prefers-color-scheme: dark) {
-				:root {
-					--bg: #0f172a;
-					--text: #f8fafc;
-					--accent: #818cf8;
-					--secondary: #94a3b8;
-					--muted: #1e293b;
+			applyTheme();
+
+			function attachThemeToggle() {
+				const toggle = document.getElementById('theme-toggle');
+				if (toggle) {
+					toggle.replaceWith(toggle.cloneNode(true));
+					const newToggle = document.getElementById('theme-toggle');
+					newToggle.addEventListener('click', () => {
+						const currentTheme = document.documentElement.getAttribute('data-theme');
+						const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+						setTheme(newTheme);
+					});
 				}
 			}
 
-			* {
-				box-sizing: border-box;
-				margin: 0;
-				padding: 0;
+			// Header Scroll, Reading Progress & Back to Top
+			function handleScroll() {
+				const header = document.getElementById('main-header');
+				const readingBar = document.getElementById('reading-progress');
+				const backToTop = document.getElementById('back-to-top');
+				
+				if (header) {
+					if (window.scrollY > 20) {
+						header.classList.add('scrolled');
+					} else {
+						header.classList.remove('scrolled');
+					}
+				}
+
+				if (readingBar) {
+					if (window.location.pathname.startsWith('/blog/')) {
+						readingBar.style.display = 'block';
+						const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+						if (totalHeight > 0) {
+							const progress = (window.scrollY / totalHeight) * 100;
+							readingBar.style.width = progress + '%';
+						}
+					} else {
+						readingBar.style.display = 'none';
+					}
+				}
+
+				if (backToTop) {
+					if (window.scrollY > 300) {
+						backToTop.classList.add('visible');
+					} else {
+						backToTop.classList.remove('visible');
+					}
+				}
 			}
 
+			// Lightbox Fonksiyonu
+			function initLightbox() {
+				const lightbox = document.getElementById('lightbox');
+				const lightboxImg = document.getElementById('lightbox-img');
+				const images = document.querySelectorAll('.prose img, .hero-image img');
+
+				images.forEach(img => {
+					img.style.cursor = 'zoom-in';
+					img.addEventListener('click', () => {
+						lightboxImg.src = img.src;
+						lightbox.classList.add('active');
+						document.body.style.overflow = 'hidden';
+					});
+				});
+
+				lightbox?.addEventListener('click', () => {
+					lightbox.classList.remove('active');
+					document.body.style.overflow = 'auto';
+				});
+			}
+
+			// Başa Dön Fonksiyonu
+			function initBackToTop() {
+				const btn = document.getElementById('back-to-top');
+				btn?.addEventListener('click', () => {
+					window.scrollTo({ top: 0, behavior: 'smooth' });
+				});
+			}
+
+			// Bağlantı Kopyalama Fonksiyonu
+			function initCopyShare() {
+				const btn = document.getElementById('copy-share-link');
+				if (btn) {
+					btn.addEventListener('click', async () => {
+						await navigator.clipboard.writeText(window.location.href);
+						const originalInner = btn.innerHTML;
+						btn.innerHTML = '✅';
+						setTimeout(() => {
+							btn.innerHTML = originalInner;
+						}, 2000);
+					});
+				}
+			}
+
+			document.addEventListener('astro:page-load', () => {
+				applyTheme();
+				attachThemeToggle();
+				initLightbox();
+				initCopyShare();
+				initBackToTop();
+				if (typeof addCopyButtons === 'function') addCopyButtons();
+				window.addEventListener('scroll', handleScroll);
+				handleScroll();
+			});
+
+			document.addEventListener('astro:after-swap', applyTheme);
+
+			document.addEventListener('astro:before-preparation', () => {
+				const bar = document.getElementById('progress-bar');
+				if (bar) bar.style.width = '30%';
+			});
+
+			document.addEventListener('astro:after-preparation', () => {
+				const bar = document.getElementById('progress-bar');
+				if (bar) {
+					bar.style.width = '100%';
+					setTimeout(() => { bar.style.width = '0%'; }, 300);
+				}
+			});
+
+			function addCopyButtons() {
+				const codeBlocks = document.querySelectorAll('pre');
+				codeBlocks.forEach((codeBlock) => {
+					if (codeBlock.querySelector('.copy-button')) return;
+					const button = document.createElement('button');
+					button.className = 'copy-button';
+					button.innerHTML = 'Kopyala';
+					codeBlock.appendChild(button);
+					button.addEventListener('click', async () => {
+						const code = codeBlock.querySelector('code');
+						if (code) {
+							await navigator.clipboard.writeText(code.innerText);
+							button.innerHTML = 'Kopyalandı! ✅';
+							setTimeout(() => { button.innerHTML = 'Kopyala'; }, 2000);
+						}
+					});
+				});
+			}
+		</script>
+		<style is:global>
+			:root {
+				--bg: #f8fafc;
+				--card-bg: #ffffff;
+				--card-bg-rgb: 255, 255, 255;
+				--text: #0f172a;
+				--accent: #6366f1;
+				--accent-light: #e0e7ff;
+				--secondary: #64748b;
+				--muted: #f1f5f9;
+				--border: #e2e8f0;
+				--shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+			}
+
+			[data-theme="dark"] {
+				--bg: #020617;
+				--card-bg: #0f172a;
+				--card-bg-rgb: 15, 23, 42;
+				--text: #f1f5f9;
+				--accent: #818cf8;
+				--accent-light: #1e1b4b;
+				--secondary: #94a3b8;
+				--muted: #1e293b;
+				--border: #1e293b;
+				--shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+			}
+
+			@media (prefers-color-scheme: dark) {
+				:root:not([data-theme="light"]) {
+					--bg: #020617;
+					--card-bg: #0f172a;
+					--card-bg-rgb: 15, 23, 42;
+					--text: #f1f5f9;
+					--accent: #818cf8;
+					--accent-light: #1e1b4b;
+					--secondary: #94a3b8;
+					--muted: #1e293b;
+					--border: #1e293b;
+					--shadow: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+				}
+			}
+
+			* { box-sizing: border-box; margin: 0; padding: 0; }
+			html { overflow-y: scroll; scroll-behavior: smooth; }
 			body {
 				font-family: 'Inter', sans-serif;
 				background-color: var(--bg);
+				background-image: radial-gradient(circle at 2px 2px, var(--border) 1px, transparent 0);
+				background-size: 40px 40px;
 				color: var(--text);
-				line-height: 1.6;
+				line-height: 1.7;
 				min-height: 100vh;
 				display: flex;
 				flex-direction: column;
+				transition: background-color 0.3s ease;
 			}
+
+			#progress-bar {
+				position: fixed; top: 0; left: 0; width: 0%; height: 3px;
+				background: linear-gradient(to right, var(--accent), #818cf8);
+				z-index: 9999; transition: width 0.3s ease;
+			}
+
+			#reading-progress {
+				position: fixed; top: 0; left: 0; width: 0%; height: 3px;
+				background: var(--accent); z-index: 9998; opacity: 0.8;
+			}
+
+			/* Back to Top Button */
+			.back-to-top {
+				position: fixed; bottom: 2rem; right: 2rem;
+				width: 3.5rem; height: 3.5rem;
+				background: var(--accent); color: white;
+				border: none; border-radius: 50%;
+				display: flex; align-items: center; justify-content: center;
+				cursor: pointer; z-index: 99;
+				opacity: 0; visibility: hidden;
+				transform: translateY(20px);
+				transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+				box-shadow: var(--shadow);
+			}
+			.back-to-top.visible { opacity: 1; visibility: visible; transform: translateY(0); }
+			.back-to-top:hover { background: #818cf8; transform: translateY(-5px); }
+
+			/* Lightbox Styles */
+			.lightbox {
+				position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+				background: rgba(0, 0, 0, 0.9);
+				display: flex; align-items: center; justify-content: center;
+				z-index: 10000; opacity: 0; pointer-events: none;
+				transition: opacity 0.3s ease;
+				backdrop-filter: blur(5px);
+			}
+			.lightbox.active { opacity: 1; pointer-events: auto; }
+			.lightbox img { max-width: 90%; max-height: 90%; border-radius: 0.5rem; transform: scale(0.9); transition: transform 0.3s ease; }
+			.lightbox.active img { transform: scale(1); }
+
+			@keyframes fadeInUp {
+				from { opacity: 0; transform: translateY(15px); }
+				to { opacity: 1; transform: translateY(0); }
+			}
+			main { animation: fadeInUp 0.5s ease-out forwards; flex: 1; padding: 3rem 1rem; max-width: 850px; margin: 0 auto; width: 100%; }
 
 			header {
-				padding: 2rem 1rem;
-				max-width: 800px;
-				margin: 0 auto;
-				width: 100%;
+				padding: 1rem 1.5rem; max-width: 900px; margin: 1rem auto;
+				width: calc(100% - 2rem); background: var(--card-bg);
+				border-radius: 1rem; border: 1px solid var(--border);
+				box-shadow: var(--shadow); backdrop-filter: blur(12px);
+				position: sticky; top: 1rem; z-index: 50;
+				display: flex; align-items: center; height: 4.5rem;
+				transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 			}
 
-			nav {
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
+			header.scrolled { height: 3.8rem; background: rgba(var(--card-bg-rgb), 0.8); max-width: 850px; margin-top: 0.5rem; }
+			nav { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+			.nav-right { display: flex; align-items: center; gap: 1.5rem; }
+			.theme-switch-wrapper { border-left: 1px solid var(--border); padding-left: 1.5rem; }
+			.theme-switch { background: var(--muted); border: 1px solid var(--border); width: 3.5rem; height: 1.8rem; border-radius: 2rem; cursor: pointer; position: relative; padding: 0; transition: all 0.3s ease; }
+			.switch-handle { width: 1.4rem; height: 1.4rem; background: var(--card-bg); border-radius: 50%; position: absolute; left: 0.2rem; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; box-shadow: var(--shadow); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+			.sun-icon { opacity: 1; } .moon-icon { opacity: 1; }
+			.switch-handle .sun-icon { display: block; } .switch-handle .moon-icon { display: none; }
+			[data-theme="dark"] .switch-handle { left: calc(100% - 1.6rem); background: #1e293b; }
+			[data-theme="dark"] .switch-handle .sun-icon { display: none; } [data-theme="dark"] .switch-handle .moon-icon { display: block; }
+			
+			@media (prefers-color-scheme: dark) {
+				:root:not([data-theme="light"]) .switch-handle { left: calc(100% - 1.6rem); background: #1e293b; }
+				:root:not([data-theme="light"]) .switch-handle .sun-icon { display: none; }
+				:root:not([data-theme="light"]) .switch-handle .moon-icon { display: block; }
 			}
 
-			.logo {
-				font-size: 1.5rem;
-				font-weight: 800;
-				color: var(--accent);
-				text-decoration: none;
-			}
-
-			.links a {
-				margin-left: 1.5rem;
-				text-decoration: none;
-				color: var(--text);
-				font-weight: 500;
-				transition: color 0.2s;
-			}
-
-			.links a:hover {
-				color: var(--accent);
-			}
-
-			main {
-				flex: 1;
-				padding: 2rem 1rem;
-				max-width: 800px;
-				margin: 0 auto;
-				width: 100%;
-			}
+			.logo { font-size: 1.25rem; font-weight: 800; color: var(--accent); text-decoration: none; }
+			.logo-text { background: linear-gradient(to right, var(--accent), #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+			.links a { margin-left: 1rem; text-decoration: none; color: var(--secondary); font-weight: 500; font-size: 0.95rem; transition: all 0.2s; padding: 0.5rem 0.75rem; border-radius: 0.5rem; }
+			.links a:hover { color: var(--accent); background: var(--accent-light); }
 
 			footer {
-				padding: 4rem 1rem 2rem;
-				text-align: center;
-				color: var(--secondary);
-				font-size: 0.875rem;
+				padding: 3rem 1rem; text-align: center; color: var(--secondary); font-size: 0.875rem;
+				border: 1px solid var(--border); background: rgba(var(--card-bg-rgb), 0.5);
+				backdrop-filter: blur(8px); margin: 4rem auto 0; border-radius: 1.5rem 1.5rem 0 0;
+				max-width: 900px; width: calc(100% - 2rem);
 			}
 
-			h1, h2, h3 {
-				line-height: 1.2;
-				margin-bottom: 1rem;
-				color: var(--text);
-			}
+			h1, h2, h3 { line-height: 1.3; margin-bottom: 1.5rem; color: var(--text); font-weight: 800; }
+			.hero-title { font-size: 3.5rem; background: linear-gradient(to right, var(--accent), #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
+			.emoji { -webkit-text-fill-color: initial; }
+			a { color: var(--accent); text-decoration: none; }
 
-			a {
-				color: var(--accent);
-			}
+			pre { position: relative; padding: 1.5rem !important; border: 1px solid var(--border) !important; background: #0f172a !important; box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.1); border-radius: 1rem; }
+			.copy-button { position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.8rem; background: var(--accent); color: white; border: none; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; opacity: 0; transition: all 0.2s ease; }
+			pre:hover .copy-button { opacity: 1; }
 		</style>
 	</body>
 </html>

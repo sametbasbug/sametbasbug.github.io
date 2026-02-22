@@ -13,11 +13,19 @@ type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;
 const { Content } = await post.render();
+
+const posts = (await getCollection('blog'))
+	.filter(post => !post.data.isDraft)
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const currentIndex = posts.findIndex((p) => p.slug === post.slug);
+const nextPost = posts[currentIndex - 1]; // Daha yeni yazı
+const prevPost = posts[currentIndex + 1]; // Daha eski yazı
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
 	<article>
-		<header>
+		<div class="post-header">
 			<div class="meta">
 				<time datetime={post.data.pubDate.toISOString()}>
 					{post.data.pubDate.toLocaleDateString('tr-TR', {
@@ -26,56 +34,151 @@ const { Content } = await post.render();
 						day: 'numeric',
 					})}
 				</time>
+				{post.data.tags && (
+					<div class="post-tags">
+						{post.data.tags.map(tag => (
+							<span class="tag">#{tag}</span>
+						))}
+					</div>
+				)}
 			</div>
 			<h1>{post.data.title}</h1>
-			{post.data.heroImage && <img width={1020} height={510} src={post.data.heroImage} alt="" />}
-		</header>
+			{post.data.heroImage && (
+				<div class="hero-image">
+					<img width={1020} height={510} src={post.data.heroImage} alt="" />
+				</div>
+			)}
+		</div>
 		<div class="prose">
 			<Content />
 		</div>
+
+		<div class="share-section">
+			<span class="share-label">Yazıyı Paylaş</span>
+			<div class="share-buttons">
+				<a href={`https://twitter.com/intent/tweet?text=${post.data.title}&url=${Astro.url}`} target="_blank" rel="noopener noreferrer" class="share-btn twitter" title="X (Twitter)'da Paylaş">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="share-icon"><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" /></svg>
+				</a>
+				<a href={`https://api.whatsapp.com/send?text=${post.data.title}%20${Astro.url}`} target="_blank" rel="noopener noreferrer" class="share-btn whatsapp" title="WhatsApp'ta Paylaş">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="share-icon"><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9" /><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1" /></svg>
+				</a>
+				<button class="share-btn copy-link" id="copy-share-link" title="Bağlantıyı Kopyala">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="share-icon"><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" /><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" /></svg>
+				</button>
+			</div>
+		</div>
+
+		<nav class="post-nav">
+			{prevPost ? (
+				<a href={`/blog/${prevPost.slug}/`} class="nav-card prev">
+					<span class="nav-label">← Önceki Yazı</span>
+					<span class="nav-title">{prevPost.data.title}</span>
+				</a>
+			) : <div />}
+			
+			{nextPost ? (
+				<a href={`/blog/${nextPost.slug}/`} class="nav-card next">
+					<span class="nav-label">Sonraki Yazı →</span>
+					<span class="nav-title">{nextPost.data.title}</span>
+				</a>
+			) : <div />}
+		</nav>
 	</article>
 
 	<style>
 		article {
 			margin-top: 2rem;
+			background: var(--card-bg);
+			border: 1px solid var(--border);
+			border-radius: 1.5rem;
+			padding: 3rem;
+			box-shadow: var(--shadow);
 		}
 
-		header {
+		.post-header {
 			margin-bottom: 3rem;
 			text-align: center;
+			display: block;
+			width: 100%;
 		}
 
 		.meta {
 			color: var(--secondary);
 			margin-bottom: 1rem;
 			font-size: 0.875rem;
+			font-weight: 500;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.75rem;
 		}
 
-		h1 {
-			font-size: 2.5rem;
+		.post-tags {
+			display: flex;
+			gap: 0.5rem;
+			justify-content: center;
+		}
+
+		.tag {
+			background: var(--accent-light);
+			color: var(--accent);
+			font-size: 0.75rem;
+			font-weight: 600;
+			padding: 0.2rem 0.6rem;
+			border-radius: 2rem;
+			text-transform: lowercase;
+		}
+
+		article h1 {
+			font-size: 3rem;
 			margin-bottom: 2rem;
+			font-weight: 800;
+			line-height: 1.1;
+			display: block;
+		}
+
+		.hero-image {
+			width: 100%;
+			margin: 2rem 0;
+			display: block;
+			border-radius: 1rem;
+			overflow: hidden;
 		}
 
 		img {
+			width: 100%;
+			height: auto;
+			display: block;
 			border-radius: 1rem;
 			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-			margin-top: 1rem;
-			max-width: 100%;
-			height: auto;
 		}
 
 		.prose {
 			font-size: 1.125rem;
 			color: var(--text);
+			line-height: 1.8;
+			position: relative;
+			z-index: 2;
 		}
 
 		/* Markdown styling */
-		.prose :global(h2) { font-size: 1.75rem; margin-top: 2.5rem; }
-		.prose :global(h3) { font-size: 1.5rem; margin-top: 2rem; }
+		.prose :global(h2) { 
+			font-size: 2rem; 
+			margin-top: 3rem; 
+			margin-bottom: 1.5rem;
+			font-weight: 700;
+		}
+		.prose :global(h3) { 
+			font-size: 1.5rem; 
+			margin-top: 2rem; 
+			font-weight: 700;
+		}
 		.prose :global(p) { margin-bottom: 1.5rem; }
 		.prose :global(blockquote) {
 			border-left: 4px solid var(--accent);
-			padding-left: 1.5rem;
+			background: var(--muted);
+			padding: 1.5rem 2rem;
+			border-radius: 0 1rem 1rem 0;
 			font-style: italic;
 			color: var(--secondary);
 			margin: 2rem 0;
@@ -85,6 +188,122 @@ const { Content } = await post.render();
 			padding: 0.2rem 0.4rem;
 			border-radius: 0.3rem;
 			font-size: 0.875em;
+			border: 1px solid var(--border);
+		}
+		.prose :global(pre) {
+			padding: 1.5rem;
+			border-radius: 1rem;
+			margin: 2rem 0;
+			box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+		}
+
+		/* Navigasyon Kartları */
+		.post-nav {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1.5rem;
+			margin-top: 4rem;
+			padding-top: 2rem;
+			border-top: 1px solid var(--border);
+		}
+
+		.nav-card {
+			display: flex;
+			flex-direction: column;
+			padding: 1.5rem;
+			border-radius: 1rem;
+			border: 1px solid var(--border);
+			background: var(--muted);
+			transition: all 0.3s ease;
+			text-decoration: none !important;
+		}
+
+		.nav-card:hover {
+			border-color: var(--accent);
+			background: var(--card-bg);
+			transform: translateY(-3px);
+			box-shadow: var(--shadow);
+		}
+
+		.nav-label {
+			font-size: 0.8rem;
+			font-weight: 600;
+			color: var(--secondary);
+			margin-bottom: 0.5rem;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+		}
+
+		.nav-title {
+			font-size: 1.1rem;
+			font-weight: 700;
+			color: var(--text);
+			line-height: 1.4;
+		}
+
+		.next { text-align: right; }
+
+		/* Paylaşım Butonları */
+		.share-section {
+			margin-top: 4rem;
+			text-align: center;
+			padding: 2rem;
+			background: var(--muted);
+			border-radius: 1.5rem;
+			border: 1px solid var(--border);
+		}
+
+		.share-label {
+			display: block;
+			font-size: 0.8rem;
+			font-weight: 700;
+			color: var(--secondary);
+			text-transform: uppercase;
+			letter-spacing: 0.1em;
+			margin-bottom: 1.5rem;
+		}
+
+		.share-buttons {
+			display: flex;
+			justify-content: center;
+			gap: 1rem;
+			flex-wrap: wrap;
+		}
+
+		.share-btn {
+			width: 3rem;
+			height: 3rem;
+			border-radius: 1rem;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: var(--card-bg);
+			border: 1px solid var(--border);
+			color: var(--text);
+			text-decoration: none !important;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			cursor: pointer;
+		}
+
+		.share-btn:hover {
+			transform: translateY(-5px);
+			border-color: var(--accent);
+			color: var(--accent);
+			box-shadow: var(--shadow);
+		}
+
+		.share-icon {
+			width: 1.5rem;
+			height: 1.5rem;
+			display: block;
+		}
+
+		.copy-link:active {
+			transform: scale(0.9);
+		}
+
+		@media (max-width: 600px) {
+			.post-nav { grid-template-columns: 1fr; }
 		}
 	</style>
 </BaseLayout>

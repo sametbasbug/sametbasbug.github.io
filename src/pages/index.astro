@@ -12,15 +12,15 @@ const description = "Samet'in teknoloji ve yaşam üzerine notları.";
 
 <BaseLayout title={title} description={description}>
 	<section class="hero">
-		<h1>Merhaba, Ben Samet 👋</h1>
+		<h1 class="hero-title">Merhaba, Ben Samet <span class="emoji">👋</span></h1>
 		<p class="subtitle">Bu benim dijital bahçem. Burada teknoloji, yazılım ve kişisel deneyimlerimi paylaşıyorum.</p>
 	</section>
 
 	<section class="posts">
 		<h2>Son Yazılar</h2>
-		<ul>
+		<div class="posts-grid">
 			{posts.map((post) => (
-				<li>
+				<article class="post-card">
 					<a href={`/blog/${post.slug}/`}>
 						<span class="date">{post.data.pubDate.toLocaleDateString('tr-TR', {
 							year: 'numeric',
@@ -29,49 +29,77 @@ const description = "Samet'in teknoloji ve yaşam üzerine notları.";
 						})}</span>
 						<h3 class="post-title">{post.data.title}</h3>
 						<p class="post-desc">{post.data.description}</p>
+						{post.data.tags && (
+							<div class="tags">
+								{post.data.tags.map(tag => (
+									<span class="tag">#{tag}</span>
+								))}
+							</div>
+						)}
+						<span class="read-more">Devamını Oku →</span>
 					</a>
-				</li>
+				</article>
 			))}
-		</ul>
+		</div>
 	</section>
 
 	<style>
 		.hero {
-			padding: 4rem 0;
+			padding: 6rem 0;
+			text-align: center;
 		}
 
 		h1 {
-			font-size: 3rem;
-			margin-bottom: 1rem;
+			font-size: 3.5rem;
+			margin-bottom: 1.5rem;
+			background: linear-gradient(to right, var(--accent), #818cf8);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
 		}
 
 		.subtitle {
 			font-size: 1.25rem;
 			color: var(--secondary);
 			max-width: 600px;
+			margin: 0 auto;
 		}
 
 		.posts {
-			margin-top: 2rem;
+			margin-top: 4rem;
 		}
 
 		h2 {
-			font-size: 1.5rem;
+			font-size: 1rem;
 			margin-bottom: 2rem;
 			text-transform: uppercase;
-			letter-spacing: 0.1em;
+			letter-spacing: 0.2em;
 			color: var(--secondary);
+			text-align: center;
 		}
 
-		ul {
-			list-style: none;
+		.posts-grid {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 2rem;
 		}
 
-		li {
-			margin-bottom: 3rem;
+		.post-card {
+			background: var(--card-bg);
+			border: 1px solid var(--border);
+			border-radius: 1.5rem;
+			transition: all 0.3s ease;
+			box-shadow: var(--shadow);
+			overflow: hidden;
 		}
 
-		li a {
+		.post-card:hover {
+			transform: translateY(-5px);
+			border-color: var(--accent);
+			box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+		}
+
+		.post-card a {
+			padding: 2.5rem;
 			text-decoration: none;
 			color: inherit;
 			display: block;
@@ -81,21 +109,55 @@ const description = "Samet'in teknoloji ve yaşam üzerine notları.";
 			font-size: 0.875rem;
 			color: var(--secondary);
 			display: block;
-			margin-bottom: 0.5rem;
+			margin-bottom: 1rem;
+			font-weight: 500;
 		}
 
 		.post-title {
 			font-size: 1.75rem;
-			transition: color 0.2s;
-		}
-
-		li a:hover .post-title {
-			color: var(--accent);
+			margin-bottom: 1rem;
+			font-weight: 800;
+			line-height: 1.2;
 		}
 
 		.post-desc {
 			color: var(--secondary);
-			margin-top: 0.5rem;
+			font-size: 1.1rem;
+			margin-bottom: 1.5rem;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+
+		.tags {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.5rem;
+			margin-bottom: 1.5rem;
+		}
+
+		.tag {
+			background: var(--accent-light);
+			color: var(--accent);
+			font-size: 0.8rem;
+			font-weight: 600;
+			padding: 0.25rem 0.75rem;
+			border-radius: 2rem;
+			text-transform: lowercase;
+			border: 1px solid transparent;
+			transition: all 0.2s ease;
+		}
+
+		.post-card:hover .tag {
+			border-color: var(--accent);
+			background: var(--card-bg);
+		}
+
+		.read-more {
+			font-weight: 600;
+			color: var(--accent);
+			font-size: 0.95rem;
 		}
 	</style>
 </BaseLayout>
