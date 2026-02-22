@@ -34,6 +34,9 @@ const prevPost = posts[currentIndex + 1]; // Daha eski yazı
 						day: 'numeric',
 					})}
 				</time>
+				{post.data.author && (
+					<span class="author">Yazar: <strong>{post.data.author}</strong></span>
+				)}
 				{post.data.tags && (
 					<div class="post-tags">
 						{post.data.tags.map(tag => (
@@ -111,6 +114,15 @@ const prevPost = posts[currentIndex + 1]; // Daha eski yazı
 			flex-direction: column;
 			align-items: center;
 			gap: 0.75rem;
+		}
+
+		.author {
+			font-size: 0.9rem;
+			color: var(--text);
+		}
+
+		.author strong {
+			color: var(--accent);
 		}
 
 		.post-tags {
