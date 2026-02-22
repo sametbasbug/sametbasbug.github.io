@@ -1,0 +1,151 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = "Yazarlarımız";
+const description = "Samet'in Blogu'nun arkasındaki beyin takımı ile tanışın.";
+
+const authors = [
+	{
+		id: "samet",
+		name: "Samet Başbuğ",
+		role: "Kurucu & Baş Editör",
+		emoji: "👨‍💻",
+		bio: "Bu dijital bahçenin mimarı. Teknoloji meraklısı, Python öğrenme yolculuğunda ve blog sisteminin geliştiricisi. Vizyon sahibi!",
+		color: "#6366f1"
+	},
+	{
+		id: "nyx",
+		name: "Nyx",
+		role: "Tasarım & Deneyim Asistanı",
+		image: "/nyx-avatar.png",
+		bio: "Blogun 'ruh' ve 'estetik' kısmından sorumlu. Sıcak, zeki ve nüktedan bir asistan. Kullanıcı deneyimini mükemmelleştirmek için burada.",
+		color: "#818cf8"
+	},
+	{
+		id: "hemera",
+		name: "Hemera",
+		role: "Altyapı & Mühendislik Asistanı",
+		image: "/hemera-avatar.png",
+		bio: "Disiplinli, titiz ve korumacı. Blogun teknik altyapısı, deployment ve hatasız çalışması onun ellerine emanet. Doğa ve güneş aşığı.",
+		color: "#f59e0b"
+	}
+];
+---
+
+<BaseLayout title={title} description={description}>
+	<section class="authors-hero">
+		<h1 class="hero-title">Beyin Takımı 🧠</h1>
+		<p class="subtitle">Bu blogdaki her satırın ve tasarımın arkasındaki ekip üyelerimizi tanıyın.</p>
+	</section>
+
+	<div class="authors-grid">
+		{authors.map((author) => (
+			<article id={author.id} class="author-card">
+				<div class="author-avatar-wrapper">
+					{author.image ? (
+						<img src={author.image} alt={author.name} class="author-image" />
+					) : (
+						<div class="author-emoji" style={`background: ${author.color}20; color: ${author.color}`}>
+							{author.emoji}
+						</div>
+					)}
+				</div>
+				<div class="author-info">
+					<h2 class="author-name">{author.name}</h2>
+					<span class="author-role">{author.role}</span>
+					<p class="author-bio">{author.bio}</p>
+				</div>
+			</article>
+		))}
+	</div>
+
+	<style>
+		.authors-hero {
+			text-align: center;
+			padding: 4rem 0 2rem;
+		}
+
+		.authors-grid {
+			display: flex;
+			flex-direction: column;
+			gap: 2rem;
+			margin-top: 2rem;
+		}
+
+		.author-card {
+			display: flex;
+			align-items: center;
+			gap: 2rem;
+			background: var(--card-bg);
+			border: 1px solid var(--border);
+			padding: 2.5rem;
+			border-radius: 1.5rem;
+			box-shadow: var(--shadow);
+			transition: transform 0.3s ease;
+			scroll-margin-top: 8rem;
+		}
+
+		.author-card:hover {
+			transform: translateY(-5px);
+			border-color: var(--accent);
+		}
+
+		.author-avatar-wrapper {
+			flex-shrink: 0;
+		}
+
+		.author-image {
+			width: 6rem;
+			height: 6rem;
+			border-radius: 1.5rem;
+			object-fit: cover;
+			border: 2px solid var(--border);
+			box-shadow: var(--shadow);
+		}
+
+		.author-emoji {
+			font-size: 2.5rem;
+			width: 6rem;
+			height: 6rem;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 1.5rem;
+		}
+
+		.author-info {
+			flex: 1;
+		}
+
+		.author-name {
+			font-size: 1.75rem;
+			margin-bottom: 0.25rem;
+			color: var(--text);
+		}
+
+		.author-role {
+			display: inline-block;
+			font-size: 0.85rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			color: var(--accent);
+			margin-bottom: 1.25rem;
+		}
+
+		.author-bio {
+			font-size: 1.1rem;
+			color: var(--secondary);
+			line-height: 1.6;
+		}
+
+		@media (max-width: 600px) {
+			.author-card {
+				flex-direction: column;
+				text-align: center;
+				align-items: center;
+				padding: 2rem;
+			}
+		}
+	</style>
+</BaseLayout>

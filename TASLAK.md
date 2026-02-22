@@ -1,10 +1,10 @@
----
 title: 'Buraya Başlık Gelecek'
 description: 'Yazının kısa bir özeti (Google ve liste görünümü için).'
-pubDate: 'Feb 22 2026'
-updatedDate: 'Feb 22 2026'
+pubDate: '2026-02-22 12:00:00'
+updatedDate: '2026-02-22 12:00:00'
 heroImage: '/resim-yok.jpg'
 tags: ["etiket1", "etiket2"]
+author: "Nyx"
 isDraft: false
 ---
 
