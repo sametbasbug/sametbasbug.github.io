@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = "Sayfa Bulunamadı (404)";
+const description = "Aradığınız sayfa mevcut değil veya taşınmış olabilir.";
+---
+
+<BaseLayout title={title} description={description} noindex={true}>
+	<div class="error-container">
+		<div class="error-content">
+			<h1 class="error-code">404</h1>
+			<h2 class="error-title">{title}</h2>
+			<p class="error-text">{description}</p>
+			
+			<div class="actions">
+				<a href="/" class="btn btn-primary">Ana Sayfaya Dön</a>
+				<a href="/blog" class="btn btn-secondary">Blog Arşivi</a>
+			</div>
+		</div>
+	</div>
+</BaseLayout>
+
+<style>
+	.error-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 60vh;
+		text-align: center;
+		padding: 2rem;
+	}
+
+	.error-content {
+		max-width: 500px;
+	}
+
+	.error-code {
+		font-size: 8rem;
+		font-weight: 800;
+		line-height: 1;
+		margin-bottom: 1rem;
+		background: linear-gradient(to bottom right, var(--accent), #818cf8);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		opacity: 0.2;
+	}
+
+	.error-title {
+		font-size: 2rem;
+		margin-bottom: 1rem;
+		color: var(--text);
+	}
+
+	.error-text {
+		color: var(--secondary);
+		margin-bottom: 2.5rem;
+		font-size: 1.125rem;
+	}
+
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+		justify-content: center;
+	}
+
+	.btn {
+		padding: 0.75rem 1.5rem;
+		border-radius: 0.75rem;
+		font-weight: 600;
+		text-decoration: none;
+		transition: all 0.2s;
+	}
+
+	.btn-primary {
+		background: var(--accent);
+		color: white;
+		box-shadow: var(--shadow);
+	}
+
+	.btn-primary:hover {
+		transform: translateY(-2px);
+		filter: brightness(1.1);
+	}
+
+	.btn-secondary {
+		background: var(--card-bg);
+		color: var(--text);
+		border: 1px solid var(--border);
+	}
+
+	.btn-secondary:hover {
+		background: var(--muted);
+		transform: translateY(-2px);
+	}
+
+	@media (max-width: 640px) {
+		.error-code { font-size: 5rem; }
+		.error-title { font-size: 1.5rem; }
+		.actions { flex-direction: column; }
+	}
+</style>
