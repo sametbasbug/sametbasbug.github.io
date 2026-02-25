@@ -1,0 +1,192 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+	.filter(post => !post.data.isDraft)
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const title = "Blog Arşivi";
+const description = "Tüm blog yazılarımızın listesi.";
+---
+
+<BaseLayout title={title} description={description}>
+	<section class="archive-container">
+		<h1 class="archive-title">
+			{title}
+		</h1>
+		<div class="posts-grid">
+			{posts.length === 0 ? (
+				<div class="empty-state">
+					Henüz yayınlanmış bir yazı yok. Yakında burada yeni içerikler göreceksin.
+				</div>
+			) : posts.map((post) => (
+				<article class="post-card">
+					<div class="card-content">
+						<div class="post-meta">
+							<time datetime={post.data.pubDate.toISOString()}>
+								{post.data.pubDate.toLocaleDateString('tr-TR', {
+									year: 'numeric',
+									month: 'long',
+									day: 'numeric',
+								})}
+							</time>
+							{post.data.tags && (
+								<div class="tags-list">
+									{post.data.tags.map(tag => (
+										<span class="tag-badge">
+											#{tag}
+										</span>
+									))}
+								</div>
+							)}
+						</div>
+						
+						<h2 class="post-title">
+							<a href={`/blog/${post.slug}/`}>
+								{post.data.title}
+							</a>
+						</h2>
+						
+						<p class="post-description">
+							{post.data.description}
+						</p>
+						
+						<a href={`/blog/${post.slug}/`} class="read-more">
+							Devamını Oku 
+							<svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="9 5l7 7-7 7" />
+							</svg>
+						</a>
+					</div>
+				</article>
+			))}
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.archive-container {
+		max-width: 800px;
+		margin: 0 auto;
+	}
+
+	.archive-title {
+		font-size: 2.5rem;
+		font-weight: 800;
+		margin-bottom: 2rem;
+		color: var(--text);
+		border-bottom: 3px solid var(--accent);
+		padding-bottom: 0.5rem;
+		display: inline-block;
+	}
+
+	.posts-grid {
+		display: grid;
+		gap: 2rem;
+	}
+
+	.post-card {
+		background: var(--card-bg);
+		border: 1px solid var(--border);
+		border-radius: 1rem;
+		box-shadow: var(--shadow);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		overflow: hidden;
+	}
+
+	.post-card:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+	}
+
+	.card-content {
+		padding: 1.5rem;
+	}
+
+	.post-meta {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		font-size: 0.85rem;
+		color: var(--secondary);
+		margin-bottom: 1rem;
+	}
+
+	.tags-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.empty-state {
+		padding: 1.25rem;
+		border: 1px dashed var(--border);
+		border-radius: 0.75rem;
+		background: var(--card-bg);
+		color: var(--secondary);
+		text-align: center;
+	}
+
+	.tag-badge {
+		background: var(--accent-light);
+		color: var(--accent);
+		padding: 0.1rem 0.6rem;
+		border-radius: 1rem;
+		font-weight: 600;
+		font-style: italic;
+	}
+
+	.post-title {
+		font-size: 1.5rem;
+		font-weight: 700;
+		margin-bottom: 0.75rem;
+	}
+
+	.post-title a {
+		color: var(--text);
+		text-decoration: none;
+		transition: color 0.2s;
+	}
+
+	.post-title a:hover {
+		color: var(--accent);
+	}
+
+	.post-description {
+		color: var(--secondary);
+		font-size: 1rem;
+		line-height: 1.6;
+		margin-bottom: 1.25rem;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.read-more {
+		display: inline-flex;
+		align-items: center;
+		color: var(--accent);
+		font-weight: 600;
+		text-decoration: none;
+		gap: 0.25rem;
+		transition: gap 0.2s;
+	}
+
+	.read-more:hover {
+		text-decoration: underline;
+		gap: 0.5rem;
+	}
+
+	.arrow-icon {
+		width: 1rem;
+		height: 1rem;
+	}
+
+	/* Dark mode specific tweaks if needed */
+	[data-theme="dark"] .post-card {
+		background: var(--card-bg);
+		border-color: var(--border);
+	}
+</style>

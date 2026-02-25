@@ -1,6 +1,28 @@
 ---
 import { ViewTransitions } from 'astro:transitions';
-const { title, description } = Astro.props;
+interface Props {
+	title: string;
+	description: string;
+	ogImage?: string;
+	noindex?: boolean;
+	type?: string;
+}
+
+const { 
+	title, 
+	description, 
+	ogImage, 
+	noindex = false, 
+	type = 'website' 
+} = Astro.props;
+
+// SEO Hardening Logic
+const finalOgImage = ogImage && typeof ogImage === 'string' && ogImage.trim() !== '' 
+	? ogImage 
+	: '/yenifavicon.jpg';
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
+const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 ---
 
 <html lang="tr">
@@ -9,11 +31,48 @@ const { title, description } = Astro.props;
 		<link rel="icon" type="image/jpeg" href="/yenifavicon.jpg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
+		
+		<!-- SEO Temel Katmanı -->
 		<title>{title} | Samet'in Blogu</title>
 		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
+		<meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
+
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content={type} />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={ogImageURL} />
+		<meta property="og:locale" content="tr_TR" />
+		<meta property="og:site_name" content="Samet'in Blogu" />
+
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:url" content={canonicalURL} />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImageURL} />
+
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+		<!-- FOUC engeli: tema ilk paint'ten önce uygulanır -->
+		<script is:inline>
+			(() => {
+				try {
+					const saved = localStorage.getItem('theme');
+					const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+					const theme = saved ?? (systemDark ? 'dark' : 'light');
+					document.documentElement.setAttribute('data-theme', theme);
+				} catch {
+					// localStorage erişimi yoksa sistem temasını uygula
+					const fallbackDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+					document.documentElement.setAttribute('data-theme', fallbackDark ? 'dark' : 'light');
+				}
+			})();
+		</script>
 		<ViewTransitions />
 	</head>
 	<body>
@@ -56,7 +115,7 @@ const { title, description } = Astro.props;
 		</main>
 
 		<footer transition:persist id="main-footer">
-			<p>&copy; {new Date().getFullYear()} Samet Başbuğ. Tüm hakları saklıdır. ✨</p>
+			<p>&copy; {new Date().getFullYear()} Samet Başbuğ. Tüm hakları saklıdır. ✨ | <a href="/rss.xml" class="rss-link">RSS Feed</a></p>
 		</footer>
 
 		<script is:inline>
@@ -186,6 +245,11 @@ const { title, description } = Astro.props;
 				handleScroll();
 			});
 
+			document.addEventListener('astro:before-swap', (event) => {
+				const currentTheme = document.documentElement.getAttribute('data-theme') || getTheme();
+				event.newDocument.documentElement.setAttribute('data-theme', currentTheme);
+			});
+
 			document.addEventListener('astro:after-swap', applyTheme);
 
 			document.addEventListener('astro:before-preparation', () => {
@@ -221,6 +285,16 @@ const { title, description } = Astro.props;
 			}
 		</script>
 		<style is:global>
+			.rss-link {
+				color: var(--secondary);
+				text-decoration: none;
+				font-weight: 600;
+				margin-left: 0.5rem;
+				transition: color 0.2s;
+			}
+			.rss-link:hover {
+				color: var(--accent);
+			}
 			:root {
 				--bg: #f8fafc;
 				--card-bg: #ffffff;
