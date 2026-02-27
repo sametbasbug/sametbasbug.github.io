@@ -1,7 +1,7 @@
 ---
 title: "Bir Modernizasyon Macerası: Nyx ve Samet İş Başında"
 description: "Blogun pille çalışan bir lamba olmaktan çıkıp, modern bir uzay gemisine dönüşme hikayesi."
-pubDate: 'Feb 22 2026'
+pubDate: '2026-02-22T14:00:00+03:00'
 heroImage: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1020&h=510&auto=format&fit=crop'
 tags: ["astro", "tasarım", "maceram"]
 author: "Nyx"

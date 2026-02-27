@@ -8,6 +8,16 @@ const posts = (await getCollection('blog'))
 
 const title = "Blog Arşivi";
 const description = "Tüm blog yazılarımızın listesi.";
+
+const searchIndex = posts.map((post) => ({
+	slug: post.slug,
+	title: post.data.title,
+	description: post.data.description,
+	tags: post.data.tags ?? [],
+	author: post.data.author ?? '',
+	body: post.body ?? '',
+	pubDate: post.data.pubDate.toISOString(),
+}));
 ---
 
 <BaseLayout title={title} description={description}>
@@ -15,13 +25,30 @@ const description = "Tüm blog yazılarımızın listesi.";
 		<h1 class="archive-title">
 			{title}
 		</h1>
-		<div class="posts-grid">
+
+		<div class="search-box">
+			<label for="post-search" class="search-label">Gönderilerde ara</label>
+			<div class="search-input-wrap">
+				<span class="search-icon" aria-hidden="true">🔎</span>
+				<input
+					id="post-search"
+					type="search"
+					placeholder="Başlık, etiket, açıklama veya içerikte ara..."
+					autocomplete="off"
+				/>
+			</div>
+			<p id="search-status" class="search-status" aria-live="polite">
+				Toplam {posts.length} gönderi.
+			</p>
+		</div>
+
+		<div class="posts-grid" id="posts-grid">
 			{posts.length === 0 ? (
 				<div class="empty-state">
 					Henüz yayınlanmış bir yazı yok. Yakında burada yeni içerikler göreceksin.
 				</div>
 			) : posts.map((post) => (
-				<article class="post-card">
+				<article class="post-card" data-post-slug={post.slug}>
 					<div class="card-content">
 						<div class="post-meta">
 							<time datetime={post.data.pubDate.toISOString()}>
@@ -41,19 +68,19 @@ const description = "Tüm blog yazılarımızın listesi.";
 								</div>
 							)}
 						</div>
-						
+
 						<h2 class="post-title">
 							<a href={`/blog/${post.slug}/`}>
 								{post.data.title}
 							</a>
 						</h2>
-						
+
 						<p class="post-description">
 							{post.data.description}
 						</p>
-						
+
 						<a href={`/blog/${post.slug}/`} class="read-more">
-							Devamını Oku 
+							Devamını Oku
 							<svg xmlns="http://www.w3.org/2000/svg" class="arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="9 5l7 7-7 7" />
 							</svg>
@@ -62,7 +89,188 @@ const description = "Tüm blog yazılarımızın listesi.";
 				</article>
 			))}
 		</div>
+
+		<div id="no-results" class="empty-state" style="display:none; margin-top:1rem;">
+			Bu arama için sonuç bulunamadı.
+		</div>
 	</section>
+
+	<script is:inline define:vars={{ searchIndex, totalPosts: posts.length }}>
+		const charMap = {
+			'ç': 'c', 'ğ': 'g', 'ı': 'i', 'İ': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u'
+		};
+
+		function normalizeText(value) {
+			return (value || '')
+				.toLocaleLowerCase('tr-TR')
+				.replace(/[çğıİöşü]/g, (ch) => charMap[ch] || ch)
+				.replace(/\s+/g, ' ')
+				.trim();
+		}
+
+		function tokenize(value) {
+			return normalizeText(value)
+				.split(/[^\p{L}\p{N}]+/u)
+				.filter(Boolean);
+		}
+
+		const indexedPosts = searchIndex.map((post) => {
+			const titleTokens = tokenize(post.title);
+			const tagTokens = tokenize((post.tags || []).join(' '));
+			const descriptionTokens = tokenize(post.description);
+			const bodyTokens = tokenize(post.body);
+			const authorTokens = tokenize(post.author);
+
+			return {
+				slug: post.slug,
+				pubDateMs: new Date(post.pubDate).getTime(),
+				titleTokens,
+				tagTokens,
+				descriptionTokens,
+				bodyTokens,
+				authorTokens,
+			};
+		});
+
+		const tokenMatch = (tokens, queryToken) => {
+			if (tokens.includes(queryToken)) return true;
+			if (queryToken.length >= 3) return tokens.some((t) => t.startsWith(queryToken));
+			return false;
+		};
+
+		function scorePost(post, queryTokens) {
+			let score = 0;
+			for (const qt of queryTokens) {
+				const inTitle = tokenMatch(post.titleTokens, qt);
+				const inTags = tokenMatch(post.tagTokens, qt);
+				const inDescription = tokenMatch(post.descriptionTokens, qt);
+				const inBody = tokenMatch(post.bodyTokens, qt);
+				const inAuthor = tokenMatch(post.authorTokens, qt);
+
+				if (!(inTitle || inTags || inDescription || inBody || inAuthor)) return -1;
+
+				if (inTitle) score += 5;
+				if (inTags) score += 4;
+				if (inDescription) score += 3;
+				if (inAuthor) score += 2;
+				if (inBody) score += 1;
+			}
+			return score;
+		}
+
+		function escapeRegex(value) {
+			return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		}
+
+		function initArchiveSearch() {
+			const searchInput = document.getElementById('post-search');
+			const searchStatus = document.getElementById('search-status');
+			const noResults = document.getElementById('no-results');
+			const cards = Array.from(document.querySelectorAll('[data-post-slug]'));
+			if (!searchInput || !searchStatus || !noResults || cards.length === 0) return;
+			if (searchInput.dataset.searchBound === '1') return;
+			searchInput.dataset.searchBound = '1';
+
+			const highlightTargets = cards.map((card) => {
+				const titleEl = card.querySelector('.post-title a');
+				const descEl = card.querySelector('.post-description');
+				const tagEls = Array.from(card.querySelectorAll('.tag-badge'));
+
+				if (titleEl && !titleEl.dataset.original) titleEl.dataset.original = titleEl.textContent || '';
+				if (descEl && !descEl.dataset.original) descEl.dataset.original = descEl.textContent || '';
+				tagEls.forEach((el) => {
+					if (!el.dataset.original) el.dataset.original = el.textContent || '';
+				});
+
+				return { titleEl, descEl, tagEls };
+			});
+
+			function applyHighlight(el, queryTokens) {
+				if (!el) return;
+				const original = el.dataset.original || '';
+				if (!queryTokens.length) {
+					el.textContent = original;
+					return;
+				}
+
+				const pattern = queryTokens.filter((t) => t.length >= 2).map(escapeRegex).join('|');
+				if (!pattern) {
+					el.textContent = original;
+					return;
+				}
+
+				const re = new RegExp(`(${pattern})`, 'giu');
+				el.innerHTML = original.replace(re, '<mark>$1</mark>');
+			}
+
+			function runSearch() {
+				const query = searchInput.value || '';
+				const normalizedQuery = normalizeText(query);
+
+				if (normalizedQuery.length > 0 && normalizedQuery.length < 2) {
+					cards.forEach((card) => (card.style.display = 'none'));
+					highlightTargets.forEach(({ titleEl, descEl, tagEls }) => {
+						applyHighlight(titleEl, []);
+						applyHighlight(descEl, []);
+						tagEls.forEach((tagEl) => applyHighlight(tagEl, []));
+					});
+					noResults.style.display = 'block';
+					searchStatus.textContent = 'En az 2 karakter girerek arama yapabilirsin.';
+					return;
+				}
+
+				if (!normalizedQuery) {
+					cards.forEach((card) => (card.style.display = 'block'));
+					highlightTargets.forEach(({ titleEl, descEl, tagEls }) => {
+						applyHighlight(titleEl, []);
+						applyHighlight(descEl, []);
+						tagEls.forEach((tagEl) => applyHighlight(tagEl, []));
+					});
+					noResults.style.display = 'none';
+					searchStatus.textContent = `Toplam ${totalPosts} gönderi.`;
+					return;
+				}
+
+				const queryTokens = tokenize(normalizedQuery);
+				const matches = indexedPosts
+					.map((post) => ({ slug: post.slug, score: scorePost(post, queryTokens), pubDateMs: post.pubDateMs }))
+					.filter((item) => item.score >= 0)
+					.sort((a, b) => {
+						if (b.score !== a.score) return b.score - a.score;
+						return b.pubDateMs - a.pubDateMs;
+					});
+
+				const visibleSet = new Set(matches.map((m) => m.slug));
+				cards.forEach((card) => {
+					const slug = card.getAttribute('data-post-slug');
+					card.style.display = slug && visibleSet.has(slug) ? 'block' : 'none';
+				});
+
+				highlightTargets.forEach(({ titleEl, descEl, tagEls }, index) => {
+					const slug = cards[index]?.getAttribute('data-post-slug');
+					const shouldHighlight = slug && visibleSet.has(slug);
+					const tokens = shouldHighlight ? queryTokens : [];
+					applyHighlight(titleEl, tokens);
+					applyHighlight(descEl, tokens);
+					tagEls.forEach((tagEl) => applyHighlight(tagEl, tokens));
+				});
+
+				noResults.style.display = matches.length === 0 ? 'block' : 'none';
+				searchStatus.textContent = `"${query}" için ${matches.length} sonuç bulundu. (ESC ile temizle)`;
+			}
+
+			searchInput.addEventListener('input', runSearch);
+			searchInput.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape') {
+					searchInput.value = '';
+					runSearch();
+				}
+			});
+		}
+
+		initArchiveSearch();
+		document.addEventListener('astro:page-load', initArchiveSearch);
+	</script>
 </BaseLayout>
 
 <style>
@@ -74,11 +282,60 @@ const description = "Tüm blog yazılarımızın listesi.";
 	.archive-title {
 		font-size: 2.5rem;
 		font-weight: 800;
-		margin-bottom: 2rem;
+		margin-bottom: 1.25rem;
 		color: var(--text);
 		border-bottom: 3px solid var(--accent);
 		padding-bottom: 0.5rem;
 		display: inline-block;
+	}
+
+	.search-box {
+		background: var(--card-bg);
+		border: 1px solid var(--border);
+		border-radius: 1rem;
+		padding: 1rem;
+		margin-bottom: 2rem;
+		box-shadow: var(--shadow);
+	}
+
+	.search-label {
+		display: block;
+		font-weight: 600;
+		margin-bottom: 0.5rem;
+	}
+
+	.search-input-wrap {
+		position: relative;
+	}
+
+	.search-icon {
+		position: absolute;
+		left: 0.75rem;
+		top: 50%;
+		transform: translateY(-50%);
+		opacity: 0.7;
+		pointer-events: none;
+	}
+
+	#post-search {
+		width: 100%;
+		padding: 0.75rem 0.9rem 0.75rem 2.2rem;
+		border-radius: 0.75rem;
+		border: 1px solid var(--border);
+		background: var(--bg);
+		color: var(--text);
+		font: inherit;
+	}
+
+	#post-search:focus {
+		outline: 2px solid var(--accent);
+		outline-offset: 1px;
+	}
+
+	.search-status {
+		margin-top: 0.6rem;
+		color: var(--secondary);
+		font-size: 0.92rem;
 	}
 
 	.posts-grid {
@@ -111,6 +368,7 @@ const description = "Tüm blog yazılarımızın listesi.";
 		font-size: 0.85rem;
 		color: var(--secondary);
 		margin-bottom: 1rem;
+		flex-wrap: wrap;
 	}
 
 	.tags-list {
@@ -184,9 +442,15 @@ const description = "Tüm blog yazılarımızın listesi.";
 		height: 1rem;
 	}
 
-	/* Dark mode specific tweaks if needed */
 	[data-theme="dark"] .post-card {
 		background: var(--card-bg);
 		border-color: var(--border);
+	}
+
+	mark {
+		background: color-mix(in srgb, var(--accent) 28%, transparent);
+		color: inherit;
+		padding: 0 0.15rem;
+		border-radius: 0.25rem;
 	}
 </style>

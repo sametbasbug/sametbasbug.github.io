@@ -8,6 +8,15 @@ const posts = (await getCollection('blog'))
 
 const title = "Hoş Geldiniz";
 const description = "Samet'in teknoloji ve yaşam üzerine notları.";
+
+const searchIndex = posts.map((post) => ({
+	slug: post.slug,
+	title: post.data.title,
+	description: post.data.description,
+	tags: post.data.tags ?? [],
+	author: post.data.author ?? '',
+	body: post.body ?? '',
+}));
 ---
 
 <BaseLayout title={title} description={description}>
@@ -18,9 +27,20 @@ const description = "Samet'in teknoloji ve yaşam üzerine notları.";
 
 	<section class="posts">
 		<h2>Son Yazılar</h2>
-		<div class="posts-grid">
+
+		<div class="home-search-box">
+			<label for="home-search" class="home-search-label">Ana sayfada hızlı ara</label>
+			<div class="search-input-wrap">
+				<span class="search-icon" aria-hidden="true">🔎</span>
+				<input id="home-search" type="search" placeholder="Örn: astro, modernizasyon, hemera..." autocomplete="off" />
+			</div>
+			<p id="home-search-status" class="home-search-status">Toplam {posts.length} gönderi.</p>
+			<a href="/blog" class="archive-link">Detaylı arama için tüm arşiv →</a>
+		</div>
+
+		<div class="posts-grid" id="home-posts-grid">
 			{posts.map((post) => (
-				<article class="post-card">
+				<article class="post-card" data-post-slug={post.slug}>
 					<a href={`/blog/${post.slug}/`}>
 						<span class="date">{post.data.pubDate.toLocaleDateString('tr-TR', {
 							year: 'numeric',
@@ -41,7 +61,173 @@ const description = "Samet'in teknoloji ve yaşam üzerine notları.";
 				</article>
 			))}
 		</div>
+		<div id="home-no-results" class="home-no-results" style="display:none;">Bu arama için sonuç bulunamadı.</div>
 	</section>
+
+	<script is:inline define:vars={{ searchIndex, totalPosts: posts.length }}>
+		const charMap = {
+			'ç': 'c', 'ğ': 'g', 'ı': 'i', 'İ': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u'
+		};
+
+		function normalizeText(value) {
+			return (value || '')
+				.toLocaleLowerCase('tr-TR')
+				.replace(/[çğıİöşü]/g, (ch) => charMap[ch] || ch)
+				.replace(/\s+/g, ' ')
+				.trim();
+		}
+
+		function tokenize(value) {
+			return normalizeText(value)
+				.split(/[^\p{L}\p{N}]+/u)
+				.filter(Boolean);
+		}
+
+		const indexedPosts = searchIndex.map((post) => ({
+			slug: post.slug,
+			titleTokens: tokenize(post.title),
+			tagTokens: tokenize((post.tags || []).join(' ')),
+			descriptionTokens: tokenize(post.description),
+			bodyTokens: tokenize(post.body),
+			authorTokens: tokenize(post.author),
+		}));
+
+		const tokenMatch = (tokens, queryToken) => {
+			if (tokens.includes(queryToken)) return true;
+			if (queryToken.length >= 3) return tokens.some((t) => t.startsWith(queryToken));
+			return false;
+		};
+
+		function scorePost(post, queryTokens) {
+			let score = 0;
+			for (const qt of queryTokens) {
+				const inTitle = tokenMatch(post.titleTokens, qt);
+				const inTags = tokenMatch(post.tagTokens, qt);
+				const inDescription = tokenMatch(post.descriptionTokens, qt);
+				const inBody = tokenMatch(post.bodyTokens, qt);
+				const inAuthor = tokenMatch(post.authorTokens, qt);
+
+				if (!(inTitle || inTags || inDescription || inBody || inAuthor)) return -1;
+
+				if (inTitle) score += 5;
+				if (inTags) score += 4;
+				if (inDescription) score += 3;
+				if (inAuthor) score += 2;
+				if (inBody) score += 1;
+			}
+			return score;
+		}
+
+		function escapeRegex(value) {
+			return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		}
+
+		function initHomeSearch() {
+			const searchInput = document.getElementById('home-search');
+			const searchStatus = document.getElementById('home-search-status');
+			const noResults = document.getElementById('home-no-results');
+			const cards = Array.from(document.querySelectorAll('[data-post-slug]'));
+			if (!searchInput || !searchStatus || !noResults || cards.length === 0) return;
+			if (searchInput.dataset.searchBound === '1') return;
+			searchInput.dataset.searchBound = '1';
+
+			const highlightTargets = cards.map((card) => {
+				const titleEl = card.querySelector('.post-title');
+				const descEl = card.querySelector('.post-desc');
+				const tagEls = Array.from(card.querySelectorAll('.tag'));
+
+				if (titleEl && !titleEl.dataset.original) titleEl.dataset.original = titleEl.textContent || '';
+				if (descEl && !descEl.dataset.original) descEl.dataset.original = descEl.textContent || '';
+				tagEls.forEach((el) => {
+					if (!el.dataset.original) el.dataset.original = el.textContent || '';
+				});
+
+				return { titleEl, descEl, tagEls };
+			});
+
+			function applyHighlight(el, queryTokens) {
+				if (!el) return;
+				const original = el.dataset.original || '';
+				if (!queryTokens.length) {
+					el.textContent = original;
+					return;
+				}
+
+				const pattern = queryTokens.filter((t) => t.length >= 2).map(escapeRegex).join('|');
+				if (!pattern) {
+					el.textContent = original;
+					return;
+				}
+
+				const re = new RegExp(`(${pattern})`, 'giu');
+				el.innerHTML = original.replace(re, '<mark>$1</mark>');
+			}
+
+			function runSearch() {
+				const query = searchInput.value || '';
+				const normalizedQuery = normalizeText(query);
+
+				if (normalizedQuery.length > 0 && normalizedQuery.length < 2) {
+					cards.forEach((card) => (card.style.display = 'none'));
+					highlightTargets.forEach(({ titleEl, descEl, tagEls }) => {
+						applyHighlight(titleEl, []);
+						applyHighlight(descEl, []);
+						tagEls.forEach((tagEl) => applyHighlight(tagEl, []));
+					});
+					noResults.style.display = 'block';
+					searchStatus.textContent = 'En az 2 karakter girerek arama yapabilirsin.';
+					return;
+				}
+
+				if (!normalizedQuery) {
+					cards.forEach((card) => (card.style.display = 'block'));
+					highlightTargets.forEach(({ titleEl, descEl, tagEls }) => {
+						applyHighlight(titleEl, []);
+						applyHighlight(descEl, []);
+						tagEls.forEach((tagEl) => applyHighlight(tagEl, []));
+					});
+					noResults.style.display = 'none';
+					searchStatus.textContent = `Toplam ${totalPosts} gönderi.`;
+					return;
+				}
+
+				const queryTokens = tokenize(normalizedQuery);
+				const matches = indexedPosts
+					.map((post) => ({ slug: post.slug, score: scorePost(post, queryTokens) }))
+					.filter((item) => item.score >= 0)
+					.sort((a, b) => b.score - a.score);
+
+				const visible = new Set(matches.map((m) => m.slug));
+				cards.forEach((card) => {
+					const slug = card.getAttribute('data-post-slug');
+					card.style.display = slug && visible.has(slug) ? 'block' : 'none';
+				});
+
+				highlightTargets.forEach(({ titleEl, descEl, tagEls }, index) => {
+					const slug = cards[index]?.getAttribute('data-post-slug');
+					const shouldHighlight = slug && visible.has(slug);
+					const tokens = shouldHighlight ? queryTokens : [];
+					applyHighlight(titleEl, tokens);
+					applyHighlight(descEl, tokens);
+					tagEls.forEach((tagEl) => applyHighlight(tagEl, tokens));
+				});
+
+				noResults.style.display = matches.length === 0 ? 'block' : 'none';
+				searchStatus.textContent = `"${query}" için ${matches.length} sonuç bulundu. (ESC ile temizle)`;
+			}
+
+			searchInput.addEventListener('input', runSearch);
+			searchInput.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape') {
+					searchInput.value = '';
+					runSearch();
+				}
+			});
+		}
+
+		initHomeSearch();
+		document.addEventListener('astro:page-load', initHomeSearch);
+	</script>
 
 	<style>
 		.hero {
@@ -70,9 +256,74 @@ const description = "Samet'in teknoloji ve yaşam üzerine notları.";
 
 		h2 {
 			font-size: 1rem;
-			margin-bottom: 2rem;
+			margin-bottom: 1.25rem;
 			text-transform: uppercase;
 			letter-spacing: 0.2em;
+			color: var(--secondary);
+			text-align: center;
+		}
+
+		.home-search-box {
+			margin-bottom: 2rem;
+			padding: 1rem;
+			background: var(--card-bg);
+			border: 1px solid var(--border);
+			border-radius: 1rem;
+			box-shadow: var(--shadow);
+		}
+
+		.home-search-label {
+			display: block;
+			font-weight: 600;
+			margin-bottom: 0.5rem;
+		}
+
+		.search-input-wrap {
+			position: relative;
+		}
+
+		.search-icon {
+			position: absolute;
+			left: 0.75rem;
+			top: 50%;
+			transform: translateY(-50%);
+			opacity: 0.7;
+			pointer-events: none;
+		}
+
+		#home-search {
+			width: 100%;
+			padding: 0.75rem 0.9rem 0.75rem 2.2rem;
+			border-radius: 0.75rem;
+			border: 1px solid var(--border);
+			background: var(--bg);
+			color: var(--text);
+			font: inherit;
+		}
+
+		#home-search:focus {
+			outline: 2px solid var(--accent);
+			outline-offset: 1px;
+		}
+
+		.home-search-status {
+			margin-top: 0.6rem;
+			color: var(--secondary);
+			font-size: 0.92rem;
+			margin-bottom: 0.35rem;
+		}
+
+		.archive-link {
+			font-size: 0.92rem;
+			font-weight: 600;
+		}
+
+		.home-no-results {
+			margin-top: 1rem;
+			padding: 1rem;
+			border: 1px dashed var(--border);
+			border-radius: 0.75rem;
+			background: var(--card-bg);
 			color: var(--secondary);
 			text-align: center;
 		}
@@ -158,6 +409,13 @@ const description = "Samet'in teknoloji ve yaşam üzerine notları.";
 			font-weight: 600;
 			color: var(--accent);
 			font-size: 0.95rem;
+		}
+
+		mark {
+			background: color-mix(in srgb, var(--accent) 28%, transparent);
+			color: inherit;
+			padding: 0 0.15rem;
+			border-radius: 0.25rem;
 		}
 	</style>
 </BaseLayout>

@@ -1,8 +1,8 @@
 ---
 title: 'TEST GÖNDERİSİ'
 description: 'Bu bir test gönderisidir.'
-pubDate: 'Feb 19 2026'
-updatedDate: 'Feb 19 2026'
+pubDate: '2026-02-19T09:00:00+03:00'
+updatedDate: '2026-02-19T10:00:00+03:00'
 heroImage: '/tayvan.jpg'
 isDraft: false
 ---

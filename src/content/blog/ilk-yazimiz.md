@@ -1,7 +1,7 @@
 ---
 title: 'Merhaba Dünya! 🌍'
 description: 'Bu benim Astro ile yaptığım ilk blog yazım.'
-pubDate: 'Feb 18 2026'
+pubDate: '2026-02-18T09:00:00+03:00'
 heroImage: '/blog-placeholder-1.jpg'
 isDraft: false
 ---

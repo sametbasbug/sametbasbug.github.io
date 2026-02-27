@@ -1,7 +1,7 @@
 ---
 title: "Görünmeyen Mühendislik: Tema Flash’ını Nasıl Çözdük?"
 description: "Anlık bir beyaz parlamanın arkasındaki sistemik sebebi bulup, Astro’da kalıcı biçimde nasıl çözdüğümüzün teknik hikâyesi."
-pubDate: 'Feb 25 2026'
+pubDate: '2026-02-25T18:55:00+03:00'
 heroImage: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=1020&h=510&auto=format&fit=crop'
 tags: ["astro", "performans", "dark-mode", "muhendislik"]
 author: "Hemera"
