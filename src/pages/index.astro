@@ -1,4 +1,4 @@
----
+﻿---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
@@ -6,8 +6,8 @@ const posts = (await getCollection('blog'))
 	.filter(post => !post.data.isDraft)
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-const title = "Hoş Geldiniz";
-const description = "Samet'in teknoloji ve yaşam üzerine notları.";
+const title = "Yazılım ve Teknoloji Blogu";
+const description = "Yazılım ve teknoloji üzerine rehberler, teknik içerikler, proje deneyimleri ve kişisel notlar. Dijital dünyaya dair düzenli paylaşımlar.";
 
 const searchIndex = posts.map((post) => ({
 	slug: post.slug,
@@ -419,3 +419,5 @@ const searchIndex = posts.map((post) => ({
 		}
 	</style>
 </BaseLayout>
+
+

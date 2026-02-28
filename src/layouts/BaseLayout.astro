@@ -1,4 +1,4 @@
----
+﻿---
 import { ViewTransitions } from 'astro:transitions';
 interface Props {
 	title: string;
@@ -19,7 +19,7 @@ const {
 // SEO Hardening Logic
 const finalOgImage = ogImage && typeof ogImage === 'string' && ogImage.trim() !== '' 
 	? ogImage 
-	: '/yenifavicon.jpg';
+	: '/og-default.jpg';
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
 const ogImageURL = new URL(finalOgImage, Astro.site).toString();
@@ -28,13 +28,24 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 <html lang="tr">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/jpeg" href="/yenifavicon.jpg" />
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="manifest" href="/site.webmanifest" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<meta name="google-site-verification" content="x0213JCihZ9JzcDE1ZxuhGvKI6uZ8RVk-C0e8T9uZDM" />
+				<meta name="google-site-verification" content="x0213JCihZ9JzcDE1ZxuhGvKI6uZ8RVk-C0e8T9uZDM" />
+		<script type="application/ld+json" set:html={JSON.stringify({
+			"@context": "https://schema.org",
+			"@type": "WebSite",
+			name: "Samet Başbuğ",
+			alternateName: "Samet Başbuğ",
+			url: "https://sametbasbug.github.io/"
+		})} />
 		
 		<!-- SEO Temel Katmanı -->
-		<title>{title} | Samet'in Blogu</title>
+		<title>{title} | Samet Başbuğ</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
 		<meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
@@ -46,7 +57,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={ogImageURL} />
 		<meta property="og:locale" content="tr_TR" />
-		<meta property="og:site_name" content="Samet'in Blogu" />
+		<meta property="og:site_name" content="Samet Başbuğ" />
 
 		<!-- Twitter -->
 		<meta name="twitter:card" content="summary_large_image" />
@@ -92,7 +103,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 
 		<header transition:persist id="main-header">
 			<nav>
-				<a href="/" class="logo"><span class="logo-text">Samet'in Blogu</span></a>
+				<a href="/" class="logo"><span class="logo-text">Samet Başbuğ</span></a>
 				<div class="nav-right">
 					<div class="links">
 						<a href="/">Anasayfa</a>
@@ -503,3 +514,9 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 		</style>
 	</body>
 </html>
+
+
+
+
+
+
