@@ -40,12 +40,12 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 			"@context": "https://schema.org",
 			"@type": "WebSite",
 			name: "Samet Başbuğ",
-			alternateName: "Samet Başbuğ",
+			alternateName: "Samet'in Blogu",
 			url: "https://sametbasbug.github.io/"
 		})} />
 		
 		<!-- SEO Temel Katmanı -->
-		<title>{title} | Samet Başbuğ</title>
+		<title>Samet Başbuğ | {title}</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
 		<meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
@@ -514,6 +514,8 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 		</style>
 	</body>
 </html>
+
+
 
 
 
