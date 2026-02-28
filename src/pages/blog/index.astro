@@ -1,4 +1,4 @@
----
+﻿---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
@@ -266,6 +266,13 @@ const searchIndex = posts.map((post) => ({
 					runSearch();
 				}
 			});
+
+			const params = new URLSearchParams(window.location.search);
+			const tag = params.get('tag');
+			if (tag) {
+				searchInput.value = tag;
+				runSearch();
+			}
 		}
 
 		initArchiveSearch();
@@ -454,3 +461,4 @@ const searchIndex = posts.map((post) => ({
 		border-radius: 0.25rem;
 	}
 </style>
+

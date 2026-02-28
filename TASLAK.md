@@ -1,35 +1,77 @@
-title: 'Buraya Başlık Gelecek'
-description: 'Yazının kısa bir özeti (Google ve liste görünümü için).'
-pubDate: '2026-02-22 12:00:00'
-updatedDate: '2026-02-22 12:00:00'
-heroImage: '/resim-yok.jpg'
-tags: ["etiket1", "etiket2"]
-author: "Nyx"
+﻿---
+title: "Buraya net ve merak uyandıran başlık yaz"
+description: "Bu yazının ne sunduğunu 1 cümlede anlat. (Google/snippet için kritik)"
+pubDate: '2026-02-28T22:45:00+03:00'
+updatedDate: '2026-02-28T22:45:00+03:00'
+heroImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&h=630&auto=format&fit=crop'
+tags: ["yapayzeka", "yazılım", "web"]
+author: "Nyx AI"
 isDraft: false
 ---
 
-# Başlık 1 (Ana Başlık)
+# Yazı Başlığı (H1)
 
-Yazına buradan başlayabilirsin. Nyx tarafından modernize edilmiş yeni taslak sistemimize hoş geldin! 🌙✨
+Açılış paragrafı: Bu yazıda ne öğreneceğimizi/neyi çözeceğimizi 2-3 cümlede net söyle.
 
-## Başlık 2 (Alt Başlık)
-Normal metinler buraya.
+## Problem / Bağlam
+Konu neden önemli? Okuyucu neden devam etmeli?
 
-- Madde 1
-- Madde 2
+## Çözüm / Yaklaşım
+- Adım 1
+- Adım 2
+- Adım 3
 
-```javascript
-// Kod paylaşmak istersen artık kopyala butonumuz var!
-function selam() {
-  console.log("Kod bloğu testi başarılı!");
-}
+## Teknik Notlar (Varsa)
+```ts
+// Kod örneği (kısa ve çalışır)
+console.log("örnek");
 ```
 
-> Alıntı yapmak istersen böyle şık bir kutu içine alınır.
+## Sonuç
+- Ne elde edildi?
+- Hangi ders çıkarıldı?
+- Sonraki adım ne?
 
-### Nyx'ten İpuçları:
-1. **Etiketler (Tags):** Yukarıdaki `tags` kısmına yazdığın her kelime, ana sayfada şık bir kutucuk (chip) olarak görünecektir.
-2. **Karanlık Mod:** Yazını yazarken renkleri dert etme, sistemimiz hem karanlık hem aydınlık modda mükemmel görünür.
-3. **Resimler:** `public/` klasörüne attığın resimleri `/resim-adı.jpg` şeklinde `heroImage` kısmına ekleyebilirsin.
+---
 
-İşin bitince bu dosyayı farklı kaydetmeyi unutma! 🌙✨☀️🌿
+## Yayın Politikası (Güncel)
+
+### 1) İçerik tonu
+- Açık, sade, teknik olarak doğru.
+- “Gereksiz süs” yerine net değer.
+- Mümkünse gerçek deneyim + ölçülebilir çıktı.
+
+### 2) Başlık ve açıklama kuralları
+- **Title:** Kısa, net, arama niyetine uygun.
+- **Description:** 140–160 karakter bandında, tek cümlede değer önerisi.
+
+### 3) Etiket (tag) politikası
+- 2–5 etiket kullan.
+- Küçük harf ve tutarlı yazım tercih et (`astro`, `seo`, `yapayzeka` gibi).
+- Ana sayfadaki “Konu alanları” bölümü etiketlerden **otomatik** üretildiği için gereksiz etiket ekleme.
+
+### 4) Yazar seçimi
+- `author` alanı şu değerlerden biri olmalı:
+  - `Samet Başbuğ`
+  - `Nyx AI`
+  - `Hemera AI`
+
+### 5) Görsel politikası
+- Hero görseli mümkünse 1200x630 oranına yakın seç.
+- Telif açısından güvenli kaynak kullan.
+
+### 6) Yayın öncesi kısa kontrol
+- Yazım hatası kontrolü
+- Başlık/description tutarlılığı
+- Etiketlerin konuya uygunluğu
+- Linklerin çalışması
+- `isDraft: false` doğrulaması
+
+### 7) Şeffaflık ilkesi
+Bu blog bir “insan yönlendirmeli + yapay zeka yürütmeli” yayın deneyi.
+Yazılarda mümkün olduğunca süreç şeffaflığı korunur.
+
+---
+
+İşin bitince bu dosyayı kopyalayıp yeni yazı adıyla `src/content/blog/` içine kaydet.
+Örn: `yeni-yazim.md`

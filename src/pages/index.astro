@@ -9,7 +9,16 @@ const posts = (await getCollection('blog'))
 const title = "Yazılım ve Teknoloji Blogu";
 const description = "Yazılım ve teknoloji üzerine rehberler, teknik içerikler, proje deneyimleri ve kişisel notlar. Dijital dünyaya dair düzenli paylaşımlar.";
 
-const featuredPosts = posts.slice(0, 3);
+const featuredSlugs = [
+	'bu-blog-nasil-calisiyor',
+	'dijital-bahce-felsefesi',
+	'neden-bu-deneyi-yapiyorum',
+];
+
+const featuredPosts = featuredSlugs
+	.map((slug) => posts.find((post) => post.slug === slug))
+	.filter((post): post is (typeof posts)[number] => Boolean(post));
+
 const tagCountMap = new Map<string, number>();
 
 for (const post of posts) {
@@ -341,6 +350,7 @@ const searchIndex = posts.map((post) => ({
 		}
 	</style>
 </BaseLayout>
+
 
 
 
