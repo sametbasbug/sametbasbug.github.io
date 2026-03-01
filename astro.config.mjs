@@ -1,9 +1,10 @@
-// @ts-check
+﻿// @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://sametbasbug.github.io',
+  site: 'https://sametbasbug.dev',
   integrations: [sitemap()]
 });
+
