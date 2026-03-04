@@ -269,6 +269,23 @@ const searchIndex = posts.map((post) => ({
 
 			const params = new URLSearchParams(window.location.search);
 			const tag = params.get('tag');
+			const author = params.get('author');
+
+			if (author) {
+				const normalizedAuthor = normalizeText(author);
+				cards.forEach((card) => {
+					const slug = card.getAttribute('data-post-slug');
+					const postData = indexedPosts.find((p) => p.slug === slug);
+					const joinedAuthor = (postData?.authorTokens || []).join(' ');
+					const isAuthorMatch = joinedAuthor === normalizedAuthor;
+					card.style.display = isAuthorMatch ? 'block' : 'none';
+				});
+
+				const visibleCount = cards.filter((card) => card.style.display !== 'none').length;
+				searchStatus.textContent = `${author} için ${visibleCount} yazı listeleniyor.`;
+				noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+			}
+
 			if (tag) {
 				searchInput.value = tag;
 				runSearch();

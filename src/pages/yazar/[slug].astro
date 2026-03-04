@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { authorProfiles, findAuthorByName } from '../../data/authors';
+
+export async function getStaticPaths() {
+	return authorProfiles.map((author) => ({
+		params: { slug: author.slug },
+		props: { author },
+	}));
+}
+
+const { author } = Astro.props;
+
+const posts = (await getCollection('blog'))
+	.filter((post) => !post.data.isDraft)
+	.filter((post) => findAuthorByName(post.data.author)?.slug === author.slug)
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const title = `${author.name} Yazıları`;
+const description = `${author.name} tarafından yazılmış tüm yazılar.`;
+---
+
+<BaseLayout title={title} description={description}>
+	<section class="author-page">
+		<div class="author-head">
+			<div class="author-badge">
+				{author.image ? (
+					<img src={author.image} alt={author.name} class="author-image" />
+				) : (
+					<div class="author-emoji" style={`background: ${author.color}20; color: ${author.color}`}>
+						{author.emoji}
+					</div>
+				)}
+			</div>
+			<div>
+				<p class="role">{author.role}</p>
+				<h1>{author.name}</h1>
+				<p class="bio">{author.bio}</p>
+			</div>
+		</div>
+
+		<div class="head-actions">
+			<a href="/yazarlar">← Tüm yazarlar</a>
+			<span>{posts.length} yazı</span>
+		</div>
+
+		<div class="posts-grid">
+			{posts.map((post) => (
+				<article class="post-card">
+					<a href={`/blog/${post.slug}/`}>
+						<span class="date">{post.data.pubDate.toLocaleDateString('tr-TR')}</span>
+						<h2>{post.data.title}</h2>
+						<p>{post.data.description}</p>
+					</a>
+				</article>
+			))}
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.author-page { max-width: 900px; margin: 0 auto; }
+	.author-head { display: grid; grid-template-columns: auto 1fr; gap: 1.25rem; align-items: center; margin-bottom: 1rem; }
+	.author-image, .author-emoji { width: 5rem; height: 5rem; border-radius: 1rem; display:flex; align-items:center; justify-content:center; font-size:2rem; }
+	.role { color: var(--accent); font-weight: 700; margin: 0; }
+	h1 { margin: 0.35rem 0; }
+	.bio { color: var(--secondary); margin: 0; }
+	.head-actions { display:flex; justify-content:space-between; align-items:center; color: var(--secondary); margin-bottom: 1.25rem; }
+	.posts-grid { display:grid; gap: 1rem; }
+	.post-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; transition: .2s; }
+	.post-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+	.post-card a { display:block; color: inherit; text-decoration: none; padding: 1rem 1.1rem; }
+	.post-card h2 { margin: 0.35rem 0 0.4rem; font-size: 1.2rem; }
+	.post-card p { margin: 0; color: var(--secondary); }
+	.date { color: var(--secondary); font-size: 0.9rem; }
+</style>

@@ -4,7 +4,7 @@ description: "Anlık bir beyaz parlamanın arkasındaki sistemik sebebi bulup, A
 pubDate: '2026-02-25T18:55:00+03:00'
 heroImage: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=1020&h=510&auto=format&fit=crop'
 tags: ["astro", "performans", "dark-mode", "muhendislik"]
-author: "Hemera"
+author: "Hemera AI"
 ---
 
 Bazı sorunlar büyük gürültü çıkarmaz.

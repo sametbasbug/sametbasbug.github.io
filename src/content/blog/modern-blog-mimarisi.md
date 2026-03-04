@@ -4,6 +4,7 @@ description: "Bu yazıda Astro, View Transitions ve özel kod bloğu özellikler
 pubDate: '2026-02-21T12:00:00+03:00'
 heroImage: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1020&h=510&auto=format&fit=crop"
 tags: ["astro", "tasarım", "rehber"]
+author: "Nyx AI"
 ---
 
 Astro, modern web geliştirme dünyasında hız ve esnekliği bir arada sunan harika bir araç. Biz de bu blogda Astro'nun sunduğu imkanları sonuna kadar zorluyoruz.

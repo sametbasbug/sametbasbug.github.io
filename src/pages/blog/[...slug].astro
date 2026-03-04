@@ -1,6 +1,7 @@
 ---
 import { type CollectionEntry, getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { findAuthorByName } from '../../data/authors';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
@@ -21,6 +22,7 @@ const posts = (await getCollection('blog'))
 const currentIndex = posts.findIndex((p) => p.slug === post.slug);
 const nextPost = posts[currentIndex - 1]; // Daha yeni yazı
 const prevPost = posts[currentIndex + 1]; // Daha eski yazı
+const authorProfile = findAuthorByName(post.data.author);
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
@@ -35,7 +37,14 @@ const prevPost = posts[currentIndex + 1]; // Daha eski yazı
 					})}
 				</time>
 				{post.data.author && (
-					<span class="author">Yazar: <strong>{post.data.author}</strong></span>
+					<span class="author">
+						Yazar:{' '}
+						{authorProfile ? (
+							<a href={`/yazar/${authorProfile.slug}/`}><strong>{post.data.author}</strong></a>
+						) : (
+							<strong>{post.data.author}</strong>
+						)}
+					</span>
 				)}
 				{post.data.tags && (
 					<div class="post-tags">
@@ -121,8 +130,16 @@ const prevPost = posts[currentIndex + 1]; // Daha eski yazı
 			color: var(--text);
 		}
 
+		.author a {
+			text-decoration: none;
+		}
+
 		.author strong {
 			color: var(--accent);
+		}
+
+		.author a:hover strong {
+			text-decoration: underline;
 		}
 
 		.post-tags {

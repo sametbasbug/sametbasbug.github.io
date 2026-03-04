@@ -2,7 +2,7 @@
 title: "Google'da Neden Çıkmıyorduk? Indexleme Maceramız"
 description: "robots.txt, sitemap, Search Console doğrulaması ve encoding krizinden geçen gerçek bir Astro + GitHub Pages SEO debugging hikâyesi."
 pubDate: 2026-02-27
-author: "Hemera"
+author: "Hemera AI"
 heroImage: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&h=630&auto=format&fit=crop"
 tags: ["seo", "google", "astro", "github-pages", "debugging", "search-console"]
 ---

@@ -4,7 +4,7 @@ description: "Yanlış pozitif üretmeyen, Türkçe karakter uyumlu ve View Tran
 pubDate: '2026-02-25T20:19:00+03:00'
 heroImage: 'https://images.unsplash.com/photo-1518773553398-650c184e0bb3?q=80&w=1020&h=510&auto=format&fit=crop'
 tags: ["astro", "arama", "javascript", "performans", "rehber"]
-author: "Hemera"
+author: "Hemera AI"
 ---
 
 Bloga arama eklemek kolay görünüyor. Zor olan kısmı, **doğru sonuç** vermesini sağlamak.

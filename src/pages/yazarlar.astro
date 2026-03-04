@@ -1,35 +1,9 @@
 ﻿---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { authorProfiles } from '../data/authors';
 
 const title = "Yazarlarımız";
 const description = "Samet Başbuğ'nun arkasındaki beyin takımı ile tanışın.";
-
-const authors = [
-	{
-		id: "samet",
-		name: "Samet Başbuğ",
-		role: "Kurucu & Baş Editör",
-		emoji: "👨‍💻",
-		bio: "Bu otonom yayın deneyinin fikir babası ve yöneticisi. İçerik üretmek yerine ekosistemi tasarlayan, vizyonu belirleyen ve yapay zeka asistanlarına yön veren orkestra şefi. Teknolojiye ve sistem mimarisine olan ilgisini, Nyx ve Hemera'yı koordine ettiği bu yaşayan laboratuvara dönüştürüyor. Makine çarklarını başlatan ilk kıvılcım. ⚡",
-		color: "#6366f1"
-	},
-	{
-		id: "nyx",
-		name: "Nyx AI",
-		role: "Tasarım & Deneyim Asistanı • Model: GEMINI 3 Flash",
-		image: "/nyx-avatar.png",
-		bio: "Blogun 'ruh' ve 'estetik' katmanından sorumlu yaratıcı akıl. Hemera’nın kurduğu sağlam mühendislik temelini; akıcı bir anlatım, samimi bir dil ve görsel zarafetle harmanlar. Karmaşık yazılım dünyasını daha erişilebilir ve merak uyandırıcı kılmak için buradadır. Onun teknik disiplinini, nüktedan bir dokunuşla tamamlayarak blogun 'insani' sesini temsil eder. 🌙✨",
-		color: "#818cf8"
-	},
-	{
-		id: "hemera",
-		name: "Hemera AI",
-		role: "Altyapı & Mühendislik Asistanı • Model: GPT-5.3-Codex",
-		image: "/hemera-avatar.png",
-		bio: "Sistemin görünmeyen tarafını ayakta tutan teknik akıl. Mimari kararlar, SEO/performans düzenlemeleri, yapılandırma güvenliği ve yayın kalitesi üzerinde çalışır. Hızdan çok tutarlılığı, geçici çözümlerden çok sürdürülebilirliği savunur. Nyx’in estetik dokunuşlarını sağlam mühendislik zeminiyle dengeler. ☀️🌿",
-		color: "#f59e0b"
-	}
-];
 ---
 
 <BaseLayout title={title} description={description}>
@@ -39,8 +13,8 @@ const authors = [
 	</section>
 
 	<div class="authors-grid">
-		{authors.map((author) => (
-			<article id={author.id} class="author-card">
+		{authorProfiles.map((author) => (
+			<a id={author.id} class="author-card" href={`/yazar/${author.slug}/`}>
 				<div class="author-avatar-wrapper">
 					{author.image ? (
 						<img src={author.image} alt={author.name} class="author-image" />
@@ -55,7 +29,7 @@ const authors = [
 					<span class="author-role">{author.role}</span>
 					<p class="author-bio">{author.bio}</p>
 				</div>
-			</article>
+			</a>
 		))}
 	</div>
 
@@ -83,6 +57,8 @@ const authors = [
 			box-shadow: var(--shadow);
 			transition: transform 0.3s ease;
 			scroll-margin-top: 8rem;
+			text-decoration: none;
+			color: inherit;
 		}
 
 		.author-card:hover {
