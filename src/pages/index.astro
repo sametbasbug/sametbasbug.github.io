@@ -32,6 +32,9 @@ const topicStats = Array.from(tagCountMap.entries())
 	.map(([topic, count]) => ({ topic, count }))
 	.sort((a, b) => b.count - a.count || a.topic.localeCompare(b.topic, 'tr'));
 
+const featuredTopics = topicStats.slice(0, 6);
+const hiddenTopicCount = Math.max(topicStats.length - featuredTopics.length, 0);
+
 const searchIndex = posts.map((post) => ({
 	slug: post.slug,
 	title: post.data.title,
@@ -73,14 +76,22 @@ const searchIndex = posts.map((post) => ({
 	</section>
 
 	<section class="topics">
-		<h2>Konu alanları</h2>
+		<div class="topics-head">
+			<h2>Konu alanları</h2>
+			<a href="/etiketler" class="all-topics-link">Tüm Etiketleri Gör</a>
+		</div>
 		<div class="topic-chips">
-			{topicStats.map((item) => (
+			{featuredTopics.map((item) => (
 				<a href={`/blog?tag=${item.topic}`} class="topic-chip">
 					<span>#{item.topic}</span>
 					<strong>{item.count}</strong>
 				</a>
 			))}
+			{hiddenTopicCount > 0 && (
+				<a href="/etiketler" class="topic-chip topic-chip-more">
+					<span>+{hiddenTopicCount} daha</span>
+				</a>
+			)}
 		</div>
 	</section>
 
@@ -310,9 +321,13 @@ const searchIndex = posts.map((post) => ({
 		.featured-card h3 { font-size:1.1rem; margin:0.5rem 0; }
 		.featured-card p { color: var(--secondary); font-size:0.95rem; }
 
+		.topics-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+		.topics-head h2 { margin-bottom: 0; text-align: left; }
+		.all-topics-link { font-weight: 600; font-size: 0.92rem; }
 		.topic-chips { display:flex; flex-wrap:wrap; gap:0.75rem; }
 		.topic-chip { display:inline-flex; gap:0.55rem; align-items:center; border:1px solid var(--border); background:var(--card-bg); padding:0.55rem 0.85rem; border-radius:999px; text-decoration:none; color:var(--text); }
 		.topic-chip strong { color: var(--accent); }
+		.topic-chip-more { border-style: dashed; color: var(--secondary); }
 
 		.home-search-box { margin-bottom: 2rem; padding: 1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; box-shadow: var(--shadow); }
 		.home-search-label { display: block; font-weight: 600; margin-bottom: 0.5rem; }

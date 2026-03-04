@@ -1,0 +1,66 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('blog'))
+	.filter(post => !post.data.isDraft);
+
+const tagCountMap = new Map<string, number>();
+
+for (const post of posts) {
+	for (const tag of post.data.tags ?? []) {
+		const normalized = tag.toLowerCase();
+		tagCountMap.set(normalized, (tagCountMap.get(normalized) ?? 0) + 1);
+	}
+}
+
+const tags = Array.from(tagCountMap.entries())
+	.map(([tag, count]) => ({ tag, count }))
+	.sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, 'tr'));
+
+const title = 'Tüm Etiketler';
+const description = 'Blogdaki tüm konu etiketlerini ve yazı sayılarını keşfedin.';
+---
+
+<BaseLayout title={title} description={description}>
+	<section class="tags-page">
+		<div class="tags-head">
+			<h1>{title}</h1>
+			<a href="/" class="back-link">← Ana sayfa</a>
+		</div>
+
+		<p class="tags-subtitle">Toplam <strong>{tags.length}</strong> etiket var. Bir etikete tıklayarak arşivde filtreleyebilirsin.</p>
+
+		<div class="tags-grid">
+			{tags.map((item) => (
+				<a href={`/blog?tag=${item.tag}`} class="tag-card">
+					<span>#{item.tag}</span>
+					<strong>{item.count}</strong>
+				</a>
+			))}
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.tags-page { max-width: 900px; margin: 0 auto; }
+	.tags-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom: 0.75rem; }
+	.tags-head h1 { margin: 0; font-size: 2rem; }
+	.back-link { font-weight: 600; }
+	.tags-subtitle { color: var(--secondary); margin-bottom: 1.25rem; }
+	.tags-grid { display:flex; flex-wrap:wrap; gap:0.75rem; }
+	.tag-card {
+		display:inline-flex;
+		align-items:center;
+		gap:0.55rem;
+		border:1px solid var(--border);
+		background: var(--card-bg);
+		padding:0.6rem 0.95rem;
+		border-radius:999px;
+		text-decoration:none;
+		color:var(--text);
+		transition: all .2s ease;
+	}
+	.tag-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+	.tag-card strong { color: var(--accent); }
+</style>
