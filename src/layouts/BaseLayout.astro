@@ -74,13 +74,11 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 			(() => {
 				try {
 					const saved = localStorage.getItem('theme');
-					const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-					const theme = saved ?? (systemDark ? 'dark' : 'light');
+					const theme = saved ?? 'dark';
 					document.documentElement.setAttribute('data-theme', theme);
 				} catch {
-					// localStorage erişimi yoksa sistem temasını uygula
-					const fallbackDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-					document.documentElement.setAttribute('data-theme', fallbackDark ? 'dark' : 'light');
+					// localStorage erişimi yoksa varsayılan olarak dark tema uygula
+					document.documentElement.setAttribute('data-theme', 'dark');
 				}
 			})();
 		</script>
@@ -135,10 +133,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 				if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
 					return localStorage.getItem('theme');
 				}
-				if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-					return 'dark';
-				}
-				return 'light';
+				return 'dark';
 			};
 
 			const setTheme = (theme) => {
