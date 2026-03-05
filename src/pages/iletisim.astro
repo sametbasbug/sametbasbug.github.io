@@ -1,0 +1,222 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const FORM_URL = import.meta.env.PUBLIC_CONTACT_FORM_URL || "";
+---
+
+<BaseLayout
+  title="İletişim"
+  description="Samet Başbuğ ile iletişime geçmek için mesaj formu."
+>
+  <section class="contact-wrap">
+    <h1>İletişim</h1>
+    <p class="intro">Bir mesaj bırakın, en kısa sürede dönüş yapalım.</p>
+
+    <form id="contactForm" class="contact-form" novalidate>
+      <label>
+        Ad Soyad
+        <input type="text" name="name" placeholder="Ad Soyad" required minlength="2" maxlength="80" />
+      </label>
+
+      <label>
+        E-posta
+        <input type="email" name="email" placeholder="ornek@mail.com" required maxlength="120" />
+      </label>
+
+      <label>
+        Mesaj
+        <textarea name="message" rows="7" placeholder="Mesajını yazabilirsin..." required minlength="30" maxlength="500"></textarea>
+      </label>
+
+      <input
+        type="text"
+        name="website"
+        tabindex="-1"
+        autocomplete="off"
+        aria-hidden="true"
+        class="honeypot"
+      />
+      <input type="hidden" name="ts" id="ts" />
+      <input type="hidden" name="clientId" id="clientId" />
+
+      <button type="submit" id="submitBtn">Gönder</button>
+      <p id="formStatus" class="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <script is:inline define:vars={{ FORM_URL }}>
+    const form = document.getElementById("contactForm");
+    const statusEl = document.getElementById("formStatus");
+    const submitBtn = document.getElementById("submitBtn");
+    const tsInput = document.getElementById("ts");
+    const clientIdInput = document.getElementById("clientId");
+
+    if (tsInput) tsInput.value = Date.now();
+
+    const getOrCreateClientId = () => {
+      try {
+        const key = "contact_client_id";
+        let id = localStorage.getItem(key);
+        if (!id) {
+          id = (crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+          localStorage.setItem(key, id);
+        }
+        return id;
+      } catch {
+        return `fallback-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      }
+    };
+
+    if (clientIdInput) clientIdInput.value = getOrCreateClientId();
+
+    const setStatus = (message, isError = false) => {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.dataset.state = isError ? "error" : "ok";
+    };
+
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!FORM_URL) {
+        setStatus("Form servisi henüz yapılandırılmadı (PUBLIC_CONTACT_FORM_URL eksik).", true);
+        return;
+      }
+
+      const fd = new FormData(form);
+      const payload = Object.fromEntries(fd.entries());
+
+      if (!payload.name || !payload.email || !payload.message) {
+        setStatus("Lütfen tüm zorunlu alanları doldur.", true);
+        return;
+      }
+
+      const messageLength = String(payload.message).trim().length;
+      if (messageLength < 30 || messageLength > 500) {
+        setStatus("Mesaj 30 ile 500 karakter arasında olmalı.", true);
+        return;
+      }
+
+      submitBtn?.setAttribute("disabled", "true");
+      setStatus("Gönderiliyor...");
+
+      try {
+        const response = await fetch(FORM_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data?.ok) {
+          form.reset();
+          if (tsInput) tsInput.value = Date.now();
+          setStatus("Mesajın başarıyla gönderildi.");
+        } else {
+          setStatus(data?.error || "Gönderim başarısız oldu. Lütfen tekrar dene.", true);
+        }
+      } catch {
+        setStatus("Bağlantı hatası oluştu. Birazdan yeniden deneyebilirsin.", true);
+      } finally {
+        submitBtn?.removeAttribute("disabled");
+      }
+    });
+  </script>
+
+  <style>
+    .contact-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .intro {
+      color: var(--secondary);
+      margin-bottom: 1.5rem;
+    }
+
+    .contact-form {
+      display: grid;
+      gap: 1rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.2rem;
+      box-shadow: var(--shadow);
+    }
+
+    label {
+      display: grid;
+      gap: 0.45rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 0.7rem;
+      background: var(--muted);
+      color: var(--text);
+      padding: 0.75rem 0.9rem;
+      font: inherit;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 180px;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+      border-color: var(--accent);
+    }
+
+    button {
+      justify-self: start;
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      border-radius: 0.7rem;
+      padding: 0.7rem 1.1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: wait;
+      transform: none;
+    }
+
+    .status {
+      min-height: 1.3rem;
+      color: var(--secondary);
+    }
+
+    .status[data-state="error"] {
+      color: #ef4444;
+    }
+
+    .status[data-state="ok"] {
+      color: #22c55e;
+    }
+
+    .honeypot {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+</BaseLayout>
