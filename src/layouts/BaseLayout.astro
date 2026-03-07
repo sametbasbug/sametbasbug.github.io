@@ -447,6 +447,9 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 					width: 100%;
 					justify-content: space-between;
 				}
+				.logo {
+					font-size: clamp(1.02rem, 4.6vw, 1.2rem);
+				}
 				.nav-right {
 					width: 100%;
 					display: flex;
@@ -454,16 +457,19 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 				}
 				.links {
 					display: flex;
-					flex-wrap: wrap;
-					justify-content: center;
-					gap: 0.35rem;
+					flex-wrap: nowrap;
+					justify-content: space-between;
+					align-items: center;
+					gap: 0.3rem;
 					width: 100%;
 				}
 				.links a {
-					font-size: 0.84rem;
-					padding: 0.4rem 0.65rem;
+					font-size: clamp(0.78rem, 3.2vw, 0.9rem);
+					padding: 0.3rem 0.2rem;
 					white-space: nowrap;
+					line-height: 1.25;
 				}
+
 				.theme-switch-wrapper {
 					padding-left: 0;
 					border-left: 0;
