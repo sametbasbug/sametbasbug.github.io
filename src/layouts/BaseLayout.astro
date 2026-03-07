@@ -100,23 +100,23 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 
 		<header transition:persist id="main-header">
 			<nav>
-				<div class="logo-area">
+				<div class="logo-area" id="logo-area">
 					<a href="/" class="logo"><span class="logo-text">Samet Başbuğ</span></a>
-					<div class="theme-switch-wrapper">
+				</div>
+				<div class="nav-right" id="nav-right">
+					<div class="links">
+						<a href="/">Anasayfa</a>
+						<a href="/yazarlar">Yazarlar</a>
+						<a href="/hakkimda">Hakkımda</a>
+						<a href="/iletisim">İletişim</a>
+					</div>
+					<div class="theme-switch-wrapper" id="theme-switch-wrapper">
 						<button id="theme-toggle" class="theme-switch" aria-label="Temayı Değiştir">
 							<div class="switch-handle">
 								<span class="sun-icon">☀️</span>
 								<span class="moon-icon">🌙</span>
 							</div>
 						</button>
-					</div>
-				</div>
-				<div class="nav-right">
-					<div class="links">
-						<a href="/">Anasayfa</a>
-						<a href="/yazarlar">Yazarlar</a>
-						<a href="/hakkimda">Hakkımda</a>
-						<a href="/iletisim">İletişim</a>
 					</div>
 				</div>
 			</nav>
@@ -160,6 +160,20 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 						const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 						setTheme(newTheme);
 					});
+				}
+			}
+
+			function placeThemeSwitch() {
+				const wrapper = document.getElementById('theme-switch-wrapper');
+				const logoArea = document.getElementById('logo-area');
+				const navRight = document.getElementById('nav-right');
+				if (!wrapper || !logoArea || !navRight) return;
+
+				const isMobile = window.matchMedia('(max-width: 700px)').matches;
+				if (isMobile) {
+					if (wrapper.parentElement !== logoArea) logoArea.appendChild(wrapper);
+				} else {
+					if (wrapper.parentElement !== navRight) navRight.appendChild(wrapper);
 				}
 			}
 
@@ -245,6 +259,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 
 			document.addEventListener('astro:page-load', () => {
 				applyTheme();
+				placeThemeSwitch();
 				attachThemeToggle();
 				initLightbox();
 				initCopyShare();
@@ -253,6 +268,11 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 				window.addEventListener('scroll', handleScroll);
 				handleScroll();
 			});
+
+			if (!window.__themeSwitchPlacementBound) {
+				window.__themeSwitchPlacementBound = true;
+				window.addEventListener('resize', placeThemeSwitch);
+			}
 
 			document.addEventListener('astro:before-swap', (event) => {
 				const currentTheme = document.documentElement.getAttribute('data-theme') || getTheme();
@@ -493,6 +513,9 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 			.dropdown-content a { color: var(--text); padding: 0.6rem 1rem; display: block; font-size: 0.9rem; margin: 0; }
 
 			.theme-switch-wrapper { display: inline-flex; align-items: center; border-left: 0; padding-left: 0; }
+			@media (min-width: 701px) {
+				.theme-switch-wrapper { border-left: 1px solid var(--border); padding-left: 1.2rem; }
+			}
 			.theme-switch { background: var(--muted); border: 1px solid var(--border); width: 3.5rem; height: 1.8rem; border-radius: 2rem; cursor: pointer; position: relative; padding: 0; transition: all 0.3s ease; }
 			.switch-handle { width: 1.4rem; height: 1.4rem; background: var(--card-bg); border-radius: 50%; position: absolute; left: 0.2rem; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; box-shadow: var(--shadow); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 			.sun-icon { opacity: 1; } .moon-icon { opacity: 1; }
