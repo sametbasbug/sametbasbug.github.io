@@ -146,9 +146,13 @@ const authorProfile = findAuthorByName(post.data.author);
 			display: flex;
 			gap: 0.5rem;
 			justify-content: center;
+			flex-wrap: wrap;
+			max-width: 100%;
 		}
 
 		.tag {
+			display: inline-flex;
+			max-width: 100%;
 			background: var(--accent-light);
 			color: var(--accent);
 			font-size: 0.75rem;
@@ -156,6 +160,8 @@ const authorProfile = findAuthorByName(post.data.author);
 			padding: 0.2rem 0.6rem;
 			border-radius: 2rem;
 			text-transform: lowercase;
+			overflow-wrap: anywhere;
+			word-break: break-word;
 		}
 
 		article h1 {
@@ -173,6 +179,13 @@ const authorProfile = findAuthorByName(post.data.author);
 			article h1 {
 				font-size: 1.75rem;
 				margin-bottom: 1.5rem;
+			}
+			.post-tags {
+				gap: 0.4rem;
+			}
+			.tag {
+				font-size: 0.72rem;
+				padding: 0.18rem 0.55rem;
 			}
 		}
 

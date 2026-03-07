@@ -399,6 +399,7 @@ const searchIndex = posts.map((post) => ({
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
+		max-width: 100%;
 	}
 
 	.empty-state {
@@ -411,12 +412,16 @@ const searchIndex = posts.map((post) => ({
 	}
 
 	.tag-badge {
+		display: inline-flex;
+		max-width: 100%;
 		background: var(--accent-light);
 		color: var(--accent);
 		padding: 0.1rem 0.6rem;
 		border-radius: 1rem;
 		font-weight: 600;
 		font-style: italic;
+		overflow-wrap: anywhere;
+		word-break: break-word;
 	}
 
 	.post-title {
@@ -476,6 +481,20 @@ const searchIndex = posts.map((post) => ({
 		color: inherit;
 		padding: 0 0.15rem;
 		border-radius: 0.25rem;
+	}
+
+	@media (max-width: 700px) {
+		.archive-title {
+			font-size: 1.9rem;
+		}
+
+		.card-content {
+			padding: 1.1rem;
+		}
+
+		.tag-badge {
+			font-size: 0.78rem;
+		}
 	}
 </style>
 

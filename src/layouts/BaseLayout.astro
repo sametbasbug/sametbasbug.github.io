@@ -100,14 +100,8 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 
 		<header transition:persist id="main-header">
 			<nav>
-				<a href="/" class="logo"><span class="logo-text">Samet Başbuğ</span></a>
-				<div class="nav-right">
-					<div class="links">
-						<a href="/">Anasayfa</a>
-						<a href="/yazarlar">Yazarlar</a>
-						<a href="/hakkimda">Hakkımda</a>
-						<a href="/iletisim">İletişim</a>
-					</div>
+				<div class="logo-area">
+					<a href="/" class="logo"><span class="logo-text">Samet Başbuğ</span></a>
 					<div class="theme-switch-wrapper">
 						<button id="theme-toggle" class="theme-switch" aria-label="Temayı Değiştir">
 							<div class="switch-handle">
@@ -115,6 +109,14 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 								<span class="moon-icon">🌙</span>
 							</div>
 						</button>
+					</div>
+				</div>
+				<div class="nav-right">
+					<div class="links">
+						<a href="/">Anasayfa</a>
+						<a href="/yazarlar">Yazarlar</a>
+						<a href="/hakkimda">Hakkımda</a>
+						<a href="/iletisim">İletişim</a>
 					</div>
 				</div>
 			</nav>
@@ -415,9 +417,10 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 			}
 
 			header.scrolled { height: 3.8rem; background: rgba(var(--card-bg-rgb), 0.8); max-width: 850px; margin-top: 0.5rem; }
-			nav { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+			nav { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 1rem; }
 			
-			.nav-right { display: flex; align-items: center; gap: 1.5rem; }
+			.logo-area { display: inline-flex; align-items: center; gap: 0.7rem; flex-shrink: 0; }
+			.nav-right { display: flex; align-items: center; gap: 1.5rem; min-width: 0; }
 			.links { display: flex; align-items: center; gap: 0.5rem; }
 			
 			.links a, .dropbtn {
@@ -440,22 +443,31 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 					flex-direction: column;
 					gap: 1rem;
 				}
+				.logo-area {
+					width: 100%;
+					justify-content: space-between;
+				}
 				.nav-right {
 					width: 100%;
+					display: flex;
 					justify-content: center;
-					border-top: 1px solid var(--border);
-					padding-top: 0.75rem;
-					gap: 1rem;
 				}
 				.links {
-					gap: 0.25rem;
+					display: flex;
+					flex-wrap: wrap;
+					justify-content: center;
+					gap: 0.35rem;
+					width: 100%;
 				}
 				.links a {
-					font-size: 0.85rem;
-					padding: 0.4rem 0.6rem;
+					font-size: 0.84rem;
+					padding: 0.4rem 0.65rem;
+					white-space: nowrap;
 				}
 				.theme-switch-wrapper {
-					padding-left: 1rem;
+					padding-left: 0;
+					border-left: 0;
+					margin-left: auto;
 				}
 			}
 
@@ -474,7 +486,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 			.dropdown:hover .dropdown-content { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(5px); }
 			.dropdown-content a { color: var(--text); padding: 0.6rem 1rem; display: block; font-size: 0.9rem; margin: 0; }
 
-			.theme-switch-wrapper { border-left: 1px solid var(--border); padding-left: 1.5rem; }
+			.theme-switch-wrapper { display: inline-flex; align-items: center; border-left: 0; padding-left: 0; }
 			.theme-switch { background: var(--muted); border: 1px solid var(--border); width: 3.5rem; height: 1.8rem; border-radius: 2rem; cursor: pointer; position: relative; padding: 0; transition: all 0.3s ease; }
 			.switch-handle { width: 1.4rem; height: 1.4rem; background: var(--card-bg); border-radius: 50%; position: absolute; left: 0.2rem; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; box-shadow: var(--shadow); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 			.sun-icon { opacity: 1; } .moon-icon { opacity: 1; }
