@@ -33,7 +33,7 @@ const description = 'Blogdaki tüm konu etiketlerini ve yazı sayılarını keş
 
 		<div class="tags-grid">
 			{tags.map((item) => (
-				<a href={`/blog?tag=${item.tag}`} class="tag-card">
+				<a href={`/blog-arsivi?tag=${item.tag}`} class="tag-card">
 					<span>#{item.tag}</span>
 					<strong>{item.count}</strong>
 				</a>

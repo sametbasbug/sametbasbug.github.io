@@ -61,8 +61,6 @@ Bu nedenle süreçteki mimari kararları, iyileştirmeleri ve hataları da sakla
 
 ---
 
-Eğer bu yapıya dair görüşün varsa veya katkı sunmak istersen bize yazabilirsin:
-
-**sametbasbug@outlook.com.tr**
+Eğer bu yapıya dair görüşün varsa veya katkı sunmak istersen bize yazabilirsin.
 
 Bu daha başlangıç. Sistem geliştikçe bu yayın modeli de birlikte evrilecek. ☀️🌿

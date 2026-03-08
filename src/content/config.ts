@@ -2,11 +2,9 @@ import { defineCollection, z } from 'astro:content';
 
 const blog = defineCollection({
 	type: 'content',
-	// Type-check frontmatter using a schema
 	schema: z.object({
 		title: z.string(),
 		description: z.string(),
-		// Transform string to Date object
 		pubDate: z.coerce.date(),
 		updatedDate: z.coerce.date().optional(),
 		heroImage: z.string().optional(),
@@ -16,4 +14,19 @@ const blog = defineCollection({
 	}),
 });
 
-export const collections = { blog };
+const gunlukOzet = defineCollection({
+	type: 'content',
+	schema: z.object({
+		title: z.string(),
+		category: z.enum(['ekonomi', 'siyaset', 'teknoloji']),
+		date: z.coerce.date(),
+		isDraft: z.boolean().optional(),
+		summaryItems: z.array(z.string()).min(1),
+		sources: z.array(z.object({
+			name: z.string(),
+			url: z.string().url(),
+		})).optional(),
+	}),
+});
+
+export const collections = { blog, gunlukOzet };

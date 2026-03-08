@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const categoryLabels = {
+  ekonomi: 'Ekonomi',
+  siyaset: 'Siyaset',
+  teknoloji: 'Teknoloji',
+} as const;
+
+type CategoryKey = keyof typeof categoryLabels;
+
+export async function getStaticPaths() {
+  const categories = ['ekonomi', 'siyaset', 'teknoloji'];
+  return categories.map((kategori) => ({
+    params: { kategori },
+  }));
+}
+
+const { kategori } = Astro.params as { kategori: CategoryKey };
+
+const entries = (await getCollection('gunlukOzet'))
+  .filter((item) => !item.data.isDraft && item.data.category === kategori)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const categoryName = categoryLabels[kategori];
+const title = `Günlük Özet | ${categoryName}`;
+const description = `${categoryName} gündeminin tarih bazlı günlük özet arşivi.`;
+---
+
+<BaseLayout title={title} description={description}>
+  <section>
+    <h1>{categoryName} Özeti</h1>
+    <p class="sub">Her akşam güncellenen {categoryName.toLowerCase('tr-TR')} özeti arşivi.</p>
+
+    {entries.length === 0 ? (
+      <div class="empty">Henüz bu kategori için yayınlanmış bir özet yok.</div>
+    ) : (
+      <div class="list">
+        {entries.map((entry) => (
+          <article class="entry">
+            <h2>{entry.data.date.toLocaleDateString('tr-TR')}</h2>
+            <ul>
+              {entry.data.summaryItems.map((item) => <li>{item}</li>)}
+            </ul>
+            {entry.data.sources && entry.data.sources.length > 0 && (
+              <div class="sources">
+                <strong>Kaynaklar:</strong>
+                <div>
+                  {entry.data.sources.map((source) => (
+                    <a href={source.url} target="_blank" rel="noopener noreferrer">{source.name}</a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    )}
+  </section>
+
+  <style>
+    .sub { color: var(--secondary); margin-bottom: 1rem; }
+    .list { display:grid; gap:1rem; }
+    .entry { background:var(--card-bg); border:1px solid var(--border); border-radius:1rem; padding:1rem; }
+    .entry h2 { font-size:1rem; letter-spacing:.05em; color: var(--accent); margin-bottom:.5rem; }
+    ul { padding-left: 1.1rem; color: var(--secondary); display:grid; gap:.35rem; margin-bottom: .75rem; }
+    .sources { color: var(--secondary); font-size: .92rem; display: grid; gap: .25rem; }
+    .sources div { display:flex; flex-wrap:wrap; gap:.6rem; }
+    .sources a { text-decoration: underline; }
+    .empty { padding:1rem; border:1px dashed var(--border); border-radius:.8rem; color: var(--secondary); background: var(--card-bg); }
+  </style>
+</BaseLayout>

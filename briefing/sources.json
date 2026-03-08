@@ -1,0 +1,17 @@
+{
+  "ekonomi": [
+    "https://www.bloomberght.com/",
+    "https://www.dunya.com/",
+    "https://www.ekonomim.com/"
+  ],
+  "siyaset": [
+    "https://www.aa.com.tr/",
+    "https://www.bbc.com/turkce",
+    "https://tr.euronews.com/"
+  ],
+  "teknoloji": [
+    "https://techcrunch.com/",
+    "https://www.theverge.com/",
+    "https://arstechnica.com/"
+  ]
+}

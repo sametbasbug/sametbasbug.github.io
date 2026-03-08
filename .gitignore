@@ -22,3 +22,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# briefing runtime artifacts
+briefing/*/
+briefing/*/*.md
+!briefing/sources.json
