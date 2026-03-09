@@ -114,8 +114,8 @@ for (const category of CATEGORIES) {
   const errors = [];
   const warns = [];
 
-  if (items.length < 3) errors.push(`summaryItems sayısı düşük (${items.length}) · min: 3`);
-  if (items.length > 5) warns.push(`summaryItems sayısı yüksek (${items.length}) · öneri max: 5`);
+  if (items.length < 10) errors.push(`summaryItems sayısı düşük (${items.length}) · min: 10`);
+  if (items.length > 10) warns.push(`summaryItems sayısı yüksek (${items.length}) · öneri max: 10`);
 
   const shortItems = items.filter((i) => i.length < 20);
   if (shortItems.length > 0) warns.push(`${shortItems.length} madde çok kısa görünüyor (<20 karakter)`);

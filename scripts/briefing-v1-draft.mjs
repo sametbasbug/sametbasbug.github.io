@@ -158,8 +158,8 @@ const parsed = parseRawByCategory(raw);
 
 for (const category of CATEGORIES) {
   const lines = parsed[category] || [];
-  const summaryItems = pickTopItems(lines, 5);
-  const sources = pickSources(lines, 5);
+  const summaryItems = pickTopItems(lines, 10);
+  const sources = pickSources(lines, 10);
 
   const cap = category.charAt(0).toUpperCase() + category.slice(1);
   const [y, m, d] = date.split('-');

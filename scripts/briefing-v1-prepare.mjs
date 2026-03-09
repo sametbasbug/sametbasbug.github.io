@@ -94,10 +94,10 @@ Aşağıdaki ham veriyi kullanarak 3 kategori için kısa, tarafsız ve tekrarla
 - Nyx playbook: ${playbookPath}
 
 ## Kurallar
-- Her kategori için 3-5 madde.
-- Her madde 1-2 cümle olsun.
+- Her kategori için tam 10 madde.
+- Her madde 2-3 cümlelik doyurucu bir paragraf olsun.
 - Spekülatif ifade kullanma, doğrulanmamış bilgiyi dışarıda bırak.
-- Aynı olayın tekrar eden başlıklarını birleştir.
+- Aynı olayın tekrar eden başlıklarını mümkünse birleştir ama toplam 10 güçlü madde üret.
 - Sonuna Kaynaklar alanını düzgün doldur.
 
 ## Girdi
@@ -110,7 +110,7 @@ ${targetFiles.map((t) => `- ${t.category}: ${t.path}`).join('\n')}
 1) Önce Nyx playbook'u oku ve kuralları uygula.
 2) Ham veriyi kategori bazında tara.
 3) Her kategori için ilgili markdown dosyasını doldur.
-4) summaryItems alanına kısa maddeleri yaz (3-5).
+4) summaryItems alanına 10 maddeyi yaz.
 5) sources alanına kullanılan kaynakları name + url olarak ekle.
 `;
 

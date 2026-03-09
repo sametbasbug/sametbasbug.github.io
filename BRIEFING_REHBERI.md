@@ -163,7 +163,7 @@ PR açılırsa gövdesinde şunlar otomatik görünür:
 
 ### Hata: `summaryItems sayısı düşük`
 Çözüm:
-- Her kategoriye en az 3 madde ekle
+- Her kategoriye tam 10 madde ekle
 
 ### Hata: `placeholder metin kalmış`
 Çözüm:

@@ -4,7 +4,10 @@
     "https://www.bloomberght.com/rss",
     "https://rss.foreks.com/rss",
     "https://www.paraanaliz.com/feed/",
-    "https://tr.investing.com/rss/news.rss"
+    "https://tr.investing.com/rss/news.rss",
+    "https://feeds.reuters.com/reuters/businessNews",
+    "https://feeds.reuters.com/news/economy",
+    "https://www.cnbc.com/id/100003114/device/rss/rss.html"
   ],
   "siyaset": [
     "https://feeds.bbci.co.uk/turkce/rss.xml",
@@ -14,7 +17,10 @@
     "https://www.diken.com.tr/feed",
     "https://www.evrensel.net/rss/haber.xml",
     "https://t24.com.tr/rss",
-    "https://medyascope.tv/feed/"
+    "https://medyascope.tv/feed/",
+    "https://feeds.reuters.com/reuters/worldNews",
+    "https://apnews.com/hub/ap-top-news?output=rss",
+    "https://www.politico.eu/feed/"
   ],
   "teknoloji": [
     "https://www.donanimhaber.com/rss/tum/",
@@ -22,6 +28,10 @@
     "https://www.log.com.tr/feed/",
     "https://www.teknoblog.com/feed/",
     "https://digitalage.com.tr/feed",
-    "https://swipeline.co/feed/"
+    "https://swipeline.co/feed/",
+    "https://techcrunch.com/feed/",
+    "https://www.theverge.com/rss/index.xml",
+    "https://feeds.arstechnica.com/arstechnica/index",
+    "https://www.wired.com/feed/rss"
   ]
 }
