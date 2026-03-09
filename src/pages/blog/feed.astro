@@ -317,9 +317,15 @@ const firstLetters = (value: string) =>
   </script>
 
   <style>
+    :global(html),
+    :global(body) {
+      overflow-x: hidden;
+    }
+
     :global(main) {
       max-width: 1240px;
       padding-top: 1.1rem;
+      overflow-x: hidden;
     }
 
     .feed-shell {
@@ -328,6 +334,9 @@ const firstLetters = (value: string) =>
       gap: 1rem;
       align-items: start;
       margin-top: 0.2rem;
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
     }
 
     :global(#main-header) {
@@ -439,6 +448,9 @@ const firstLetters = (value: string) =>
       overflow: hidden;
       border-left: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
       border-right: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
     }
 
     .feed-topbar {
@@ -473,6 +485,7 @@ const firstLetters = (value: string) =>
       padding: 0.8rem 0.9rem;
       border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
       transition: background 0.2s ease;
+      min-width: 0;
     }
 
     .feed-item:hover {
@@ -589,6 +602,7 @@ const firstLetters = (value: string) =>
       gap: 0.6rem;
       color: var(--secondary);
       font-size: 0.82rem;
+      min-width: 0;
     }
 
     .action-btn,
