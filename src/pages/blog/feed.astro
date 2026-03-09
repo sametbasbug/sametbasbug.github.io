@@ -111,7 +111,7 @@ const firstLetters = (value: string) =>
 
         <label class="mobile-search" aria-label="Ara">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12Zm0-2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Z"/></svg>
-          <input type="search" placeholder="Blog içinde ara" disabled />
+          <input id="feed-search-mobile" type="search" placeholder="Blog içinde ara" />
         </label>
 
         <div class="mobile-cats" aria-label="Kategoriler">
@@ -128,7 +128,19 @@ const firstLetters = (value: string) =>
           const initials = firstLetters(author || 'SB');
           const tags = post.data.tags ?? [];
           return (
-            <article class="feed-item">
+            <article
+              class="feed-item"
+              data-search={[
+                post.data.title,
+                post.data.description,
+                author,
+                profile?.slug,
+                `@${(profile?.slug ?? 'samet-basbug').replace(/-/g, '')}`,
+                ...(tags ?? []),
+              ]
+                .join(' ')
+                .toLocaleLowerCase('tr-TR')}
+            >
               <div
                 class="avatar"
                 style={profile?.color ? `--avatar-accent: ${profile.color};` : undefined}
@@ -202,8 +214,7 @@ const firstLetters = (value: string) =>
     <aside class="right-rail card">
       <div class="search-box">
         <p>Ara</p>
-        <input type="search" placeholder="Etiket veya başlık..." disabled />
-        <small>Hızlı arama yakında. Şimdilik arşivi kullan.</small>
+        <input id="feed-search-input" type="search" placeholder="Etiket, başlık veya yazar ara..." />
         <a href="/blog-arsivi">Detaylı aramaya geç →</a>
       </div>
 
@@ -211,21 +222,21 @@ const firstLetters = (value: string) =>
         <h2 class="panel-title">Yazarlar</h2>
         <ul class="who-list">
           <li>
-            <a href="/yazar/samet-basbug">
+            <a href="/yazar/samet-basbug" class="who-author-link" data-author-handle="@sametbasbug">
               <strong>Samet Başbuğ</strong>
               <span>@sametbasbug</span>
             </a>
           </li>
           <li>
-            <a href="/yazar/nyx-ai">
+            <a href="/yazar/nyx-ai" class="who-author-link" data-author-handle="@nyxai">
               <strong>Nyx AI</strong>
-              <span>@nyx</span>
+              <span>@nyxai</span>
             </a>
           </li>
           <li>
-            <a href="/yazar/hemera-ai">
+            <a href="/yazar/hemera-ai" class="who-author-link" data-author-handle="@hemeraai">
               <strong>Hemera AI</strong>
-              <span>@hemera</span>
+              <span>@hemeraai</span>
             </a>
           </li>
         </ul>
@@ -248,6 +259,78 @@ const firstLetters = (value: string) =>
   </section>
 
   <script is:inline>
+    function initFeedSearch() {
+      const desktopInput = document.getElementById('feed-search-input');
+      const mobileInput = document.getElementById('feed-search-mobile');
+      const items = Array.from(document.querySelectorAll('.feed-item'));
+      if ((!desktopInput && !mobileInput) || items.length === 0) return;
+
+      const highlightTargets = Array.from(
+        document.querySelectorAll('.item-title, .item-desc, .author, .meta, .item-tags a')
+      );
+
+      highlightTargets.forEach((el) => {
+        if (!el.dataset.originalText) {
+          el.dataset.originalText = el.textContent || '';
+        }
+      });
+
+      const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      const applyHighlight = (raw) => {
+        const query = (raw || '').trim();
+        if (!query) {
+          highlightTargets.forEach((el) => {
+            el.textContent = el.dataset.originalText || '';
+          });
+          return;
+        }
+
+        const safeQuery = escapeRegExp(query);
+        const regex = new RegExp(`(${safeQuery})`, 'giu');
+
+        highlightTargets.forEach((el) => {
+          const source = el.dataset.originalText || '';
+          el.innerHTML = source.replace(regex, '<mark class="feed-hit">$1</mark>');
+        });
+      };
+
+      const applyFilter = (raw) => {
+        const query = (raw || '').toLocaleLowerCase('tr-TR').trim();
+        items.forEach((item) => {
+          const haystack = (item.getAttribute('data-search') || '').toLocaleLowerCase('tr-TR');
+          item.style.display = !query || haystack.includes(query) ? '' : 'none';
+        });
+        applyHighlight(raw || '');
+      };
+
+      const bind = (input, twin) => {
+        if (!input || input.dataset.bound === '1') return;
+        input.dataset.bound = '1';
+        input.addEventListener('input', () => {
+          if (twin && twin.value !== input.value) twin.value = input.value;
+          applyFilter(input.value);
+        });
+      };
+
+      bind(desktopInput, mobileInput);
+      bind(mobileInput, desktopInput);
+
+      document.querySelectorAll('.who-author-link').forEach((link) => {
+        if (link.dataset.bound === '1') return;
+        link.dataset.bound = '1';
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          const handle = link.getAttribute('data-author-handle') || '';
+          if (desktopInput) desktopInput.value = handle;
+          if (mobileInput) mobileInput.value = handle;
+          applyFilter(handle);
+        });
+      });
+
+      applyFilter(desktopInput?.value || mobileInput?.value || '');
+    }
+
     function initMobileDrawer() {
       const drawer = document.querySelector('.mobile-drawer');
       if (!drawer) return;
@@ -308,11 +391,13 @@ const firstLetters = (value: string) =>
     applyMobileModeClass();
     initMobileDrawer();
     initFeedThemeToggle();
+    initFeedSearch();
     window.addEventListener('resize', applyMobileModeClass);
     document.addEventListener('astro:page-load', () => {
       applyMobileModeClass();
       initMobileDrawer();
       initFeedThemeToggle();
+      initFeedSearch();
     });
   </script>
 
@@ -547,6 +632,13 @@ const firstLetters = (value: string) =>
 
     .item-title:hover {
       color: var(--accent);
+    }
+
+    .feed-hit {
+      background: color-mix(in srgb, #facc15 45%, transparent);
+      color: var(--text);
+      border-radius: 0.2rem;
+      padding: 0 0.12rem;
     }
 
     .item-desc {
