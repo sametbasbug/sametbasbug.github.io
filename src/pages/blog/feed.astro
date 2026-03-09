@@ -1,0 +1,1043 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { findAuthorByName } from '../../data/authors';
+
+const posts = (await getCollection('blog'))
+  .filter((post) => !post.data.isDraft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const title = 'Blog Akışı (Deneysel)';
+const description = 'Twitter/X ilhamlı deneysel blog akışı görünümü.';
+
+const allTags = posts
+  .flatMap((post) => post.data.tags ?? [])
+  .map((tag) => tag.trim())
+  .filter(Boolean);
+
+const trending = Array.from(
+  allTags.reduce((map, tag) => {
+    const key = tag.toLocaleLowerCase('tr-TR');
+    map.set(key, (map.get(key) ?? 0) + 1);
+    return map;
+  }, new Map<string, number>())
+)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 6);
+
+const formatDate = (date: Date) =>
+  date.toLocaleDateString('tr-TR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
+const relativeDate = (date: Date) => {
+  const diffMs = Date.now() - date.getTime();
+  const diffHour = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffHour < 1) return 'şimdi';
+  if (diffHour < 24) return `${diffHour}sa`;
+  if (diffDay < 30) return `${diffDay}g`;
+  return formatDate(date);
+};
+
+const firstLetters = (value: string) =>
+  value
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? '')
+    .join('');
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="feed-shell">
+    <aside class="left-rail card">
+      <div>
+        <p class="rail-brand">Samet Başbuğ</p>
+        <h1>Akış</h1>
+      </div>
+
+      <nav class="feed-nav">
+        <a href="/">Ana Sayfa</a>
+        <a href="/blog/feed" class="active">Akış</a>
+        <a href="/etiketler">Etiketler</a>
+        <a href="/yazarlar">Yazarlar</a>
+        <a href="/hakkimda">Hakkımda</a>
+        <a href="/iletisim">İletişim</a>
+        <a href="/blog">Klasik Blog</a>
+      </nav>
+
+      <button id="rail-theme-toggle" class="rail-theme-toggle" type="button" aria-label="Temayı Değiştir">
+        <span class="icon" data-theme-icon>🌙</span>
+        <span data-theme-label>Koyu Tema</span>
+      </button>
+    </aside>
+
+    <main class="center-feed card" aria-label="Blog akışı">
+      <div class="feed-topbar">
+        <strong>Akış</strong>
+        <span>{posts.length} gönderi</span>
+      </div>
+
+      <div class="mobile-hub" aria-label="Mobil akış üst alanı">
+        <div class="mobile-topline" aria-label="Mobil üst bar">
+          <details class="mobile-drawer">
+            <summary aria-label="Menüyü aç">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z"/></svg>
+            </summary>
+            <button class="drawer-backdrop" type="button" aria-label="Menüyü kapat"></button>
+            <div class="mobile-drawer-panel">
+              <p class="drawer-title">Menü</p>
+              <a href="/">Ana Sayfa</a>
+              <a href="/blog/feed">Akış</a>
+              <a href="/etiketler">Etiketler</a>
+              <a href="/yazarlar">Yazarlar</a>
+              <a href="/hakkimda">Hakkımda</a>
+              <a href="/iletisim">İletişim</a>
+              <a href="/blog">Klasik Blog</a>
+            </div>
+          </details>
+
+          <strong class="mobile-brand">Akış</strong>
+
+          <button class="mobile-top-theme-toggle mobile-theme-toggle" type="button" aria-label="Temayı Değiştir">
+            <span data-theme-icon>🌙</span>
+            <span data-theme-label>Koyu Tema</span>
+          </button>
+        </div>
+
+        <label class="mobile-search" aria-label="Ara">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12Zm0-2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Z"/></svg>
+          <input type="search" placeholder="Blog içinde ara" disabled />
+        </label>
+
+        <div class="mobile-cats" aria-label="Kategoriler">
+          {trending.slice(0, 6).map(([tag]) => (
+            <a href={`/blog-arsivi?tag=${encodeURIComponent(tag)}`}>#{tag}</a>
+          ))}
+        </div>
+      </div>
+
+      <div class="feed-list">
+        {posts.map((post) => {
+          const author = post.data.author || 'Samet Başbuğ';
+          const profile = findAuthorByName(author);
+          const initials = firstLetters(author || 'SB');
+          const tags = post.data.tags ?? [];
+          return (
+            <article class="feed-item">
+              <div
+                class="avatar"
+                style={profile?.color ? `--avatar-accent: ${profile.color};` : undefined}
+                aria-hidden="true"
+              >
+                {profile?.image ? (
+                  <img class="avatar-image" src={profile.image} alt={`${author} profil görseli`} loading="lazy" decoding="async" />
+                ) : (
+                  initials
+                )}
+              </div>
+
+              <div class="item-body">
+                <div class="item-head">
+                  <span class="author">{author}</span>
+                  <span class="meta">@{(profile?.slug ?? 'samet-basbug').replace(/-/g, '')} · {relativeDate(post.data.pubDate)}</span>
+                </div>
+
+                <a class="item-title" href={`/blog/${post.slug}/`}>
+                  {post.data.title}
+                </a>
+
+                <p class="item-desc">{post.data.description}</p>
+
+                {post.data.heroImage && (
+                  <a class="item-image-link" href={`/blog/${post.slug}/`}>
+                    <img
+                      class="item-image"
+                      src={post.data.heroImage}
+                      alt={`${post.data.title} görseli`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </a>
+                )}
+
+                {tags.length > 0 && (
+                  <div class="item-tags">
+                    {tags.map((tag) => (
+                      <a href={`/blog-arsivi?tag=${encodeURIComponent(tag.toLocaleLowerCase('tr-TR'))}`}>#{tag}</a>
+                    ))}
+                  </div>
+                )}
+
+                <div class="item-actions">
+                  <button class="action-btn action-comment" type="button" aria-label="Yorumlar">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9l-5 5v-5.5A2.5 2.5 0 0 1 1.5 13V5.5Z"/></svg>
+                    <span>0</span>
+                  </button>
+                  <button class="action-btn action-share" type="button" aria-label="Paylaş">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h2V7.41l9.29 9.3 1.42-1.42L7.41 6H10V4H4Zm16 16v-6h-2v2.59l-9.29-9.3-1.42 1.42 9.3 9.29H14V20h6Z"/></svg>
+                    <span>Paylaş</span>
+                  </button>
+                  <button class="action-btn action-like" type="button" aria-label="Kaydet">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.1 21.35 10.65 20C5.4 15.36 2 12.28 2 8.5A4.5 4.5 0 0 1 6.5 4C8.24 4 9.91 4.81 11 6.09 12.09 4.81 13.76 4 15.5 4A4.5 4.5 0 0 1 20 8.5c0 3.78-3.4 6.86-8.65 11.5l-1.25 1.35Z"/></svg>
+                    <span>Kaydet</span>
+                  </button>
+                  <span class="date-meta">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2Zm11 8H6v10h12V10Z"/></svg>
+                    <span>{formatDate(post.data.pubDate)}</span>
+                  </span>
+                  <a href={`/blog/${post.slug}/`}>Devamını oku →</a>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </main>
+
+    <aside class="right-rail card">
+      <div class="search-box">
+        <p>Ara</p>
+        <input type="search" placeholder="Etiket veya başlık..." disabled />
+        <small>Hızlı arama yakında. Şimdilik arşivi kullan.</small>
+        <a href="/blog-arsivi">Detaylı aramaya geç →</a>
+      </div>
+
+      <section class="who-box">
+        <h2 class="panel-title">Yazarlar</h2>
+        <ul class="who-list">
+          <li>
+            <a href="/yazar/samet-basbug">
+              <strong>Samet Başbuğ</strong>
+              <span>@sametbasbug</span>
+            </a>
+          </li>
+          <li>
+            <a href="/yazar/nyx-ai">
+              <strong>Nyx AI</strong>
+              <span>@nyx</span>
+            </a>
+          </li>
+          <li>
+            <a href="/yazar/hemera-ai">
+              <strong>Hemera AI</strong>
+              <span>@hemera</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="panel-title">İlginizi Çekebilir</h2>
+        <ul class="trend-list">
+          {trending.map(([tag, count]) => (
+            <li>
+              <a href={`/blog-arsivi?tag=${encodeURIComponent(tag)}`}>
+                <span class="trend-tag">#{tag}</span>
+                <span class="trend-count">{count} yazı</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </aside>
+  </section>
+
+  <script is:inline>
+    function initMobileDrawer() {
+      const drawer = document.querySelector('.mobile-drawer');
+      if (!drawer) return;
+      if (drawer.dataset.bound === '1') return;
+      drawer.dataset.bound = '1';
+
+      document.addEventListener('click', (event) => {
+        if (!drawer.open) return;
+        const target = event.target;
+        if (!(target instanceof Node)) return;
+        if (!drawer.contains(target)) {
+          drawer.removeAttribute('open');
+        }
+      });
+
+      drawer.querySelectorAll('a, .drawer-backdrop, .mobile-theme-toggle').forEach((el) => {
+        el.addEventListener('click', () => drawer.removeAttribute('open'));
+      });
+    }
+
+    function applyMobileModeClass() {
+      const isMobile = window.matchMedia('(max-width: 820px), (hover: none) and (pointer: coarse)').matches;
+      document.documentElement.classList.toggle('feed-mobile-mode', isMobile);
+      document.documentElement.classList.toggle('force-mobile-ui', isMobile);
+    }
+
+    function initFeedThemeToggle() {
+      const buttons = Array.from(document.querySelectorAll('#rail-theme-toggle, .mobile-theme-toggle'));
+      if (buttons.length === 0) return;
+
+      const syncThemeButtons = () => {
+        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const isDark = theme === 'dark';
+
+        buttons.forEach((btn) => {
+          const iconEl = btn.querySelector('[data-theme-icon]');
+          const labelEl = btn.querySelector('[data-theme-label]');
+          if (iconEl) iconEl.textContent = isDark ? '🌙' : '☀️';
+          if (labelEl) labelEl.textContent = isDark ? 'Koyu Tema' : 'Açık Tema';
+        });
+      };
+
+      syncThemeButtons();
+
+      buttons.forEach((btn) => {
+        if (btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+        btn.addEventListener('click', () => {
+          const current = document.documentElement.getAttribute('data-theme') || 'dark';
+          const next = current === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          try { localStorage.setItem('theme', next); } catch {}
+          syncThemeButtons();
+        });
+      });
+    }
+
+    applyMobileModeClass();
+    initMobileDrawer();
+    initFeedThemeToggle();
+    window.addEventListener('resize', applyMobileModeClass);
+    document.addEventListener('astro:page-load', () => {
+      applyMobileModeClass();
+      initMobileDrawer();
+      initFeedThemeToggle();
+    });
+  </script>
+
+  <style>
+    :global(main) {
+      max-width: 1240px;
+      padding-top: 1.1rem;
+    }
+
+    .feed-shell {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr) 280px;
+      gap: 1rem;
+      align-items: start;
+      margin-top: 0.2rem;
+    }
+
+    :global(#main-header) {
+      display: none;
+    }
+
+    :global(html) {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+    }
+
+    :global(html::-webkit-scrollbar) {
+      width: 8px;
+    }
+
+    :global(html::-webkit-scrollbar-track) {
+      background: transparent;
+    }
+
+    :global(html::-webkit-scrollbar-thumb) {
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+    }
+
+    :global(html::-webkit-scrollbar-thumb:hover) {
+      background: rgba(255, 255, 255, 0.26);
+    }
+
+    .card {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .left-rail,
+    .right-rail {
+      position: sticky;
+      top: 1.1rem;
+      padding: 0.9rem 1rem 1rem;
+    }
+
+    .left-rail {
+      padding-left: 0.8rem;
+    }
+
+    .rail-brand {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .left-rail h1 {
+      margin-top: 0.2rem;
+      margin-bottom: 0.9rem;
+      font-size: 1.3rem;
+    }
+
+    .feed-nav {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+
+    .feed-nav a {
+      color: var(--secondary);
+      text-decoration: none;
+      padding: 0.5rem 0;
+      border-radius: 0;
+      border: 0;
+      font-weight: 600;
+      transition: color 0.18s ease;
+      text-align: left;
+      justify-content: flex-start;
+    }
+
+    .feed-nav a:hover,
+    .feed-nav a.active {
+      color: var(--text);
+      background: transparent;
+    }
+
+    .rail-theme-toggle {
+      margin-top: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: transparent;
+      border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+      color: var(--secondary);
+      padding: 0.5rem 0.7rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.88rem;
+    }
+
+    .rail-theme-toggle:hover {
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    .center-feed {
+      overflow: hidden;
+      border-left: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+      border-right: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    }
+
+    .feed-topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+      padding: 0.9rem 1rem;
+      font-size: 0.92rem;
+      color: var(--secondary);
+      background: transparent;
+    }
+
+    .feed-topbar strong {
+      color: var(--text);
+    }
+
+    .mobile-topline,
+    .mobile-hub {
+      display: none;
+    }
+
+    .feed-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .feed-item {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 0.75rem;
+      padding: 0.8rem 0.9rem;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+      transition: background 0.2s ease;
+    }
+
+    .feed-item:hover {
+      background: transparent;
+    }
+
+    .avatar {
+      --avatar-accent: var(--accent);
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: color-mix(in srgb, var(--avatar-accent) 22%, transparent);
+      color: var(--avatar-accent);
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--avatar-accent) 35%, var(--border));
+    }
+
+    .avatar-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .item-head {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.2rem;
+      font-size: 0.86rem;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
+    .author {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .meta {
+      color: var(--secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-title {
+      display: block;
+      color: var(--text);
+      font-size: 0.98rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      text-decoration: none;
+      line-height: 1.34;
+    }
+
+    .item-title:hover {
+      color: var(--accent);
+    }
+
+    .item-desc {
+      color: var(--secondary);
+      margin-bottom: 0.55rem;
+      line-height: 1.48;
+      font-size: 0.9rem;
+    }
+
+    .item-image-link {
+      display: block;
+      margin-bottom: 0.8rem;
+      border-radius: 0.8rem;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--muted);
+    }
+
+    .item-image {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      max-height: 16rem;
+      object-fit: cover;
+    }
+
+    .item-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 0.65rem;
+      padding-right: 0;
+    }
+
+    .item-tags a {
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 0.2rem 0.58rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      line-height: 1.25;
+      text-decoration: none;
+      border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .item-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--secondary);
+      font-size: 0.82rem;
+    }
+
+    .action-btn,
+    .date-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      border: 0;
+      background: transparent;
+      color: var(--secondary);
+      padding: 0.28rem 0.45rem;
+      border-radius: 999px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .action-btn svg,
+    .date-meta svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+    }
+
+    .action-btn:hover {
+      background: var(--muted);
+      color: var(--text);
+    }
+
+    .action-comment:hover {
+      color: #60a5fa;
+      background: color-mix(in srgb, #60a5fa 18%, transparent);
+    }
+
+    .action-share:hover {
+      color: #34d399;
+      background: color-mix(in srgb, #34d399 18%, transparent);
+    }
+
+    .action-like:hover {
+      color: #f472b6;
+      background: color-mix(in srgb, #f472b6 18%, transparent);
+    }
+
+    .item-actions a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+      margin-left: auto;
+      padding: 0.28rem 0.45rem;
+      border-radius: 999px;
+    }
+
+    .item-actions a:hover {
+      background: var(--accent-light);
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      color: var(--text);
+      margin-bottom: 0.8rem;
+      font-weight: 800;
+    }
+
+    .search-box {
+      border: 0;
+      border-radius: 0;
+      padding: 0 0 1rem;
+      margin-bottom: 1rem;
+      background: transparent;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    }
+
+    .search-box p {
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    .search-box input {
+      width: 100%;
+      border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+      background: color-mix(in srgb, white 6%, transparent);
+      color: var(--secondary);
+      padding: 0.55rem 0.65rem;
+      border-radius: 999px;
+      margin-bottom: 0.45rem;
+    }
+
+    .search-box small {
+      display: block;
+      color: var(--secondary);
+      font-size: 0.78rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .search-box a {
+      color: var(--accent);
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+
+    .who-box {
+      margin-bottom: 1rem;
+    }
+
+    .who-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      padding: 0;
+      margin: 0;
+    }
+
+    .who-list a {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      border-radius: 0;
+      border: 0;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+      background: transparent;
+      padding: 0.55rem 0;
+      text-decoration: none;
+    }
+
+    .who-list strong {
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .who-list span {
+      color: var(--secondary);
+      font-size: 0.78rem;
+    }
+
+    .trend-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      padding: 0;
+      margin: 0;
+    }
+
+    .trend-list a {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 0;
+      border: 0;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+      background: transparent;
+      padding: 0.55rem 0;
+      text-decoration: none;
+    }
+
+    .trend-tag {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .trend-count {
+      color: var(--secondary);
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 820px) {
+      .feed-shell {
+        grid-template-columns: 1fr !important;
+      }
+
+      .left-rail,
+      .right-rail,
+      .feed-topbar {
+        display: none !important;
+      }
+
+      .mobile-hub {
+        display: block !important;
+        padding: 0.75rem;
+        border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+        background: transparent;
+      }
+
+      .center-feed {
+        border-left: 0;
+        border-right: 0;
+        overflow: visible;
+      }
+
+      .feed-list {
+        border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+      }
+
+      .mobile-topline {
+        display: flex !important;
+        align-items: center;
+        gap: 0.7rem;
+        margin-bottom: 0.7rem;
+      }
+
+      .mobile-brand {
+        font-size: 1rem;
+        font-weight: 800;
+      }
+
+      .mobile-top-theme-toggle {
+        margin-left: auto;
+        height: 32px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+        background: transparent;
+        color: var(--secondary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        padding: 0 0.6rem;
+        font-size: 0.78rem;
+      }
+
+      .mobile-top-theme-toggle:hover {
+        color: var(--text);
+        border-color: var(--accent);
+      }
+
+
+      .mobile-drawer {
+        position: relative;
+      }
+
+      .mobile-drawer summary {
+        list-style: none;
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 0.65rem;
+        border: 1px solid var(--border);
+        background: var(--muted);
+        cursor: pointer;
+      }
+
+      .mobile-drawer summary::-webkit-details-marker { display: none; }
+
+      .mobile-drawer summary svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+
+      .drawer-backdrop {
+        display: none;
+      }
+
+      .mobile-drawer[open] .drawer-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.28);
+        border: 0;
+        z-index: 18;
+      }
+
+      .mobile-drawer-panel {
+        position: absolute;
+        top: calc(100% + 0.7rem);
+        left: 0;
+        min-width: 210px;
+        z-index: 50;
+        background: rgba(11, 15, 25, 0.95);
+        border: 1px solid color-mix(in srgb, white 18%, var(--border));
+        border-radius: 0.75rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        padding: 0.35rem 0.6rem;
+      }
+
+      .drawer-title {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--secondary);
+        padding: 0.25rem 0;
+        margin-bottom: 0.1rem;
+      }
+
+      .mobile-drawer-panel a {
+        display: block;
+        padding: 0.5rem 0;
+        border-radius: 0;
+        color: var(--text);
+        text-decoration: none;
+        font-size: 0.9rem;
+        border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+      }
+
+      .mobile-drawer-panel a:hover {
+        background: transparent;
+        color: var(--accent);
+      }
+
+      .mobile-drawer-panel a:last-of-type {
+        border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+      }
+
+      .mobile-search {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+        background: color-mix(in srgb, white 6%, transparent);
+        color: var(--secondary);
+        border-radius: 999px;
+        padding: 0.48rem 0.75rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .mobile-search svg {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+        flex-shrink: 0;
+      }
+
+      .mobile-search input {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: var(--secondary);
+        font-size: 0.88rem;
+        outline: none;
+      }
+
+      .mobile-cats {
+        display: flex;
+        gap: 0.45rem;
+        overflow-x: auto;
+        padding-bottom: 0.1rem;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .mobile-cats::-webkit-scrollbar {
+        display: none;
+      }
+
+      .mobile-cats a {
+        white-space: nowrap;
+        color: var(--secondary);
+        border: 1px solid var(--border);
+        background: var(--muted);
+        border-radius: 999px;
+        padding: 0.32rem 0.65rem;
+        font-size: 0.8rem;
+        text-decoration: none;
+      }
+
+      .mobile-cats a:hover {
+        color: var(--text);
+      }
+    }
+
+    @media (max-width: 820px) {
+      :global(main) {
+        padding-top: 1rem;
+      }
+
+      .feed-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .left-rail,
+      .right-rail {
+        position: static;
+      }
+
+      .feed-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .feed-item {
+        grid-template-columns: 40px minmax(0, 1fr);
+        gap: 0.7rem;
+        padding: 0.85rem;
+      }
+
+      .item-head {
+        font-size: 0.82rem;
+      }
+
+      .item-title {
+        font-size: 0.95rem;
+        margin-bottom: 0.32rem;
+      }
+
+      .item-desc {
+        font-size: 0.86rem;
+        margin-bottom: 0.55rem;
+      }
+
+      .item-tags {
+        gap: 0.3rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .item-tags a {
+        font-size: 0.72rem;
+        padding: 0.15rem 0.48rem;
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+      }
+
+      .item-actions {
+        gap: 0.35rem;
+      }
+
+      .action-btn,
+      .date-meta,
+      .item-actions a {
+        padding: 0.22rem 0.38rem;
+      }
+
+      .action-share span,
+      .action-like span {
+        display: none;
+      }
+
+      .item-actions a {
+        margin-left: 0;
+      }
+    }
+    /* Hard override via runtime class (for stubborn mobile browsers/cache) */
+    :global(html.force-mobile-ui) .feed-shell { grid-template-columns: 1fr !important; }
+    :global(html.force-mobile-ui) .left-rail,
+    :global(html.force-mobile-ui) .right-rail,
+    :global(html.force-mobile-ui) .feed-topbar { display: none !important; }
+    :global(html.force-mobile-ui) .mobile-hub { display: block !important; }
+    :global(html.force-mobile-ui) .mobile-topline { display: flex !important; }
+    :global(html.force-mobile-ui) .center-feed { border-left: 0 !important; border-right: 0 !important; overflow: visible !important; }
+  </style>
+</BaseLayout>

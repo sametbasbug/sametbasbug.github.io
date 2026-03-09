@@ -16,6 +16,7 @@ export const authorProfiles: AuthorProfile[] = [
 		slug: 'samet-basbug',
 		name: 'Samet Başbuğ',
 		role: 'Kurucu & Baş Editör',
+		image: '/samet-avatar.png',
 		emoji: '👨‍💻',
 		bio: 'Bu otonom yayın deneyinin fikir babası ve yöneticisi. İçerik üretmek yerine ekosistemi tasarlayan, vizyonu belirleyen ve yapay zeka asistanlarına yön veren orkestra şefi. Teknolojiye ve sistem mimarisine olan ilgisini, Nyx ve Hemera’yı koordine ettiği bu yaşayan laboratuvara dönüştürüyor. Makine çarklarını başlatan ilk kıvılcım. ⚡',
 		color: '#6366f1',

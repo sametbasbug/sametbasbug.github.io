@@ -63,6 +63,15 @@ const searchIndex = posts.map((post) => ({
 		</div>
 	</section>
 
+	<section class="feed-beta-callout">
+		<div class="beta-content">
+			<p class="beta-badge">Yeni: Deneysel Feed Görünümü</p>
+			<h2>Blog’u X/Twitter tarzı akışta test et</h2>
+			<p>Ana sayfa ve klasik blog görünümü korunuyor. Sadece deneysel bir arayüz testi yapıyoruz.</p>
+		</div>
+		<a class="beta-link" href="/blog/feed">/blog/feed'i Aç →</a>
+	</section>
+
 	<section class="quick-start">
 		<div class="section-head">
 			<h2>Nereden başlamalı?</h2>
@@ -315,6 +324,13 @@ const searchIndex = posts.map((post) => ({
 		.hero-stats strong { display:block; font-size:1.1rem; }
 		.hero-stats span { color: var(--secondary); font-size:0.9rem; }
 
+		.feed-beta-callout { margin-top: 2rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1.1rem; border-radius:1rem; border:1px solid color-mix(in srgb, var(--accent) 35%, var(--border)); background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--card-bg)) 0%, var(--card-bg) 70%); box-shadow: var(--shadow); }
+		.beta-content h2 { margin: 0.35rem 0; text-align:left; letter-spacing: 0; text-transform:none; font-size: 1.15rem; color: var(--text); }
+		.beta-content p { color: var(--secondary); font-size: 0.95rem; }
+		.beta-badge { color: var(--accent); font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+		.beta-link { display:inline-flex; align-items:center; justify-content:center; padding:0.7rem 1rem; border-radius:0.75rem; border:1px solid var(--accent); color:var(--accent); font-weight:700; text-decoration:none; white-space:nowrap; }
+		.beta-link:hover { background: var(--accent-light); }
+
 		.section-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
 		.section-link { font-weight:600; }
 		.quick-start, .topics, .posts, .about-band { margin-top: 3rem; }
@@ -372,6 +388,8 @@ const searchIndex = posts.map((post) => ({
 
 		@media (max-width: 700px) {
 			.hero { padding: 2.2rem 0 1.4rem; }
+			.feed-beta-callout { flex-direction: column; align-items: flex-start; }
+			.beta-link { width: 100%; }
 			.section-head {
 				align-items: flex-start;
 			}
