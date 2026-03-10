@@ -10,8 +10,9 @@ const inputId = `comment-input-${postId}`;
 
   <div class="comment-form-container" data-comment-form style="display: none;">
     <label for={inputId} class="sr-only">Yorumunuz</label>
-    <textarea id={inputId} name="comment" data-comment-input placeholder="Düşüncelerinizi paylaşın..."></textarea>
-    <button class="comment-btn" data-comment-submit type="button">Yorumu Gönder</button>
+    <textarea id={inputId} name="comment" data-comment-input placeholder="Düşüncelerinizi paylaşın..." minlength="5" maxlength="300"></textarea>
+    <p class="char-counter" data-char-counter>0 / 300</p>
+    <button class="comment-btn" data-comment-submit type="button" disabled>Yorumu Gönder</button>
     
     <p class="success-message" data-success-message style="display: none;">
       ✓ Yorumunuz başarıyla gönderildi! Yönetici onayından sonra sayfada görünecektir.
@@ -26,6 +27,10 @@ const inputId = `comment-input-${postId}`;
   import { onAuthStateChanged } from "firebase/auth";
   import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "firebase/firestore";
 
+  const MIN_LENGTH = 5;
+  const MAX_LENGTH = 300;
+  const COOLDOWN_MS = 60_000;
+
   const safeDate = (ts) => {
     if (!ts || typeof ts.toDate !== 'function') return 'az önce';
     return ts.toDate().toLocaleString('tr-TR', {
@@ -34,9 +39,8 @@ const inputId = `comment-input-${postId}`;
     });
   };
 
-  // HEMERA'NIN PERFORMANS TAVSİYESİ: Dinleyicileri hafızada tutacağımız değişkenler
-  let unsubscribeAuth = null;
-  let unsubscribeSnapshot = null;
+  const unsubscribers = new Set();
+  const intervals = new Set();
 
   const initCommentWidget = (wrapper) => {
     if (!wrapper || wrapper.dataset.bound === '1') return;
@@ -47,85 +51,153 @@ const inputId = `comment-input-${postId}`;
     const formContainer = wrapper.querySelector('[data-comment-form]');
     const loginPrompt = wrapper.querySelector('[data-login-prompt]');
     const commentInput = wrapper.querySelector('[data-comment-input]');
+    const charCounter = wrapper.querySelector('[data-char-counter]');
     const submitBtn = wrapper.querySelector('[data-comment-submit]');
     const successMsg = wrapper.querySelector('[data-success-message]');
 
-    let currentUser = null;
+    if (!postId || !commentInput || !submitBtn || !charCounter) return;
 
-    // Dinleyiciyi değişkene atıyoruz ki sonra kapatabilelim
-    unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+    const cooldownKey = 'commentCooldownGlobal';
+
+    let currentUser = null;
+    let cooldownUntil = 0;
+    let cooldownInterval = null;
+
+    const stopCooldown = () => {
+      if (!cooldownInterval) return;
+      clearInterval(cooldownInterval);
+      intervals.delete(cooldownInterval);
+      cooldownInterval = null;
+    };
+
+    const updateSubmitState = () => {
+      const value = commentInput.value || '';
+      const length = value.length;
+      const trimmedLength = value.trim().length;
+      const now = Date.now();
+      const inCooldown = cooldownUntil > now;
+
+      charCounter.textContent = `${length} / ${MAX_LENGTH}`;
+      charCounter.classList.toggle('danger', length > MAX_LENGTH);
+
+      if (!currentUser) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Yorumu Gönder';
+        return;
+      }
+
+      if (inCooldown) {
+        const remainingSec = Math.ceil((cooldownUntil - now) / 1000);
+        submitBtn.disabled = true;
+        submitBtn.textContent = `Yeni yorum için ${remainingSec}s...`;
+        return;
+      }
+
+      submitBtn.textContent = 'Yorumu Gönder';
+      submitBtn.disabled = trimmedLength < MIN_LENGTH || length > MAX_LENGTH;
+    };
+
+    const startCooldown = (targetTime) => {
+      cooldownUntil = targetTime;
+      localStorage.setItem(cooldownKey, String(cooldownUntil));
+      stopCooldown();
+      updateSubmitState();
+
+      cooldownInterval = setInterval(() => {
+        if (Date.now() >= cooldownUntil) {
+          localStorage.removeItem(cooldownKey);
+          cooldownUntil = 0;
+          stopCooldown();
+        }
+        updateSubmitState();
+      }, 250);
+
+      intervals.add(cooldownInterval);
+    };
+
+    const savedCooldown = Number(localStorage.getItem(cooldownKey) || 0);
+    if (savedCooldown > Date.now()) {
+      startCooldown(savedCooldown);
+    } else {
+      localStorage.removeItem(cooldownKey);
+    }
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (!formContainer || !loginPrompt) return;
       if (user) {
         currentUser = user;
-        formContainer.style.display = "flex"; 
+        formContainer.style.display = "flex";
         loginPrompt.style.display = "none";
       } else {
         currentUser = null;
         formContainer.style.display = "none";
         loginPrompt.style.display = "block";
       }
+      updateSubmitState();
     });
 
-    if (postId) {
-      const q = query(
-        collection(db, "comments"),
-        where("postId", "==", postId),
-        where("status", "==", "approved"),
-        orderBy("createdAt", "asc")
-      );
+    unsubscribers.add(unsubscribeAuth);
 
-      // Dinleyiciyi değişkene atıyoruz ki sonra kapatabilelim
-      unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
-        if (!commentsList) return;
-        commentsList.innerHTML = "";
-        
-        if (snapshot.empty) {
-          commentsList.innerHTML = '<p class="empty-state">Henüz onaylanmış yorum yok. İlk yorumu sen yap!</p>';
-          return;
-        }
+    const q = query(
+      collection(db, "comments"),
+      where("postId", "==", postId),
+      where("status", "==", "approved"),
+      orderBy("createdAt", "asc")
+    );
 
-        snapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          const item = document.createElement('article');
-          item.className = 'comment-item';
+    const unsubscribeSnapshot = onSnapshot(q, (snapshot) => {
+      if (!commentsList) return;
+      commentsList.innerHTML = "";
 
-          const top = document.createElement('div');
-          top.className = 'comment-top';
+      if (snapshot.empty) {
+        commentsList.innerHTML = '<p class="empty-state">Henüz onaylanmış yorum yok. İlk yorumu sen yap!</p>';
+        return;
+      }
 
-          const name = document.createElement('strong');
-          name.className = 'comment-author';
-          name.textContent = data.authorName || 'Kullanıcı';
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const item = document.createElement('article');
+        item.className = 'comment-item';
 
-          const time = document.createElement('span');
-          time.className = 'comment-time';
-          time.textContent = safeDate(data.createdAt);
+        const top = document.createElement('div');
+        top.className = 'comment-top';
 
-          top.appendChild(name);
-          top.appendChild(time);
+        const name = document.createElement('strong');
+        name.className = 'comment-author';
+        name.textContent = data.authorName || 'Kullanıcı';
 
-          const text = document.createElement('p');
-          text.className = 'comment-text';
-          text.textContent = data.text || '';
+        const time = document.createElement('span');
+        time.className = 'comment-time';
+        time.textContent = safeDate(data.createdAt);
 
-          item.appendChild(top);
-          item.appendChild(text);
+        top.appendChild(name);
+        top.appendChild(time);
 
-          commentsList.appendChild(item);
-        });
-      }, (error) => {
-        console.error("Yorumlar çekilirken hata:", error);
+        const text = document.createElement('p');
+        text.className = 'comment-text';
+        text.textContent = data.text || '';
+
+        item.appendChild(top);
+        item.appendChild(text);
+
+        commentsList.appendChild(item);
       });
-    }
+    }, (error) => {
+      console.error("Yorumlar çekilirken hata:", error);
+    });
 
-    submitBtn?.addEventListener("click", async () => {
-      if (!commentInput || !postId) return;
+    unsubscribers.add(unsubscribeSnapshot);
 
+    commentInput.addEventListener('input', updateSubmitState);
+
+    submitBtn.addEventListener("click", async () => {
       const text = commentInput.value.trim();
-      if (!text || !currentUser) return;
+      if (!currentUser || text.length < MIN_LENGTH || text.length > MAX_LENGTH) return;
+      if (Date.now() < cooldownUntil) return;
 
       try {
         submitBtn.textContent = "Gönderiliyor...";
-        submitBtn.setAttribute("disabled", "true");
+        submitBtn.disabled = true;
         successMsg.style.display = "none";
 
         await addDoc(collection(db, "comments"), {
@@ -138,29 +210,36 @@ const inputId = `comment-input-${postId}`;
         });
 
         commentInput.value = "";
-        
-        // HEMERA'NIN UX TAVSİYESİ: Çirkin alert yerine şık yazı
+        updateSubmitState();
+
         successMsg.style.display = "block";
-        setTimeout(() => { successMsg.style.display = "none"; }, 5000); // 5 saniye sonra gizle
-        
+        setTimeout(() => { successMsg.style.display = "none"; }, 5000);
+
+        startCooldown(Date.now() + COOLDOWN_MS);
       } catch (error) {
         console.error("Yorum eklenirken hata oluştu:", error);
-      } finally {
-        submitBtn.textContent = "Yorumu Gönder";
-        submitBtn.removeAttribute("disabled");
+        updateSubmitState();
       }
     });
+
+    updateSubmitState();
   };
 
-  // Astro View Transitions için: Sayfa her değiştiğinde sistemi yeniden başlat
-  document.addEventListener('astro:page-load', () => {
+  const bootCommentWidgets = () => {
     document.querySelectorAll('[data-comment-widget]').forEach(initCommentWidget);
-  });
+  };
 
-  // HEMERA'NIN PERFORMANS TAVSİYESİ: Sayfa değişirken dinleyicileri (listener) temizle
+  bootCommentWidgets();
+  document.addEventListener('astro:page-load', bootCommentWidgets);
+
   document.addEventListener('astro:before-swap', () => {
-    if (unsubscribeAuth) unsubscribeAuth();
-    if (unsubscribeSnapshot) unsubscribeSnapshot();
+    unsubscribers.forEach((unsub) => {
+      try { unsub(); } catch {}
+    });
+    unsubscribers.clear();
+
+    intervals.forEach((id) => clearInterval(id));
+    intervals.clear();
   });
 </script>
 
@@ -177,8 +256,10 @@ const inputId = `comment-input-${postId}`;
   .comment-form-container { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.7rem; }
   textarea[data-comment-input] { width: 100%; min-height: 110px; border: 1px solid var(--border); border-radius: 0.8rem; background: var(--card-bg); color: var(--text); padding: 0.8rem; resize: vertical; font: inherit; }
   textarea[data-comment-input]:focus { outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px; }
+  .char-counter { margin: -0.1rem 0 0; color: var(--secondary); font-size: 0.78rem; text-align: right; }
+  .char-counter.danger { color: #ef4444; }
   .comment-btn { align-self: flex-end; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border)); background: var(--accent); color: white; border-radius: 999px; padding: 0.5rem 0.95rem; cursor: pointer; font-weight: 600; }
-  .comment-btn:disabled { opacity: 0.7; cursor: wait; }
+  .comment-btn:disabled { opacity: 0.7; cursor: not-allowed; }
   .login-prompt, .empty-state { color: var(--secondary); font-size: 0.9rem; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   
