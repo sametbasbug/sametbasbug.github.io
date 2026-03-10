@@ -3,12 +3,15 @@
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.2-1.4 3.6-5.5 3.6-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.2.8 4 1.5l2.7-2.6C17 3 14.8 2 12 2 6.5 2 2 6.5 2 12s4.5 10 10 10c5.8 0 9.7-4.1 9.7-9.8 0-.7-.1-1.2-.2-1.8H12z"/>
     </svg>
-    <span>Google ile Giriş</span>
+    <span>Google ile Giriş Yap</span>
   </button>
 
   <div class="user-profile" data-auth-user hidden>
-    <span class="user-name-text" data-auth-name></span>
-    <button class="auth-btn auth-btn-logout" data-auth-logout type="button">Çıkış</button>
+    <div class="user-meta">
+      <img class="user-avatar" data-auth-avatar alt="Profil fotoğrafı" hidden />
+      <span class="user-name-text" data-auth-name></span>
+    </div>
+    <button class="auth-btn auth-btn-logout" data-auth-logout type="button">Çıkış Yap</button>
   </div>
 </div>
 
@@ -17,50 +20,84 @@
   import { auth } from "../firebase.js";
 
   const provider = new GoogleAuthProvider();
+  const listeners = new WeakMap();
+
+  const renderAuthState = ({ loginBtn, userInfo, userName, userAvatar }, user) => {
+    if (!loginBtn || !userInfo || !userName || !userAvatar) return;
+
+    if (user) {
+      const firstName = (user.displayName || "Kullanıcı").trim().split(/\s+/)[0] || "Kullanıcı";
+      loginBtn.hidden = true;
+      loginBtn.style.display = "none";
+      userInfo.hidden = false;
+      userInfo.style.display = "flex";
+      userName.textContent = `Merhaba, ${firstName}`;
+
+      if (user.photoURL) {
+        userAvatar.src = user.photoURL;
+        userAvatar.hidden = false;
+      } else {
+        userAvatar.hidden = true;
+        userAvatar.removeAttribute("src");
+      }
+    } else {
+      loginBtn.hidden = false;
+      loginBtn.style.display = "inline-flex";
+      userInfo.hidden = true;
+      userInfo.style.display = "none";
+      userName.textContent = "";
+      userAvatar.hidden = true;
+      userAvatar.removeAttribute("src");
+    }
+  };
 
   const initAuthWidget = (root) => {
-    if (!root || root.dataset.bound === "1") return;
-    root.dataset.bound = "1";
+    if (!root) return;
 
     const loginBtn = root.querySelector("[data-auth-login]");
     const logoutBtn = root.querySelector("[data-auth-logout]");
     const userInfo = root.querySelector("[data-auth-user]");
     const userName = root.querySelector("[data-auth-name]");
+    const userAvatar = root.querySelector("[data-auth-avatar]");
 
-    loginBtn?.addEventListener("click", async () => {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        console.error("Giriş hatası:", error);
-      }
+    if (!loginBtn || !logoutBtn || !userInfo || !userName || !userAvatar) return;
+
+    if (!root.dataset.eventsBound) {
+      root.dataset.eventsBound = "1";
+
+      loginBtn.addEventListener("click", async () => {
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error("Giriş hatası:", error);
+        }
+      });
+
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+        } catch (error) {
+          console.error("Çıkış hatası:", error);
+        }
+      });
+    }
+
+    listeners.get(root)?.();
+
+    const unsub = onAuthStateChanged(auth, (user) => {
+      renderAuthState({ loginBtn, userInfo, userName, userAvatar }, user);
     });
 
-    logoutBtn?.addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-      } catch (error) {
-        console.error("Çıkış hatası:", error);
-      }
-    });
-
-    onAuthStateChanged(auth, (user) => {
-      if (!loginBtn || !userInfo || !userName) return;
-
-      if (user) {
-        const firstName = (user.displayName || "Kullanıcı").trim().split(/\s+/)[0] || "Kullanıcı";
-        loginBtn.hidden = true;
-        userInfo.hidden = false;
-        userInfo.style.display = "flex";
-        userName.textContent = `Merhaba, ${firstName}`;
-      } else {
-        loginBtn.hidden = false;
-        userInfo.hidden = true;
-        userName.textContent = "";
-      }
-    });
+    listeners.set(root, unsub);
+    renderAuthState({ loginBtn, userInfo, userName, userAvatar }, auth.currentUser);
   };
 
-  document.querySelectorAll("[data-auth-widget]").forEach(initAuthWidget);
+  const bootAuthWidgets = () => {
+    document.querySelectorAll("[data-auth-widget]").forEach(initAuthWidget);
+  };
+
+  bootAuthWidgets();
+  document.addEventListener("astro:page-load", bootAuthWidgets);
 </script>
 
 <style>
@@ -71,6 +108,10 @@
     gap: 0.45rem;
     width: 100%;
     min-height: 2.2rem;
+  }
+
+  .auth-widget [hidden] {
+    display: none !important;
   }
 
   .auth-btn {
@@ -118,6 +159,23 @@
     width: 100%;
     min-width: 0;
     max-width: 100%;
+  }
+
+  .user-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+
+  .user-avatar {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
   }
 
   .user-name-text {
