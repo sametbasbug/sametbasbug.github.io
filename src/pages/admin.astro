@@ -1,0 +1,372 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = 'Yorum Moderasyon Paneli';
+const description = 'Sadece yönetici erişimine açık yorum moderasyon ekranı.';
+---
+
+<BaseLayout title={title} description={description} noindex={true}>
+  <section class="admin-shell" data-admin-shell>
+    <header class="admin-header">
+      <p class="admin-kicker">Gizli Alan</p>
+      <h1>Yorum Moderasyon Paneli</h1>
+      <p class="admin-sub">Bekleyen yorumları buradan onaylayabilir veya silebilirsin.</p>
+    </header>
+
+    <div class="status-box" data-auth-status>Oturum kontrol ediliyor...</div>
+
+    <section class="dashboard" data-admin-dashboard hidden>
+      <div class="dashboard-top">
+        <h2>Bekleyen Yorumlar</h2>
+        <span class="pending-badge" data-pending-count>0</span>
+      </div>
+
+      <div class="pending-list" data-pending-list>
+        <p class="muted">Yorumlar yükleniyor...</p>
+      </div>
+    </section>
+  </section>
+
+  <script>
+    const ADMIN_UID = "dmX4uSaCaAfD0OvhiOa4nUp79Mv2";
+
+    import { auth, db } from "../firebase.js";
+    import { onAuthStateChanged } from "firebase/auth";
+    import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
+    
+    const statusBox = document.querySelector('[data-auth-status]');
+    const dashboard = document.querySelector('[data-admin-dashboard]');
+    const pendingList = document.querySelector('[data-pending-list]');
+    const pendingCount = document.querySelector('[data-pending-count]');
+
+    const formatDate = (ts) => {
+      if (!ts || typeof ts.toDate !== 'function') return 'Tarih yok';
+      return ts.toDate().toLocaleString('tr-TR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    };
+
+    const escapeHtml = (value = '') =>
+      value
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+
+    const sortByCreatedAtAsc = (items) => {
+      return [...items].sort((a, b) => {
+        const aSec = a.createdAt?.seconds ?? 0;
+        const bSec = b.createdAt?.seconds ?? 0;
+        return aSec - bSec;
+      });
+    };
+
+    let unsubscribeComments = null;
+
+    const setUnauthorized = () => {
+      if (statusBox) {
+        statusBox.textContent = 'Yetkisiz Erişim! Bu sayfayı görüntüleme izniniz yok.';
+        statusBox.classList.add('error');
+      }
+      if (dashboard) dashboard.hidden = true;
+      if (unsubscribeComments) {
+        unsubscribeComments();
+        unsubscribeComments = null;
+      }
+    };
+
+    const bindModerationActions = () => {
+      pendingList?.querySelectorAll('[data-action]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const action = btn.dataset.action;
+          const id = btn.dataset.id;
+          if (!id) return;
+
+          const prevLabel = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = 'İşleniyor...';
+
+          try {
+            const ref = doc(db, 'comments', id);
+
+            if (action === 'approve') {
+              await updateDoc(ref, { status: 'approved' });
+            }
+
+            if (action === 'reject') {
+              await deleteDoc(ref);
+            }
+          } catch (error) {
+            console.error('Moderasyon işlemi başarısız:', error);
+            btn.textContent = 'Hata';
+            setTimeout(() => {
+              btn.textContent = prevLabel;
+              btn.disabled = false;
+            }, 1200);
+            return;
+          }
+
+          btn.textContent = prevLabel;
+          btn.disabled = false;
+        });
+      });
+    };
+
+    const renderPending = (docs) => {
+      if (!pendingList || !pendingCount) return;
+
+      pendingCount.textContent = String(docs.length);
+
+      if (docs.length === 0) {
+        pendingList.innerHTML = '<p class="muted">Bekleyen yorum bulunmuyor.</p>';
+        return;
+      }
+
+      const sorted = sortByCreatedAtAsc(docs);
+
+      pendingList.innerHTML = sorted
+        .map(({ id, ...data }) => {
+          const author = escapeHtml(data.authorName || 'Kullanıcı');
+          const text = escapeHtml(data.text || '');
+          const postId = escapeHtml(data.postId || '-');
+          const createdAt = formatDate(data.createdAt);
+
+          return `
+            <article class="comment-card">
+              <div class="comment-meta">
+                <strong>${author}</strong>
+                <span>${createdAt}</span>
+              </div>
+
+              <p class="comment-text">${text}</p>
+
+              <div class="comment-foot">
+                <small>Post: ${postId}</small>
+                <div class="comment-actions">
+                  <button class="approve" data-action="approve" data-id="${id}" type="button">Onayla</button>
+                  <button class="reject" data-action="reject" data-id="${id}" type="button">Sil / Reddet</button>
+                </div>
+              </div>
+            </article>
+          `;
+        })
+        .join('');
+
+      bindModerationActions();
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        if (statusBox) {
+          statusBox.textContent = 'Bu paneli görüntülemek için önce giriş yapmalısın.';
+          statusBox.classList.remove('error');
+        }
+        if (dashboard) dashboard.hidden = true;
+        if (unsubscribeComments) {
+          unsubscribeComments();
+          unsubscribeComments = null;
+        }
+        return;
+      }
+
+      if (user.uid !== ADMIN_UID) {
+        setUnauthorized();
+        return;
+      }
+
+      if (statusBox) {
+        statusBox.textContent = `Admin doğrulandı: ${user.displayName || user.email || user.uid}`;
+        statusBox.classList.remove('error');
+      }
+      if (dashboard) dashboard.hidden = false;
+
+      if (unsubscribeComments) unsubscribeComments();
+
+      const q = query(collection(db, 'comments'), where('status', '==', 'pending'));
+      unsubscribeComments = onSnapshot(
+        q,
+        (snapshot) => {
+          const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+          renderPending(items);
+        },
+        (error) => {
+          console.error('Pending yorumlar çekilemedi:', error);
+          if (pendingList) {
+            pendingList.innerHTML = '<p class="muted">Yorumlar alınırken bir hata oluştu.</p>';
+          }
+        }
+      );
+    });
+  </script>
+</BaseLayout>
+
+<style>
+  .admin-shell {
+    max-width: 920px;
+    margin: 2rem auto;
+    padding: 1rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .admin-header {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.1rem;
+    background: color-mix(in srgb, var(--muted) 45%, transparent);
+  }
+
+  .admin-kicker {
+    margin: 0 0 0.3rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--secondary);
+  }
+
+  .admin-header h1 {
+    margin: 0;
+    font-size: clamp(1.2rem, 2.4vw, 1.8rem);
+  }
+
+  .admin-sub {
+    margin: 0.35rem 0 0;
+    color: var(--secondary);
+    font-size: 0.95rem;
+  }
+
+  .status-box {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    background: var(--card-bg);
+    color: var(--text);
+  }
+
+  .status-box.error {
+    border-color: color-mix(in srgb, #ef4444 55%, var(--border));
+    color: #ef4444;
+  }
+
+  .dashboard {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1rem;
+    background: var(--card-bg);
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .dashboard-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .dashboard-top h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  .pending-badge {
+    min-width: 2rem;
+    text-align: center;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--text);
+  }
+
+  .pending-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  :global(.comment-card) {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.85rem;
+    background: color-mix(in srgb, var(--muted) 35%, transparent);
+  }
+
+  :global(.comment-meta) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.55rem;
+    font-size: 0.9rem;
+  }
+
+  :global(.comment-meta span) {
+    color: var(--secondary);
+    font-size: 0.78rem;
+  }
+
+  :global(.comment-text) {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  :global(.comment-foot) {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  :global(.comment-foot small) {
+    color: var(--secondary);
+    font-size: 0.78rem;
+  }
+
+  :global(.comment-actions) {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  :global(.comment-actions button) {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.45rem 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--card-bg);
+    color: var(--text);
+  }
+
+  :global(.comment-actions button.approve) {
+    border-color: color-mix(in srgb, #22c55e 40%, var(--border));
+    background: color-mix(in srgb, #22c55e 18%, transparent);
+  }
+
+  :global(.comment-actions button.reject) {
+    border-color: color-mix(in srgb, #ef4444 45%, var(--border));
+    background: color-mix(in srgb, #ef4444 14%, transparent);
+  }
+
+  :global(.comment-actions button:disabled) {
+    opacity: 0.65;
+    cursor: wait;
+  }
+
+  .muted {
+    margin: 0;
+    color: var(--secondary);
+    font-size: 0.92rem;
+  }
+</style>

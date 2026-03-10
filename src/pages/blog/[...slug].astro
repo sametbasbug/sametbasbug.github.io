@@ -1,6 +1,7 @@
 ---
 import { type CollectionEntry, getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import CommentSection from '../../components/CommentSection.astro';
 import { findAuthorByName } from '../../data/authors';
 
 export async function getStaticPaths() {
@@ -64,6 +65,8 @@ const authorProfile = findAuthorByName(post.data.author);
 		<div class="prose">
 			<Content />
 		</div>
+
+		<CommentSection postId={post.slug} />
 
 		<div class="share-section">
 			<span class="share-label">Yazıyı Paylaş</span>

@@ -433,11 +433,11 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 				border-radius: 1rem; border: 1px solid var(--border);
 				box-shadow: var(--shadow); backdrop-filter: blur(12px);
 				position: sticky; top: 1rem; z-index: 50;
-				display: flex; align-items: center; height: 4.5rem;
+				display: flex; flex-direction: column; align-items: stretch; gap: 0.75rem;
 				transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 			}
 
-			header.scrolled { height: 3.8rem; background: rgba(var(--card-bg-rgb), 0.8); max-width: 850px; margin-top: 0.5rem; }
+			header.scrolled { background: rgba(var(--card-bg-rgb), 0.8); max-width: 850px; margin-top: 0.5rem; }
 			nav { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 1rem; }
 			
 			.logo-area { display: inline-flex; align-items: center; gap: 0.7rem; flex-shrink: 0; }

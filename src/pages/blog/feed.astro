@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Login from '../../components/Login.astro';
 import { findAuthorByName } from '../../data/authors';
 
 const posts = (await getCollection('blog'))
@@ -74,6 +75,10 @@ const firstLetters = (value: string) =>
         <span class="icon" data-theme-icon>🌙</span>
         <span data-theme-label>Koyu Tema</span>
       </button>
+
+      <div class="feed-login-slot">
+        <Login />
+      </div>
     </aside>
 
     <main class="center-feed card" aria-label="Blog akışı">
@@ -98,6 +103,9 @@ const firstLetters = (value: string) =>
               <a href="/hakkimda">Hakkımda</a>
               <a href="/iletisim">İletişim</a>
               <a href="/blog">Klasik Blog</a>
+              <div class="mobile-drawer-login">
+                <Login />
+              </div>
             </div>
           </details>
 
@@ -346,7 +354,7 @@ const firstLetters = (value: string) =>
         }
       });
 
-      drawer.querySelectorAll('a, .drawer-backdrop, .mobile-theme-toggle').forEach((el) => {
+      drawer.querySelectorAll('a, .drawer-backdrop, .mobile-theme-toggle, [data-auth-login], [data-auth-logout]').forEach((el) => {
         el.addEventListener('click', () => drawer.removeAttribute('open'));
       });
     }
@@ -527,6 +535,12 @@ const firstLetters = (value: string) =>
     .rail-theme-toggle:hover {
       color: var(--text);
       border-color: var(--accent);
+    }
+
+    .feed-login-slot {
+      margin-top: 0.65rem;
+      display: flex;
+      justify-content: flex-start;
     }
 
     .center-feed {
@@ -1013,7 +1027,13 @@ const firstLetters = (value: string) =>
       }
 
       .mobile-drawer-panel a:last-of-type {
-        border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+        border-bottom: 0;
+      }
+
+      .mobile-drawer-login {
+        margin-top: 0.2rem;
+        padding-top: 0.55rem;
+        border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
       }
 
       .mobile-search {
