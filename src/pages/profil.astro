@@ -1,0 +1,619 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = 'Profil';
+const description = 'Kullanıcı kontrol paneli: beğeniler ve hesap bilgileri.';
+---
+
+<BaseLayout title={title} description={description} noindex={true}>
+  <section class="profile-shell" data-profile-shell aria-live="polite">
+    <main class="profile-main">
+      <div class="profile-topbar">
+        <strong>Profil Paneli</strong>
+        <span>Kişisel alan</span>
+      </div>
+
+      <header class="hero" data-user-panel hidden>
+        <div class="avatar-wrap">
+          <img class="avatar" data-user-avatar alt="Profil fotoğrafı" hidden />
+          <div class="avatar-fallback" data-user-fallback>👤</div>
+        </div>
+
+        <div class="user-info">
+          <p class="user-handle" data-user-handle hidden>@kullaniciadi</p>
+          <h1 data-user-name>İsimsiz Kullanıcı</h1>
+          <p data-user-email>-</p>
+        </div>
+      </header>
+
+      <section class="panel username-claim" data-username-claim hidden>
+        <h2>Kullanıcı adını ayarla</h2>
+        <p class="muted">3-15 karakter: sadece küçük harf, rakam ve alt çizgi kullanabilirsin.</p>
+        <div class="claim-row">
+          <span>@</span>
+          <input type="text" data-username-input placeholder="kullaniciadi" maxlength="15" autocomplete="off" />
+          <button type="button" data-username-save>Kaydet</button>
+        </div>
+        <p class="claim-msg" data-username-msg></p>
+      </section>
+
+      <section class="auth-guard" data-auth-guard>
+        <p class="guard-text">Bu sayfayı görmek için giriş yapmalısınız.</p>
+        <button class="login-btn" data-login-btn type="button">Google ile Giriş Yap</button>
+      </section>
+
+      <div class="grid" data-dashboard hidden>
+        <section class="panel likes-panel">
+          <div class="panel-head">
+            <h2>Beğendiğim Yazılar</h2>
+            <span class="badge" data-like-count>0</span>
+          </div>
+
+          <div class="likes-list" data-likes-list>
+            <p class="muted">Yükleniyor...</p>
+          </div>
+        </section>
+
+        <section class="panel comments-panel">
+          <div class="panel-head">
+            <h2>Yaptığım Yorumlar</h2>
+          </div>
+          <p class="muted">Çok yakında...</p>
+        </section>
+      </div>
+    </main>
+
+    <aside class="profile-side">
+      <section class="side-card">
+        <h3>Panel Kısayolları</h3>
+        <a href="/blog/feed">← Akışa dön</a>
+        <a href="/blog">Klasik blog</a>
+        <button class="logout-btn" data-logout-btn type="button">Çıkış Yap</button>
+      </section>
+
+      <section class="side-card">
+        <h3>Yakında</h3>
+        <p>Yorum geçmişi, kayıtlar ve kişisel tercih ayarları bu panelde yer alacak.</p>
+      </section>
+    </aside>
+  </section>
+
+  <script>
+    import { auth, db } from '../firebase.js';
+    import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+    import { collection, deleteDoc, doc, getDoc, getDocs, limit, onSnapshot, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+    import { isUsernameBanned } from '../utils/blacklist.js';
+
+    const provider = new GoogleAuthProvider();
+
+    const shell = document.querySelector('[data-profile-shell]');
+    if (!shell) {
+      console.warn('Profile shell bulunamadı, profil init atlandı.');
+    }
+
+    const userPanel = shell?.querySelector('[data-user-panel]');
+    const authGuard = shell?.querySelector('[data-auth-guard]');
+    const dashboard = shell?.querySelector('[data-dashboard]');
+    const userAvatar = shell?.querySelector('[data-user-avatar]');
+    const userFallback = shell?.querySelector('[data-user-fallback]');
+    const userName = shell?.querySelector('[data-user-name]');
+    const userEmail = shell?.querySelector('[data-user-email]');
+    const userHandle = shell?.querySelector('[data-user-handle]');
+    const usernameClaim = shell?.querySelector('[data-username-claim]');
+    const usernameInput = shell?.querySelector('[data-username-input]');
+    const usernameSaveBtn = shell?.querySelector('[data-username-save]');
+    const usernameMsg = shell?.querySelector('[data-username-msg]');
+    const likesList = shell?.querySelector('[data-likes-list]');
+    const likeCount = shell?.querySelector('[data-like-count]');
+    const loginBtn = shell?.querySelector('[data-login-btn]');
+    const logoutBtn = shell?.querySelector('[data-logout-btn]');
+
+    let likesUnsub = null;
+    let authUnsub = null;
+    let currentUser = null;
+    let likedItems = [];
+
+    const USERNAME_REGEX = /^[a-z0-9_]+$/;
+    const USERNAME_MIN = 3;
+    const USERNAME_MAX = 15;
+
+    const cleanupLikesListener = () => {
+      if (likesUnsub) {
+        try { likesUnsub(); } catch {}
+        likesUnsub = null;
+      }
+    };
+
+    const renderLikes = () => {
+      if (!likesList || !likeCount) return;
+
+      likeCount.textContent = String(likedItems.length);
+
+      if (likedItems.length === 0) {
+        likesList.innerHTML = '<p class="muted">Henüz beğendiğin bir yazı yok.</p>';
+        return;
+      }
+
+      likesList.innerHTML = likedItems
+        .map((item) => {
+          const title = item.postTitle || 'Başlıksız yazı';
+          const slug = item.postSlug || '#';
+          return `
+            <article class="like-item" data-like-row="${item.id}">
+              <a href="${slug}" class="post-link">${title}</a>
+              <button class="remove-btn" type="button" data-remove-like="${item.id}">💔 Kaldır</button>
+            </article>
+          `;
+        })
+        .join('');
+
+      likesList.querySelectorAll('[data-remove-like]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-remove-like');
+          if (!id) return;
+
+          btn.disabled = true;
+          btn.textContent = 'Siliniyor...';
+
+          try {
+            await deleteDoc(doc(db, 'likes', id));
+            likedItems = likedItems.filter((x) => x.id !== id);
+            renderLikes();
+          } catch (error) {
+            console.error('Beğeni silinemedi:', error);
+            btn.disabled = false;
+            btn.textContent = '💔 Kaldır';
+          }
+        });
+      });
+    };
+
+    const setUsernameMessage = (text = '', isError = false) => {
+      if (!usernameMsg) return;
+      usernameMsg.textContent = text;
+      usernameMsg.classList.toggle('error', !!isError);
+    };
+
+    const renderUsername = (username) => {
+      if (!userHandle || !usernameClaim) return;
+
+      if (username) {
+        userHandle.hidden = false;
+        userHandle.textContent = `@${username}`;
+        usernameClaim.hidden = true;
+        setUsernameMessage('');
+      } else {
+        userHandle.hidden = true;
+        userHandle.textContent = '';
+        usernameClaim.hidden = false;
+      }
+    };
+
+    const syncUserDoc = async (user) => {
+      if (!user) return;
+      const ref = doc(db, 'users', user.uid);
+      const snap = await getDoc(ref);
+      const username = snap.exists() ? (snap.data()?.username || '') : '';
+      renderUsername(username);
+    };
+
+    const renderUser = (user) => {
+      if (!userPanel || !authGuard || !dashboard || !userName || !userEmail || !userAvatar || !userFallback) return;
+
+      if (!user) {
+        userPanel.hidden = true;
+        dashboard.hidden = true;
+        authGuard.hidden = false;
+
+        userName.textContent = 'İsimsiz Kullanıcı';
+        userEmail.textContent = '-';
+        userAvatar.hidden = true;
+        userAvatar.removeAttribute('src');
+        userFallback.hidden = false;
+        renderUsername('');
+        if (usernameClaim) usernameClaim.hidden = true;
+        if (usernameInput) usernameInput.value = '';
+        setUsernameMessage('');
+
+        likedItems = [];
+        renderLikes();
+        cleanupLikesListener();
+        return;
+      }
+
+      userPanel.hidden = false;
+      dashboard.hidden = false;
+      authGuard.hidden = true;
+      if (usernameClaim) usernameClaim.hidden = true;
+
+      userName.textContent = user.displayName || 'İsimsiz Kullanıcı';
+      userEmail.textContent = user.email || 'E-posta bilgisi yok';
+
+      if (user.photoURL) {
+        userAvatar.src = user.photoURL;
+        userAvatar.hidden = false;
+        userFallback.hidden = true;
+      } else {
+        userAvatar.hidden = true;
+        userAvatar.removeAttribute('src');
+        userFallback.hidden = false;
+      }
+    };
+
+    const startLikesListener = (uid) => {
+      cleanupLikesListener();
+      const q = query(collection(db, 'likes'), where('userId', '==', uid));
+      likesUnsub = onSnapshot(
+        q,
+        (snap) => {
+          likedItems = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          likedItems.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+          renderLikes();
+        },
+        (error) => {
+          console.error('Beğeniler okunamadı:', error);
+          if (likesList) {
+            likesList.innerHTML = '<p class="muted">Beğeniler yüklenemedi.</p>';
+          }
+        }
+      );
+    };
+
+    const bootProfile = async () => {
+      if (!shell) return;
+
+      if (loginBtn && !loginBtn.dataset.bound) {
+        loginBtn.dataset.bound = '1';
+        loginBtn.addEventListener('click', async () => {
+          try {
+            await signInWithPopup(auth, provider);
+          } catch (error) {
+            console.error('Giriş hatası:', error);
+          }
+        });
+      }
+
+      if (logoutBtn && !logoutBtn.dataset.bound) {
+        logoutBtn.dataset.bound = '1';
+        logoutBtn.addEventListener('click', async () => {
+          try {
+            await signOut(auth);
+          } catch (error) {
+            console.error('Çıkış hatası:', error);
+          }
+        });
+      }
+
+      if (usernameSaveBtn && !usernameSaveBtn.dataset.bound) {
+        usernameSaveBtn.dataset.bound = '1';
+
+        const saveUsername = async () => {
+          if (!currentUser || !usernameInput) return;
+
+          const raw = usernameInput.value.trim();
+          const candidate = raw.toLowerCase();
+
+          if (!candidate) {
+            setUsernameMessage('Kullanıcı adı boş olamaz.', true);
+            return;
+          }
+
+          if (candidate.length < USERNAME_MIN || candidate.length > USERNAME_MAX) {
+            setUsernameMessage(`Kullanıcı adı ${USERNAME_MIN}-${USERNAME_MAX} karakter arasında olmalıdır.`, true);
+            return;
+          }
+
+          if (!USERNAME_REGEX.test(candidate)) {
+            setUsernameMessage('Sadece küçük harf, rakam ve alt çizgi kullanabilirsiniz.', true);
+            return;
+          }
+
+          if (isUsernameBanned(candidate)) {
+            setUsernameMessage('Bu kullanıcı adı rezerve edilmiştir ve alınamaz.', true);
+            return;
+          }
+
+          usernameSaveBtn.disabled = true;
+          setUsernameMessage('Kontrol ediliyor...');
+
+          try {
+            const existsQ = query(collection(db, 'users'), where('username', '==', candidate), limit(1));
+            const existsSnap = await getDocs(existsQ);
+            const takenByAnother = existsSnap.docs.some((d) => d.id !== currentUser.uid);
+
+            if (takenByAnother) {
+              setUsernameMessage('Bu kullanıcı adı zaten kullanılıyor.', true);
+              return;
+            }
+
+            await setDoc(
+              doc(db, 'users', currentUser.uid),
+              {
+                username: candidate,
+                email: currentUser.email || null,
+                displayName: currentUser.displayName || null,
+                updatedAt: serverTimestamp(),
+              },
+              { merge: true }
+            );
+
+            renderUsername(candidate);
+            setUsernameMessage('Kullanıcı adı kaydedildi.');
+          } catch (error) {
+            console.error('Kullanıcı adı kaydedilemedi:', error);
+            setUsernameMessage('Bir hata oluştu, tekrar deneyin.', true);
+          } finally {
+            usernameSaveBtn.disabled = false;
+          }
+        };
+
+        usernameSaveBtn.addEventListener('click', saveUsername);
+        usernameInput?.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            saveUsername();
+          }
+        });
+
+        usernameInput?.addEventListener('input', () => {
+          usernameInput.value = usernameInput.value
+            .toLowerCase()
+            .replace(/[^a-z0-9_]/g, '');
+          if (usernameMsg?.textContent) setUsernameMessage('');
+        });
+      }
+
+      if (authUnsub) {
+        try { authUnsub(); } catch {}
+        authUnsub = null;
+      }
+
+      // İlk paint'te mevcut oturumu hızlıca yansıt
+      renderUser(auth.currentUser);
+      if (auth.currentUser?.uid) {
+        startLikesListener(auth.currentUser.uid);
+        syncUserDoc(auth.currentUser).catch((error) => {
+          console.error('Kullanıcı profili okunamadı:', error);
+        });
+      }
+
+      if (typeof auth.authStateReady === 'function') {
+        try { await auth.authStateReady(); } catch {}
+      }
+
+      authUnsub = onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        renderUser(user);
+
+        if (!user) return;
+        startLikesListener(user.uid);
+        syncUserDoc(user).catch((error) => {
+          console.error('Kullanıcı profili okunamadı:', error);
+        });
+      });
+    };
+
+    const cleanupProfile = () => {
+      cleanupLikesListener();
+      if (authUnsub) {
+        try { authUnsub(); } catch {}
+        authUnsub = null;
+      }
+      currentUser = null;
+    };
+
+    bootProfile();
+    document.addEventListener('astro:page-load', bootProfile);
+    document.addEventListener('astro:before-swap', cleanupProfile);
+  </script>
+</BaseLayout>
+
+<style>
+  :global(#main-header) { display: none; }
+
+  .profile-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 1rem;
+    margin-top: 0.35rem;
+    align-items: start;
+  }
+
+  .profile-main,
+  .profile-side {
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--muted) 28%, transparent);
+  }
+
+  .profile-main { padding: 0.9rem; }
+  .profile-side {
+    position: sticky;
+    top: 1rem;
+    padding: 0.9rem;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .profile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.3rem 0.2rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.85rem;
+  }
+
+  .profile-topbar strong { font-size: 0.98rem; }
+  .profile-topbar span { color: var(--secondary); font-size: 0.82rem; }
+
+  .panel,
+  .hero,
+  .auth-guard {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card-bg);
+    padding: 0.9rem;
+  }
+
+  .hero { display: flex; align-items: center; gap: 0.9rem; }
+
+  .avatar-wrap {
+    width: 64px; height: 64px; border-radius: 999px; overflow: hidden;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--muted) 55%, transparent);
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+
+  .avatar { width: 100%; height: 100%; object-fit: cover; }
+  .avatar-fallback { font-size: 1.35rem; }
+
+  .user-handle {
+    margin: 0 0 0.25rem;
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .user-info h1 { margin: 0; font-size: clamp(1.08rem, 1.6vw, 1.35rem); }
+  .user-info p { margin: 0.25rem 0 0; color: var(--secondary); font-size: 0.9rem; }
+
+  .username-claim { margin-top: 0.8rem; display: grid; gap: 0.55rem; }
+  .username-claim h2 { margin: 0; font-size: 0.95rem; }
+
+  .claim-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .claim-row span { color: var(--secondary); font-weight: 700; }
+
+  .claim-row input {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 0.45rem 0.6rem;
+    font: inherit;
+  }
+
+  .claim-row button {
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+    background: color-mix(in srgb, var(--accent) 15%, var(--card-bg));
+    color: var(--text);
+    border-radius: 999px;
+    padding: 0.45rem 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .claim-row button:disabled { opacity: 0.7; cursor: wait; }
+
+  .claim-msg { margin: 0; font-size: 0.82rem; color: #10b981; }
+  .claim-msg.error { color: #ef4444; }
+
+  .auth-guard { display: grid; gap: 0.75rem; justify-items: start; margin-top: 0.8rem; }
+  [hidden] { display: none !important; }
+  .guard-text { margin: 0; color: var(--secondary); }
+
+  .login-btn {
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+    background: var(--card-bg);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 0.5rem 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1.35fr 0.65fr;
+    gap: 0.85rem;
+    margin-top: 0.8rem;
+  }
+
+  .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; }
+  .panel-head h2 { margin: 0; font-size: 0.98rem; }
+
+  .badge {
+    min-width: 2rem; text-align: center; border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    padding: 0.2rem 0.55rem; font-weight: 700; font-size: 0.8rem;
+  }
+
+  .likes-list { display: grid; gap: 0.58rem; }
+
+  :global(.like-item) {
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 0.65rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+    background: color-mix(in srgb, var(--muted) 32%, transparent);
+  }
+
+  :global(.post-link) { color: var(--text); text-decoration: none; font-weight: 600; }
+  :global(.post-link:hover) { text-decoration: underline; }
+
+  :global(.remove-btn) {
+    border: 1px solid color-mix(in srgb, #ef4444 45%, var(--border));
+    background: color-mix(in srgb, #ef4444 14%, transparent);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 0.35rem 0.7rem;
+    cursor: pointer;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  :global(.remove-btn:disabled) { opacity: 0.7; cursor: wait; }
+
+  .side-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.75rem;
+    background: var(--card-bg);
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .side-card h3 { margin: 0 0 0.15rem; font-size: 0.9rem; }
+  .side-card p { margin: 0; color: var(--secondary); font-size: 0.84rem; line-height: 1.5; }
+  .side-card a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.86rem;
+    padding: 0.2rem 0;
+  }
+  .side-card a:hover { text-decoration: underline; }
+  .logout-btn {
+    margin-top: 0.45rem;
+    border: 1px solid color-mix(in srgb, #ef4444 45%, var(--border));
+    background: color-mix(in srgb, #ef4444 14%, transparent);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 0.4rem 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: fit-content;
+  }
+
+  .muted { margin: 0; color: var(--secondary); font-size: 0.9rem; }
+
+  @media (max-width: 980px) {
+    .profile-shell { grid-template-columns: 1fr; }
+    .profile-side { position: static; }
+  }
+
+  @media (max-width: 760px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>

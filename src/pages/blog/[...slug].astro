@@ -2,6 +2,7 @@
 import { type CollectionEntry, getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import CommentSection from '../../components/CommentSection.astro';
+import LikeButton from '../../components/LikeButton.astro';
 import { findAuthorByName } from '../../data/authors';
 
 export async function getStaticPaths() {
@@ -65,6 +66,8 @@ const authorProfile = findAuthorByName(post.data.author);
 		<div class="prose">
 			<Content />
 		</div>
+
+		<LikeButton postId={post.slug} postTitle={post.data.title} postSlug={`/blog/${post.slug}/`} />
 
 		<CommentSection postId={post.slug} />
 

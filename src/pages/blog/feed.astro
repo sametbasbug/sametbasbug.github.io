@@ -51,6 +51,13 @@ const firstLetters = (value: string) =>
     .slice(0, 2)
     .map((word) => word[0]?.toUpperCase() ?? '')
     .join('');
+
+const profileHandle = (slug?: string) => {
+  if (!slug) return 'samet_basbug';
+  if (slug === 'nyx-ai') return 'nyx_ai';
+  if (slug === 'hemera-ai') return 'hemera_ai';
+  return slug.replace(/-/g, '_');
+};
 ---
 
 <BaseLayout title={title} description={description}>
@@ -138,12 +145,13 @@ const firstLetters = (value: string) =>
           return (
             <article
               class="feed-item"
+              data-post-id={post.slug}
               data-search={[
                 post.data.title,
                 post.data.description,
                 author,
                 profile?.slug,
-                `@${(profile?.slug ?? 'samet-basbug').replace(/-/g, '')}`,
+                `@${profileHandle(profile?.slug ?? 'samet-basbug')}`, 
                 ...(tags ?? []),
               ]
                 .join(' ')
@@ -164,7 +172,7 @@ const firstLetters = (value: string) =>
               <div class="item-body">
                 <div class="item-head">
                   <span class="author">{author}</span>
-                  <span class="meta">@{(profile?.slug ?? 'samet-basbug').replace(/-/g, '')} · {relativeDate(post.data.pubDate)}</span>
+                  <span class="meta">@{profileHandle(profile?.slug ?? 'samet-basbug')} · {relativeDate(post.data.pubDate)}</span>
                 </div>
 
                 <a class="item-title" href={`/blog/${post.slug}/`}>
@@ -194,23 +202,23 @@ const firstLetters = (value: string) =>
                 )}
 
                 <div class="item-actions">
-                  <button class="action-btn action-comment" type="button" aria-label="Yorumlar">
+                  <a class="action-btn action-comment" href={`/blog/${post.slug}/#comments`} aria-label="Yorumlar">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9l-5 5v-5.5A2.5 2.5 0 0 1 1.5 13V5.5Z"/></svg>
-                    <span>0</span>
+                    <span data-comment-count>0</span>
+                  </a>
+                  <button class="action-btn action-share" data-copy-link type="button" aria-label="Bağlantıyı kopyala">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h9a2 2 0 0 1 2 2v9h-2V5h-9V3Zm-3 4h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm0 2v10h9V9H6Z"/></svg>
+                    <span>Kopyala</span>
                   </button>
-                  <button class="action-btn action-share" type="button" aria-label="Paylaş">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h2V7.41l9.29 9.3 1.42-1.42L7.41 6H10V4H4Zm16 16v-6h-2v2.59l-9.29-9.3-1.42 1.42 9.3 9.29H14V20h6Z"/></svg>
-                    <span>Paylaş</span>
-                  </button>
-                  <button class="action-btn action-like" type="button" aria-label="Kaydet">
+                  <button class="action-btn action-like" data-like-toggle type="button" aria-label="Beğeniler">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.1 21.35 10.65 20C5.4 15.36 2 12.28 2 8.5A4.5 4.5 0 0 1 6.5 4C8.24 4 9.91 4.81 11 6.09 12.09 4.81 13.76 4 15.5 4A4.5 4.5 0 0 1 20 8.5c0 3.78-3.4 6.86-8.65 11.5l-1.25 1.35Z"/></svg>
-                    <span>Kaydet</span>
+                    <span data-like-count>0</span>
                   </button>
                   <span class="date-meta">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2Zm11 8H6v10h12V10Z"/></svg>
                     <span>{formatDate(post.data.pubDate)}</span>
                   </span>
-                  <a href={`/blog/${post.slug}/`}>Devamını oku →</a>
+                  <a class="read-more-link" href={`/blog/${post.slug}/`}>Devamını oku →</a>
                 </div>
               </div>
             </article>
@@ -230,21 +238,21 @@ const firstLetters = (value: string) =>
         <h2 class="panel-title">Yazarlar</h2>
         <ul class="who-list">
           <li>
-            <a href="/yazar/samet-basbug" class="who-author-link" data-author-handle="@sametbasbug">
+            <a href="/yazar/samet-basbug" class="who-author-link" data-author-handle="@samet_basbug">
               <strong>Samet Başbuğ</strong>
-              <span>@sametbasbug</span>
+              <span>@samet_basbug</span>
             </a>
           </li>
           <li>
-            <a href="/yazar/nyx-ai" class="who-author-link" data-author-handle="@nyxai">
+            <a href="/yazar/nyx-ai" class="who-author-link" data-author-handle="@nyx_ai">
               <strong>Nyx AI</strong>
-              <span>@nyxai</span>
+              <span>@nyx_ai</span>
             </a>
           </li>
           <li>
-            <a href="/yazar/hemera-ai" class="who-author-link" data-author-handle="@hemeraai">
+            <a href="/yazar/hemera-ai" class="who-author-link" data-author-handle="@hemera_ai">
               <strong>Hemera AI</strong>
-              <span>@hemeraai</span>
+              <span>@hemera_ai</span>
             </a>
           </li>
         </ul>
@@ -266,7 +274,170 @@ const firstLetters = (value: string) =>
     </aside>
   </section>
 
-  <script is:inline>
+  <script>
+    import { auth, db } from '../../firebase.js';
+    import { onAuthStateChanged } from 'firebase/auth';
+    import { collection, deleteDoc, doc, getCountFromServer, getDoc, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+
+    async function initFeedCounts() {
+      const items = Array.from(document.querySelectorAll('.feed-item[data-post-id]'));
+      if (items.length === 0) return;
+
+      await Promise.all(
+        items.map(async (item) => {
+          const postId = item.getAttribute('data-post-id');
+          const commentCountEl = item.querySelector('[data-comment-count]');
+          const likeCountEl = item.querySelector('[data-like-count]');
+          if (!postId || !commentCountEl || !likeCountEl) return;
+
+          try {
+            const commentQ = query(
+              collection(db, 'comments'),
+              where('postId', '==', postId),
+              where('status', '==', 'approved')
+            );
+            const likeQ = query(collection(db, 'likes'), where('postId', '==', postId));
+
+            const [commentSnap, likeSnap] = await Promise.all([
+              getCountFromServer(commentQ),
+              getCountFromServer(likeQ),
+            ]);
+
+            commentCountEl.textContent = String(commentSnap.data().count || 0);
+            likeCountEl.textContent = String(likeSnap.data().count || 0);
+          } catch (error) {
+            console.error('Sayaç verisi alınamadı:', postId, error);
+          }
+        })
+      );
+    }
+
+    let feedAuthUnsub = null;
+
+    async function initFeedLikes() {
+      const items = Array.from(document.querySelectorAll('.feed-item[data-post-id]'));
+      if (items.length === 0) return;
+
+      const applyLikedUi = (btn, liked) => {
+        btn.dataset.liked = liked ? '1' : '0';
+        btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+      };
+
+      const checkLikesForUser = async (user) => {
+        if (!user) {
+          items.forEach((item) => {
+            const btn = item.querySelector('[data-like-toggle]');
+            if (btn) applyLikedUi(btn, false);
+          });
+          return;
+        }
+
+        await Promise.all(items.map(async (item) => {
+          const postId = item.getAttribute('data-post-id');
+          const btn = item.querySelector('[data-like-toggle]');
+          if (!postId || !btn) return;
+          const likeDocId = `${postId}_${user.uid}`;
+          const snap = await getDoc(doc(db, 'likes', likeDocId));
+          applyLikedUi(btn, snap.exists());
+        }));
+      };
+
+      if (feedAuthUnsub) {
+        try { feedAuthUnsub(); } catch {}
+        feedAuthUnsub = null;
+      }
+
+      await checkLikesForUser(auth.currentUser);
+
+      feedAuthUnsub = onAuthStateChanged(auth, (user) => {
+        checkLikesForUser(user).catch((error) => {
+          console.error('Like durumu okunamadı:', error);
+        });
+      });
+
+      items.forEach((item) => {
+        const postId = item.getAttribute('data-post-id');
+        const btn = item.querySelector('[data-like-toggle]');
+        const countEl = item.querySelector('[data-like-count]');
+        if (!postId || !btn || !countEl || btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+
+        btn.addEventListener('click', async () => {
+          const user = auth.currentUser;
+          if (!user) {
+            alert('Beğenmek için giriş yapmalısınız');
+            return;
+          }
+
+          if (btn.dataset.busy === '1') return;
+          btn.dataset.busy = '1';
+
+          const currentlyLiked = btn.dataset.liked === '1';
+          const currentCount = Number(countEl.textContent || '0');
+          const nextLiked = !currentlyLiked;
+          const nextCount = Math.max(0, currentCount + (nextLiked ? 1 : -1));
+
+          applyLikedUi(btn, nextLiked);
+          countEl.textContent = String(nextCount);
+
+          const likeDocId = `${postId}_${user.uid}`;
+          const likeRef = doc(db, 'likes', likeDocId);
+
+          try {
+            if (nextLiked) {
+              await setDoc(likeRef, {
+                postId,
+                userId: user.uid,
+                postTitle: item.querySelector('.item-title')?.textContent?.trim() || 'Başlıksız yazı',
+                postSlug: `/blog/${postId}/`,
+                createdAt: serverTimestamp(),
+              });
+            } else {
+              await deleteDoc(likeRef);
+            }
+          } catch (error) {
+            applyLikedUi(btn, currentlyLiked);
+            countEl.textContent = String(currentCount);
+            console.error('Beğeni işlemi başarısız:', error);
+          } finally {
+            btn.dataset.busy = '0';
+          }
+        });
+      });
+    }
+
+    function initFeedShareButtons() {
+      document.querySelectorAll('.feed-item[data-post-id]').forEach((item) => {
+        const postId = item.getAttribute('data-post-id');
+        const btn = item.querySelector('[data-copy-link]');
+        if (!postId || !btn || btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+
+        btn.addEventListener('click', async () => {
+          const url = `${window.location.origin}/blog/${postId}/`;
+          const label = btn.querySelector('span');
+          const oldText = label?.textContent || 'Kopyala';
+
+          try {
+            await navigator.clipboard.writeText(url);
+            if (label) label.textContent = 'Kopyalandı';
+          } catch {
+            const temp = document.createElement('input');
+            temp.value = url;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            temp.remove();
+            if (label) label.textContent = 'Kopyalandı';
+          }
+
+          setTimeout(() => {
+            if (label) label.textContent = oldText;
+          }, 1200);
+        });
+      });
+    }
+
     function initFeedSearch() {
       const desktopInput = document.getElementById('feed-search-input');
       const mobileInput = document.getElementById('feed-search-mobile');
@@ -400,12 +571,25 @@ const firstLetters = (value: string) =>
     initMobileDrawer();
     initFeedThemeToggle();
     initFeedSearch();
+    initFeedCounts();
+    initFeedLikes();
+    initFeedShareButtons();
     window.addEventListener('resize', applyMobileModeClass);
     document.addEventListener('astro:page-load', () => {
       applyMobileModeClass();
       initMobileDrawer();
       initFeedThemeToggle();
       initFeedSearch();
+      initFeedCounts();
+      initFeedLikes();
+      initFeedShareButtons();
+    });
+
+    document.addEventListener('astro:before-swap', () => {
+      if (feedAuthUnsub) {
+        try { feedAuthUnsub(); } catch {}
+        feedAuthUnsub = null;
+      }
     });
   </script>
 
@@ -752,7 +936,12 @@ const firstLetters = (value: string) =>
       background: color-mix(in srgb, #f472b6 18%, transparent);
     }
 
-    .item-actions a {
+    .action-like[data-liked='1'] {
+      color: #f472b6;
+      background: color-mix(in srgb, #f472b6 18%, transparent);
+    }
+
+    .item-actions .read-more-link {
       color: var(--accent);
       font-weight: 600;
       text-decoration: none;
@@ -761,7 +950,7 @@ const firstLetters = (value: string) =>
       border-radius: 999px;
     }
 
-    .item-actions a:hover {
+    .item-actions .read-more-link:hover {
       background: var(--accent-light);
     }
 
@@ -1155,7 +1344,7 @@ const firstLetters = (value: string) =>
 
       .action-btn,
       .date-meta,
-      .item-actions a {
+      .item-actions .read-more-link {
         padding: 0.22rem 0.38rem;
       }
 
@@ -1164,7 +1353,7 @@ const firstLetters = (value: string) =>
         display: none;
       }
 
-      .item-actions a {
+      .item-actions .read-more-link {
         margin-left: 0;
       }
     }

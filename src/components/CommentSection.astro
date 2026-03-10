@@ -3,7 +3,7 @@ const { postId } = Astro.props;
 const inputId = `comment-input-${postId}`;
 ---
 
-<section class="comments-wrapper" data-comment-widget data-post-id={postId}>
+<section id="comments" class="comments-wrapper" data-comment-widget data-post-id={postId}>
   <h3>Yorumlar</h3>
 
   <div class="comments-list" data-comments-list></div>
@@ -17,6 +17,11 @@ const inputId = `comment-input-${postId}`;
     <p class="success-message" data-success-message style="display: none;">
       ✓ Yorumunuz başarıyla gönderildi! Yönetici onayından sonra sayfada görünecektir.
     </p>
+
+    <p class="username-warning" data-username-warning style="display: none;">
+      Yorum yapabilmek için önce bir kullanıcı adı belirlemelisiniz.
+      <a href="/profil">Profilden ayarla</a>
+    </p>
   </div>
 
   <p class="login-prompt" data-login-prompt>Yorum yapabilmek için lütfen giriş yapın.</p>
@@ -25,7 +30,7 @@ const inputId = `comment-input-${postId}`;
 <script>
   import { auth, db } from "../firebase.js";
   import { onAuthStateChanged } from "firebase/auth";
-  import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "firebase/firestore";
+  import { collection, addDoc, doc, getDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "firebase/firestore";
 
   const MIN_LENGTH = 5;
   const MAX_LENGTH = 300;
@@ -54,6 +59,7 @@ const inputId = `comment-input-${postId}`;
     const charCounter = wrapper.querySelector('[data-char-counter]');
     const submitBtn = wrapper.querySelector('[data-comment-submit]');
     const successMsg = wrapper.querySelector('[data-success-message]');
+    const usernameWarning = wrapper.querySelector('[data-username-warning]');
 
     if (!postId || !commentInput || !submitBtn || !charCounter) return;
 
@@ -133,6 +139,7 @@ const inputId = `comment-input-${postId}`;
         formContainer.style.display = "none";
         loginPrompt.style.display = "block";
       }
+      if (usernameWarning) usernameWarning.style.display = "none";
       updateSubmitState();
     });
 
@@ -164,7 +171,7 @@ const inputId = `comment-input-${postId}`;
 
         const name = document.createElement('strong');
         name.className = 'comment-author';
-        name.textContent = data.authorName || 'Kullanıcı';
+        name.textContent = data.authorUsername || '@kullanici';
 
         const time = document.createElement('span');
         time.className = 'comment-time';
@@ -188,7 +195,10 @@ const inputId = `comment-input-${postId}`;
 
     unsubscribers.add(unsubscribeSnapshot);
 
-    commentInput.addEventListener('input', updateSubmitState);
+    commentInput.addEventListener('input', () => {
+      if (usernameWarning) usernameWarning.style.display = 'none';
+      updateSubmitState();
+    });
 
     submitBtn.addEventListener("click", async () => {
       const text = commentInput.value.trim();
@@ -199,11 +209,23 @@ const inputId = `comment-input-${postId}`;
         submitBtn.textContent = "Gönderiliyor...";
         submitBtn.disabled = true;
         successMsg.style.display = "none";
+        if (usernameWarning) usernameWarning.style.display = "none";
+
+        const userRef = doc(db, 'users', currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        const fetchedUsername = (userSnap.exists() ? userSnap.data()?.username : '') || '';
+
+        if (!fetchedUsername) {
+          if (usernameWarning) usernameWarning.style.display = 'block';
+          updateSubmitState();
+          return;
+        }
 
         await addDoc(collection(db, "comments"), {
           postId,
           text,
           authorName: currentUser.displayName || 'Kullanıcı',
+          authorUsername: `@${fetchedUsername}`,
           authorId: currentUser.uid,
           status: 'pending',
           createdAt: serverTimestamp()
@@ -265,4 +287,16 @@ const inputId = `comment-input-${postId}`;
   
   /* Yeni eklenen bildirim mesajı stili */
   .success-message { color: #10b981; font-size: 0.9rem; margin-top: 0.5rem; font-weight: 500; text-align: right; }
+  .username-warning {
+    margin: 0.2rem 0 0;
+    color: #f59e0b;
+    font-size: 0.86rem;
+    text-align: right;
+  }
+  .username-warning a {
+    color: var(--text);
+    font-weight: 700;
+    text-decoration: underline;
+    margin-left: 0.25rem;
+  }
 </style>

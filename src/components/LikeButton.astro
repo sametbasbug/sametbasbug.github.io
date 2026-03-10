@@ -1,0 +1,224 @@
+---
+const { postId, postTitle, postSlug } = Astro.props;
+---
+
+<div
+  class="like-widget"
+  data-like-widget
+  data-post-id={postId}
+  data-post-title={postTitle}
+  data-post-slug={postSlug}
+  aria-live="polite"
+>
+  <button class="like-btn" data-like-btn type="button" aria-label="Bu yazıyı beğen">
+    <span class="heart" data-like-heart>♡</span>
+    <span class="label" data-like-label>Beğen</span>
+    <span class="count" data-like-count>0</span>
+  </button>
+  <p class="hint" data-like-hint></p>
+</div>
+
+<script>
+  import { auth, db } from '../firebase.js';
+  import { onAuthStateChanged } from 'firebase/auth';
+  import {
+    collection,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    query,
+    serverTimestamp,
+    setDoc,
+    where,
+  } from 'firebase/firestore';
+
+  const widgetUnsubs = new WeakMap();
+
+  const setLikedUi = ({ btn, heart, label }, liked) => {
+    btn?.setAttribute('data-liked', liked ? '1' : '0');
+    if (heart) heart.textContent = liked ? '♥' : '♡';
+    if (label) label.textContent = liked ? 'Beğenildi' : 'Beğen';
+    if (btn) btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+  };
+
+  const initLikeWidget = (root) => {
+    if (!root || root.dataset.bound === '1') return;
+    root.dataset.bound = '1';
+
+    const postId = root.dataset.postId;
+    const postTitle = root.dataset.postTitle || '';
+    const postSlug = root.dataset.postSlug || '';
+
+    const btn = root.querySelector('[data-like-btn]');
+    const heart = root.querySelector('[data-like-heart]');
+    const label = root.querySelector('[data-like-label]');
+    const countEl = root.querySelector('[data-like-count]');
+    const hintEl = root.querySelector('[data-like-hint]');
+
+    if (!postId || !btn || !heart || !label || !countEl || !hintEl) return;
+
+    let currentUser = null;
+    let liked = false;
+    let userLikeUnsub = null;
+    let busy = false;
+
+    const likesQuery = query(collection(db, 'likes'), where('postId', '==', postId));
+    const countUnsub = onSnapshot(
+      likesQuery,
+      (snap) => {
+        countEl.textContent = String(snap.size);
+      },
+      (error) => {
+        console.error('Like count okunamadı:', error);
+      }
+    );
+
+    const authUnsub = onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      hintEl.textContent = '';
+
+      userLikeUnsub?.();
+      userLikeUnsub = null;
+
+      if (!currentUser) {
+        liked = false;
+        setLikedUi({ btn, heart, label }, false);
+        return;
+      }
+
+      const likeDocId = `${postId}_${currentUser.uid}`;
+      userLikeUnsub = onSnapshot(
+        doc(db, 'likes', likeDocId),
+        (snap) => {
+          liked = snap.exists();
+          setLikedUi({ btn, heart, label }, liked);
+        },
+        (error) => {
+          console.error('Kullanıcı like durumu okunamadı:', error);
+        }
+      );
+    });
+
+    btn.addEventListener('click', async () => {
+      if (busy) return;
+
+      if (!currentUser) {
+        hintEl.textContent = 'Beğenmek için giriş yapmalısınız.';
+        return;
+      }
+
+      busy = true;
+      btn.disabled = true;
+      hintEl.textContent = '';
+
+      const likeDocId = `${postId}_${currentUser.uid}`;
+      const likeRef = doc(db, 'likes', likeDocId);
+
+      try {
+        if (liked) {
+          await deleteDoc(likeRef);
+        } else {
+          await setDoc(likeRef, {
+            postId,
+            userId: currentUser.uid,
+            postTitle,
+            postSlug,
+            createdAt: serverTimestamp(),
+          });
+        }
+      } catch (error) {
+        console.error('Like işlemi başarısız:', error);
+      } finally {
+        busy = false;
+        btn.disabled = false;
+      }
+    });
+
+    widgetUnsubs.set(root, () => {
+      try { countUnsub?.(); } catch {}
+      try { authUnsub?.(); } catch {}
+      try { userLikeUnsub?.(); } catch {}
+    });
+  };
+
+  const bootLikeWidgets = () => {
+    document.querySelectorAll('[data-like-widget]').forEach(initLikeWidget);
+  };
+
+  const cleanupLikeWidgets = () => {
+    document.querySelectorAll('[data-like-widget]').forEach((root) => {
+      const unsub = widgetUnsubs.get(root);
+      try { unsub?.(); } catch {}
+      widgetUnsubs.delete(root);
+      root.dataset.bound = '0';
+    });
+  };
+
+  bootLikeWidgets();
+  document.addEventListener('astro:page-load', bootLikeWidgets);
+  document.addEventListener('astro:before-swap', cleanupLikeWidgets);
+</script>
+
+<style>
+  .like-widget {
+    margin-top: 1rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .like-btn {
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 0.48rem 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .like-btn:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  }
+
+  .like-btn[data-liked='1'] {
+    border-color: color-mix(in srgb, #ef4444 45%, var(--border));
+    background: color-mix(in srgb, #ef4444 14%, var(--card-bg));
+  }
+
+  .like-btn:disabled {
+    opacity: 0.75;
+    cursor: wait;
+  }
+
+  .heart {
+    font-size: 0.95rem;
+    line-height: 1;
+    color: #ef4444;
+  }
+
+  .label {
+    font-size: 0.86rem;
+  }
+
+  .count {
+    min-width: 1.5rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--secondary);
+    border-left: 1px solid var(--border);
+    padding-left: 0.45rem;
+  }
+
+  .hint {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--secondary);
+  }
+</style>

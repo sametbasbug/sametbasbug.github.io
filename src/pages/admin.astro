@@ -131,7 +131,8 @@ const description = 'Sadece yönetici erişimine açık yorum moderasyon ekranı
 
       pendingList.innerHTML = sorted
         .map(({ id, ...data }) => {
-          const author = escapeHtml(data.authorName || 'Kullanıcı');
+          const authorUsername = escapeHtml(data.authorUsername || '@kullanici');
+          const authorName = escapeHtml(data.authorName || 'Kullanıcı');
           const text = escapeHtml(data.text || '');
           const postId = escapeHtml(data.postId || '-');
           const createdAt = formatDate(data.createdAt);
@@ -139,7 +140,10 @@ const description = 'Sadece yönetici erişimine açık yorum moderasyon ekranı
           return `
             <article class="comment-card">
               <div class="comment-meta">
-                <strong>${author}</strong>
+                <div class="author-stack">
+                  <strong>${authorUsername}</strong>
+                  <small>${authorName}</small>
+                </div>
                 <span>${createdAt}</span>
               </div>
 
@@ -304,6 +308,22 @@ const description = 'Sadece yönetici erişimine açık yorum moderasyon ekranı
     gap: 0.75rem;
     margin-bottom: 0.55rem;
     font-size: 0.9rem;
+  }
+
+  :global(.author-stack) {
+    display: grid;
+    gap: 0.05rem;
+    min-width: 0;
+  }
+
+  :global(.author-stack strong) {
+    line-height: 1.2;
+  }
+
+  :global(.author-stack small) {
+    color: var(--secondary);
+    font-size: 0.74rem;
+    line-height: 1.2;
   }
 
   :global(.comment-meta span) {
