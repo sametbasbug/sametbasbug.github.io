@@ -19,6 +19,12 @@ Bu projede 3 kategori için günlük özet üretiyoruz:
 İçerikler burada tutulur:
 - `src/content/gunlukOzet/YYYY-MM-DD-kategori.md`
 
+**Önemli ayrım:**
+- `BRIEFING_REHBERI.md` = teknik ve operasyonel akış
+- `NYX_BRIEFING_PLAYBOOK.md` = editoryal kalite standardı
+
+Yani komutları ve sırayı bu rehber belirler; yazım kalitesini ve briefing standardını playbook belirler.
+
 ---
 
 ## 2) En önemli komutlar (kısa liste)
@@ -81,14 +87,28 @@ Bu komut şunları hazırlar:
 - [18:40] ABD enflasyon verisi açıklandı | Beklenti altı gelince risk iştahı arttı | https://ornek.com/haber
 ```
 
+### Ham veri toplarken dikkat
+- Aynı kaynaktan gereğinden fazla başlık yığma.
+- Mümkün olduğunca farklı kaynaklardan veri topla.
+- Aynı olayın farklı başlıklarla tekrar eden versiyonlarını erken aşamada ayıkla.
+- Zayıf veya sadece dolgu işlevi görecek haberleri sırf 10 maddeyi tamamlamak için taşıma.
+
 ## Adım 3) İlk taslağı üret
 ```bash
 npm run briefing:v1:draft -- --date YYYY-MM-DD
 ```
 
+**Not:** Bu adımın çıktısı yayınlık final metin değildir. Bu yalnızca ilk iskelettir.
+
 ## Adım 4) Nyx editör rötuşu
-- `nyx-prompt.md` dosyasını Nyx’e ver
-- Nyx summaryItems ve sources alanlarını kaliteye getirir
+- `nyx-prompt.md` dosyasını Nyx'e ver.
+- Nyx, `summaryItems` ve `sources` alanlarını `NYX_BRIEFING_PLAYBOOK.md` talimatlarına göre editoryal olarak güçlendirir.
+- Bu aşamada özellikle şunlar kontrol edilir:
+  - 09.03.2026 standardına yakın briefing tonu
+  - kaynak çeşitliliği ve denge
+  - maddelerin olay + önem + etki katmanı taşıması
+  - tekrar ve şişirme temizliği
+  - `Site Adı - Haber adı` formatında kaynak yazımı
 
 ## Adım 5) Kalite kontrol
 ```bash
@@ -125,6 +145,8 @@ npm run briefing:v1:run -- --date YYYY-MM-DD
 Bu komut hepsini sırasıyla dener.
 
 Not: Validate fail olursa süreç durur.
+
+**Ama dikkat:** Tek komut zinciri teknik akışı hızlandırır; editoryal kaliteyi garanti eden asıl belge yine `NYX_BRIEFING_PLAYBOOK.md` dosyasıdır.
 
 ---
 
@@ -173,6 +195,12 @@ PR açılırsa gövdesinde şunlar otomatik görünür:
 Çözüm:
 - `https://example.com` gibi tam URL kullan
 
+### Hata: kalite zayıf ama validate geçti
+Çözüm:
+1. Teknik hata yok diye içeriği yayınlık kabul etme
+2. `NYX_BRIEFING_PLAYBOOK.md` kurallarına göre tekrar rötuş yap
+3. Özellikle kaynak dengesi, briefing tonu ve tekrar kontrolünü yeniden gözden geçir
+
 ### Hata: build fail
 Çözüm:
 1. Önce `validate` çalıştır
@@ -190,6 +218,10 @@ PR açılırsa gövdesinde şunlar otomatik görünür:
 - "Hepsini birden çalıştır" → `briefing:v1:run`
 - "CI mantığında çalıştır" → `briefing:v1:run:ci`
 
+**Ek not:**
+- Teknik sırayı bu rehberden takip et
+- Editoryal kalite çıtasını `NYX_BRIEFING_PLAYBOOK.md` belirler
+
 ---
 
 ## 8) Önerilen pratik
@@ -205,8 +237,16 @@ En güvenli günlük akış:
 
 Bu sırayı takip edersen sürpriz hata ihtimali çok düşer.
 
+**Kısa özet:**
+- Draft = iskelet
+- Nyx rötuş = kalite
+- Validate = teknik temizlik
+- Build = yayın öncesi son kapı
+
 ---
 
 ## 9) Not
 
 Bu rehberi güncel tut. Yeni komut/özellik eklendikçe bu dosyaya 1-2 satır eklemek yeterli.
+
+Eğer editoryal kalite kuralı değişirse, önce `NYX_BRIEFING_PLAYBOOK.md` güncellenmelidir; bu rehber ise o akışın nasıl uygulanacağını anlatır.

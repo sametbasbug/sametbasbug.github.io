@@ -108,8 +108,8 @@ for (const category of CATEGORIES) {
   const items = getSummaryItems(content).filter(Boolean);
   const urls = getSourceUrls(content);
 
-  if (items.length < 3) errors.push(`summaryItems düşük (${items.length})`);
-  if (items.length > 5) warns.push(`summaryItems yüksek (${items.length})`);
+  if (items.length < 10) errors.push(`summaryItems sayısı düşük (${items.length}) · min: 10`);
+  if (items.length > 10) warns.push(`summaryItems sayısı yüksek (${items.length}) · öneri max: 10`);
   if (items.filter((x) => x.length < 20).length > 0) warns.push('Kısa madde(ler) var (<20 karakter)');
   if (urls.length < 1) errors.push('Kaynak URL yok');
   if (urls.some((u) => !isValidHttpUrl(u))) errors.push('Geçersiz kaynak URL var');
