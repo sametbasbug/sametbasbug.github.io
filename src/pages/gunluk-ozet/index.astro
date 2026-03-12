@@ -1,9 +1,11 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import AppShell from '../../components/AppShell.astro';
+import Login from '../../components/Login.astro';
 import { getCollection } from 'astro:content';
 
-const title = 'Günlük Özetler';
-const description = 'Kategori bazlı günlük haber özetleri.';
+const title = 'Bülten Arşivi';
+const description = 'Kategori bazlı bülten arşivine buradan ulaşabilirsin.';
 
 const summaries = (await getCollection('gunlukOzet'))
   .filter((item) => !item.data.isDraft)
@@ -22,27 +24,68 @@ const categories = [
     lastDate: items[0]?.data.date,
   };
 });
+
+const navItems = [
+  { href: '/', label: 'Ana Sayfa' },
+  { href: '/bulten', label: 'Bülten', active: true },
+  { href: '/etiketler', label: 'Etiketler' },
+  { href: '/yazarlar', label: 'Yazarlar' },
+  { href: '/hakkimda', label: 'Hakkımda' },
+  { href: '/iletisim', label: 'İletişim' },
+];
 ---
 
-<BaseLayout title={title} description={description}>
-  <section>
-    <h1>Günlük Özetler</h1>
-    <p class="sub">Kategori seçerek tarih tarih özetleri inceleyebilirsin.</p>
-    <div class="links">
+<BaseLayout shellLayout={true} title={title} description={description}>
+  <AppShell pageTitle="Bülten Arşivi" topbarTitle="Bülten Arşivi" topbarMeta={`${summaries.length} kayıt`} navItems={navItems} showLoginSlot={true}>
+    <Fragment slot="left-login"><Login /></Fragment>
+    <Fragment slot="mobile-login"><Login /></Fragment>
+    <section class="archive-intro">
+      <h2>Kategoriler arasında dolaş</h2>
+      <p>Her kategori kendi zaman çizgisine sahip. Buradan ekonomi, siyaset ve teknoloji özetlerinin tarih bazlı arşivine geçebilirsin.</p>
+    </section>
+    <div class="archive-links">
       {categories.map((item) => (
-        <a href={item.href}>
+        <a href={item.href} class="archive-card">
           <strong>{item.name}</strong>
           <span>{item.count} kayıt · Son: {item.lastDate ? item.lastDate.toLocaleDateString('tr-TR') : '—'}</span>
         </a>
       ))}
     </div>
-  </section>
+
+    <Fragment slot="right-rail">
+      <div class="search-box archive-side">
+        <p>Arşiv Özeti</p>
+        <strong class="archive-side-title">3 kategori</strong>
+        <span>Bültenler kategori bazlı tarih sırasıyla arşivleniyor.</span>
+      </div>
+      <section class="who-box">
+        <h2 class="panel-title">Hızlı Geçiş</h2>
+        <ul class="who-list">
+          {categories.map((item) => (
+            <li><a href={item.href}><strong>{item.name}</strong><span>{item.count} kayıt</span></a></li>
+          ))}
+        </ul>
+      </section>
+    </Fragment>
+  </AppShell>
 
   <style>
-    h1 { margin-bottom: .75rem; }
-    .sub { color: var(--secondary); margin-bottom: 1rem; }
-    .links { display:grid; gap:.75rem; }
-    .links a { display:grid; gap:.25rem; padding:1rem; border:1px solid var(--border); border-radius:.8rem; background:var(--card-bg); }
-    .links span { color: var(--secondary); font-size: .92rem; }
+    :global(#main-header) { display: none; }
+    .archive-intro { padding:1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+    .archive-intro h2 { margin:0 0 .5rem; font-size:clamp(1.4rem, 3vw, 1.9rem); }
+    .archive-intro p { color:var(--secondary); max-width:60ch; }
+    .archive-links { display:grid; gap:.85rem; padding:1rem; }
+    .archive-card { display:grid; gap:.25rem; padding:1rem; border:1px solid var(--border); border-radius:1rem; background:color-mix(in srgb, var(--card-bg) 82%, transparent); text-decoration:none; }
+    .archive-card strong { color:var(--text); font-size:1rem; }
+    .archive-card span { color:var(--secondary); font-size:.9rem; }
+    .archive-side { display:grid; gap:.25rem; padding:0 0 1rem; margin-bottom:1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+    .archive-side-title { color:var(--text); font-size:1rem; }
+    .archive-side span { color:var(--secondary); font-size:.88rem; line-height:1.55; }
+    .panel-title { font-size:1rem; color:var(--text); margin-bottom:.8rem; font-weight:800; }
+    .who-box { margin-bottom:1rem; }
+    .who-list { list-style:none; display:flex; flex-direction:column; gap:.45rem; padding:0; margin:0; }
+    .who-list a { display:flex; flex-direction:column; gap:.1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 60%, transparent); padding:.55rem 0; text-decoration:none; }
+    .who-list strong { color:var(--text); font-size:.9rem; }
+    .who-list span { color:var(--secondary); font-size:.82rem; line-height:1.5; }
   </style>
 </BaseLayout>

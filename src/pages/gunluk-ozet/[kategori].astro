@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import AppShell from '../../components/AppShell.astro';
+import Login from '../../components/Login.astro';
 import { getCollection } from 'astro:content';
 
 const categoryLabels = {
@@ -12,54 +14,59 @@ type CategoryKey = keyof typeof categoryLabels;
 
 export async function getStaticPaths() {
   const categories = ['ekonomi', 'siyaset', 'teknoloji'];
-  return categories.map((kategori) => ({
-    params: { kategori },
-  }));
+  return categories.map((kategori) => ({ params: { kategori } }));
 }
 
 const { kategori } = Astro.params as { kategori: CategoryKey };
-
 const entries = (await getCollection('gunlukOzet'))
   .filter((item) => !item.data.isDraft && item.data.category === kategori)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
 const categoryName = categoryLabels[kategori];
-const title = `Günlük Özet | ${categoryName}`;
-const description = `${categoryName} gündeminin tarih bazlı günlük özet arşivi.`;
+const title = `Bülten | ${categoryName}`;
+const description = `${categoryName} gündeminin tarih bazlı bülten arşivi.`;
+const navItems = [
+  { href: '/', label: 'Ana Sayfa' },
+  { href: '/bulten', label: 'Bülten', active: true },
+  { href: '/etiketler', label: 'Etiketler' },
+  { href: '/yazarlar', label: 'Yazarlar' },
+  { href: '/hakkimda', label: 'Hakkımda' },
+  { href: '/iletisim', label: 'İletişim' },
+];
 
 const searchIndex = entries.map((entry, index) => ({
   index,
   date: entry.data.date.toLocaleDateString('tr-TR'),
   summaryItems: entry.data.summaryItems,
-  sources: (entry.data.sources ?? []).map((s) => ({
-    name: s.name,
-    url: s.url,
-  })),
+  sources: (entry.data.sources ?? []).map((s) => ({ name: s.name, url: s.url })),
 }));
 ---
 
-<BaseLayout title={title} description={description}>
-  <section>
-    <h1>{categoryName} Özeti</h1>
-    <p class="sub">Her akşam güncellenen {categoryName.toLowerCase('tr-TR')} özeti arşivi.</p>
+<BaseLayout shellLayout={true} title={title} description={description}>
+  <AppShell pageTitle={categoryName} topbarTitle={`${categoryName} Bülteni`} topbarMeta={`${entries.length} kayıt`} navItems={navItems} showLoginSlot={true}>
+    <Fragment slot="left-login"><Login /></Fragment>
+    <Fragment slot="mobile-login"><Login /></Fragment>
+    <section class="bulletin-hero">
+      <h2>{categoryName} Özeti</h2>
+      <p>Her akşam güncellenen {categoryName.toLocaleLowerCase('tr-TR')} bülteni arşivi.</p>
+    </section>
 
     {entries.length === 0 ? (
-      <div class="empty">Henüz bu kategori için yayınlanmış bir özet yok.</div>
+      <div class="empty">Henüz bu kategori için yayınlanmış bir bülten yok.</div>
     ) : (
       <>
-        <div class="search-box">
-          <label for="summary-search" class="search-label">Özetlerde akıllı ara</label>
+        <div class="search-box main-search-box">
+          <label for="summary-search" class="search-label">Bültenlerde akıllı ara</label>
           <div class="search-input-wrap">
             <span class="search-icon" aria-hidden="true">🔎</span>
             <input id="summary-search" type="search" placeholder="Örn: enflasyon, yapay zeka, meclis..." autocomplete="off" />
           </div>
           <p id="search-status" class="search-status">Toplam {entries.length} bülten kaydı.</p>
         </div>
-
         <div class="list" id="summary-list">
           {entries.map((entry, index) => (
             <article class="entry" data-entry-index={index}>
-              <h2>{entry.data.date.toLocaleDateString('tr-TR')}</h2>
+              <h3>{entry.data.date.toLocaleDateString('tr-TR')}</h3>
               <p class="source-match-note" style="display:none;">Bu bülten kaynak eşleşmesiyle bulundu.</p>
               <ul>
                 {entry.data.summaryItems.map((item) => <li class="summary-item">{item}</li>)}
@@ -77,267 +84,95 @@ const searchIndex = entries.map((entry, index) => ({
             </article>
           ))}
         </div>
-
-        <div id="no-results" class="empty" style="display:none; margin-top:1rem;">Bu arama için özet bulunamadı.</div>
+        <div id="no-results" class="empty" style="display:none; margin:1rem;">Bu arama için bülten bulunamadı.</div>
       </>
     )}
-  </section>
+
+    <Fragment slot="right-rail">
+      <div class="search-box bulletin-side">
+        <p>Kategori Özeti</p>
+        <strong class="bulletin-side-title">{categoryName}</strong>
+        <span>Bu kategoriye ait tüm tarihli bülten girişleri burada listelenir.</span>
+      </div>
+      <section class="who-box">
+        <h2 class="panel-title">Hızlı Geçiş</h2>
+        <ul class="who-list">
+          <li><a href="/gunluk-ozet/ekonomi"><strong>Ekonomi</strong><span>Makro gündem ve piyasalar</span></a></li>
+          <li><a href="/gunluk-ozet/siyaset"><strong>Siyaset</strong><span>Türkiye ve dünya siyaseti</span></a></li>
+          <li><a href="/gunluk-ozet/teknoloji"><strong>Teknoloji</strong><span>Yapay zeka ve ürün güncellemeleri</span></a></li>
+        </ul>
+      </section>
+    </Fragment>
+  </AppShell>
 
   <script is:inline define:vars={{ searchIndex, totalEntries: entries.length }}>
     const TR_CHAR_MAP = { 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'İ': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u' };
-
-    function normalizeText(value = '') {
-      return String(value)
-        .toLocaleLowerCase('tr-TR')
-        .replace(/[çğıİöşü]/g, (ch) => TR_CHAR_MAP[ch] || ch)
-        .replace(/\s+/g, ' ')
-        .trim();
-    }
-
-    function tokenize(value = '') {
-      return normalizeText(value)
-        .split(/[^\p{L}\p{N}]+/u)
-        .filter(Boolean);
-    }
-
-    function tokenizeRaw(value = '') {
-      return String(value)
-        .toLocaleLowerCase('tr-TR')
-        .split(/[^\p{L}\p{N}]+/u)
-        .filter(Boolean);
-    }
-
-    function tokenMatch(tokens, queryToken) {
-      if (tokens.includes(queryToken)) return true;
-      if (queryToken.length >= 3) return tokens.some((t) => t.startsWith(queryToken));
-      return false;
-    }
-
-    const indexed = searchIndex.map((entry) => ({
-      index: entry.index,
-      date: normalizeText(entry.date),
-      items: (entry.summaryItems || []).map((text) => ({
-        original: text,
-        normalized: normalizeText(text),
-        tokens: tokenize(text),
-      })),
-      sources: (entry.sources || []).map((s) => ({
-        name: s.name,
-        url: s.url,
-        normalized: normalizeText(`${s.name} ${s.url}`),
-        tokens: tokenize(`${s.name} ${s.url}`),
-      })),
-    }));
-
-    function scoreItem(item, queryTokens) {
-      let score = 0;
-      for (const qt of queryTokens) {
-        const tokenHit = tokenMatch(item.tokens, qt);
-        const textHit = item.normalized.includes(qt);
-
-        if (!(tokenHit || textHit)) return -1;
-        if (tokenHit) score += 3;
-        if (textHit) score += 1;
-      }
-      return score;
-    }
-
+    function normalizeText(value = '') { return String(value).toLocaleLowerCase('tr-TR').replace(/[çğıİöşü]/g, (ch) => TR_CHAR_MAP[ch] || ch).replace(/\s+/g, ' ').trim(); }
+    function tokenize(value = '') { return normalizeText(value).split(/[^\p{L}\p{N}]+/u).filter(Boolean); }
+    function tokenizeRaw(value = '') { return String(value).toLocaleLowerCase('tr-TR').split(/[^\p{L}\p{N}]+/u).filter(Boolean); }
+    function tokenMatch(tokens, queryToken) { if (tokens.includes(queryToken)) return true; if (queryToken.length >= 3) return tokens.some((t) => t.startsWith(queryToken)); return false; }
+    const indexed = searchIndex.map((entry) => ({ index: entry.index, date: normalizeText(entry.date), items: (entry.summaryItems || []).map((text) => ({ original: text, normalized: normalizeText(text), tokens: tokenize(text) })), sources: (entry.sources || []).map((s) => ({ name: s.name, url: s.url, normalized: normalizeText(`${s.name} ${s.url}`), tokens: tokenize(`${s.name} ${s.url}`) })) }));
+    function scoreItem(item, queryTokens) { let score = 0; for (const qt of queryTokens) { const tokenHit = tokenMatch(item.tokens, qt); const textHit = item.normalized.includes(qt); if (!(tokenHit || textHit)) return -1; if (tokenHit) score += 3; if (textHit) score += 1; } return score; }
     function initSummarySearch() {
-      const input = document.getElementById('summary-search');
-      const status = document.getElementById('search-status');
-      const noResults = document.getElementById('no-results');
-      const cards = Array.from(document.querySelectorAll('[data-entry-index]'));
-      const summaryItems = Array.from(document.querySelectorAll('.summary-item'));
-      const sourceLinks = Array.from(document.querySelectorAll('.source-link'));
-      if (!input || !status || !noResults || cards.length === 0) return;
-      if (input.dataset.bound === '1') return;
-      input.dataset.bound = '1';
-
-      summaryItems.forEach((el) => {
-        if (!el.dataset.original) el.dataset.original = el.textContent || '';
-      });
-      sourceLinks.forEach((el) => {
-        if (!el.dataset.original) el.dataset.original = el.textContent || '';
-      });
-
+      const input = document.getElementById('summary-search'); const status = document.getElementById('search-status'); const noResults = document.getElementById('no-results'); const cards = Array.from(document.querySelectorAll('[data-entry-index]')); const summaryItems = Array.from(document.querySelectorAll('.summary-item')); const sourceLinks = Array.from(document.querySelectorAll('.source-link')); if (!input || !status || !noResults || cards.length === 0) return; if (input.dataset.bound === '1') return; input.dataset.bound = '1';
+      summaryItems.forEach((el) => { if (!el.dataset.original) el.dataset.original = el.textContent || ''; }); sourceLinks.forEach((el) => { if (!el.dataset.original) el.dataset.original = el.textContent || ''; });
       const entryMap = new Map(indexed.map((entry) => [entry.index, entry]));
-
-      function escapeRegex(value) {
-        return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      }
-
-      function trCharPattern(ch) {
-        const c = ch.toLocaleLowerCase('tr-TR');
-        const map = {
-          i: '[iİıI]',
-          ı: '[ıIiİ]',
-          c: '[cçCÇ]',
-          ç: '[çcÇC]',
-          g: '[gğGĞ]',
-          ğ: '[ğgĞG]',
-          o: '[oöOÖ]',
-          ö: '[öoÖO]',
-          s: '[sşSŞ]',
-          ş: '[şsŞS]',
-          u: '[uüUÜ]',
-          ü: '[üuÜU]',
-        };
-        return map[c] || escapeRegex(ch);
-      }
-
-      function tokenToTrRegex(token) {
-        return Array.from(token).map(trCharPattern).join('');
-      }
-
-      function applyHighlight(el, highlightTokens) {
-        if (!el) return;
-        const original = el.dataset.original || '';
-        if (!highlightTokens.length) {
-          el.textContent = original;
-          return;
-        }
-
-        const pattern = highlightTokens
-          .filter((t) => t.length >= 2)
-          .map(tokenToTrRegex)
-          .join('|');
-
-        if (!pattern) {
-          el.textContent = original;
-          return;
-        }
-
-        const re = new RegExp(`(${pattern})`, 'giu');
-        el.innerHTML = original.replace(re, '<mark>$1</mark>');
-      }
-
+      function escapeRegex(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+      function trCharPattern(ch) { const c = ch.toLocaleLowerCase('tr-TR'); const map = { i: '[iİıI]', ı: '[ıIiİ]', c: '[cçCÇ]', ç: '[çcÇC]', g: '[gğGĞ]', ğ: '[ğgĞG]', o: '[oöOÖ]', ö: '[öoÖO]', s: '[sşSŞ]', ş: '[şsŞS]', u: '[uüUÜ]', ü: '[üuÜU]' }; return map[c] || escapeRegex(ch); }
+      function tokenToTrRegex(token) { return Array.from(token).map(trCharPattern).join(''); }
+      function applyHighlight(el, highlightTokens) { if (!el) return; const original = el.dataset.original || ''; if (!highlightTokens.length) { el.textContent = original; return; } const pattern = highlightTokens.filter((t) => t.length >= 2).map(tokenToTrRegex).join('|'); if (!pattern) { el.textContent = original; return; } const re = new RegExp(`(${pattern})`, 'giu'); el.innerHTML = original.replace(re, '<mark>$1</mark>'); }
       function runSearch() {
-        const query = input.value || '';
-        const normalized = normalizeText(query);
-
-        if (!normalized) {
-          cards.forEach((card) => {
-            card.style.display = 'block';
-            const sourceNote = card.querySelector('.source-match-note');
-            if (sourceNote) sourceNote.style.display = 'none';
-            const cardItems = card.querySelectorAll('.summary-item');
-            cardItems.forEach((el) => {
-              el.style.display = 'list-item';
-              applyHighlight(el, []);
-            });
-            const cardSourceLinks = card.querySelectorAll('.source-link');
-            cardSourceLinks.forEach((el) => applyHighlight(el, []));
-          });
-          noResults.style.display = 'none';
-          status.textContent = `Toplam ${totalEntries} bülten kaydı.`;
-          return;
-        }
-
-        if (normalized.length < 2) {
-          cards.forEach((card) => (card.style.display = 'none'));
-          summaryItems.forEach((el) => {
-            el.style.display = 'list-item';
-            applyHighlight(el, []);
-          });
-          sourceLinks.forEach((el) => applyHighlight(el, []));
-          noResults.style.display = 'block';
-          status.textContent = 'En az 2 karakter girerek arama yapabilirsin.';
-          return;
-        }
-
-        const qTokens = tokenize(normalized);
-        const highlightTokens = tokenizeRaw(query);
-        let matchedBulletins = 0;
-        let matchedItemsTotal = 0;
-
+        const query = input.value || ''; const normalized = normalizeText(query);
+        if (!normalized) { cards.forEach((card) => { card.style.display = 'block'; const sourceNote = card.querySelector('.source-match-note'); if (sourceNote) sourceNote.style.display = 'none'; card.querySelectorAll('.summary-item').forEach((el) => { el.style.display = 'list-item'; applyHighlight(el, []); }); card.querySelectorAll('.source-link').forEach((el) => applyHighlight(el, [])); }); noResults.style.display = 'none'; status.textContent = `Toplam ${totalEntries} bülten kaydı.`; return; }
+        if (normalized.length < 2) { cards.forEach((card) => (card.style.display = 'none')); summaryItems.forEach((el) => { el.style.display = 'list-item'; applyHighlight(el, []); }); sourceLinks.forEach((el) => applyHighlight(el, [])); noResults.style.display = 'block'; status.textContent = 'En az 2 karakter girerek arama yapabilirsin.'; return; }
+        const qTokens = tokenize(normalized); const highlightTokens = tokenizeRaw(query); let matchedBulletins = 0; let matchedItemsTotal = 0;
         cards.forEach((card) => {
-          const idxText = card.getAttribute('data-entry-index');
-          const idx = Number(idxText);
-          const entry = entryMap.get(idx);
-          if (!entry) {
-            card.style.display = 'none';
-            return;
-          }
-
-          const cardItems = Array.from(card.querySelectorAll('.summary-item'));
-          const cardSourceLinks = Array.from(card.querySelectorAll('.source-link'));
-          const sourceNote = card.querySelector('.source-match-note');
-
-          const itemScores = entry.items.map((item) => scoreItem(item, qTokens));
-          const sourceScores = entry.sources.map((source) => scoreItem(source, qTokens));
-          const sourceMatched = sourceScores.some((s) => s >= 0);
-
-          let itemMatchedCount = 0;
-          cardItems.forEach((el, itemIdx) => {
-            const matched = (itemScores[itemIdx] ?? -1) >= 0;
-            // Eğer en az bir madde eşleştiyse sadece eşleşen maddeleri göster.
-            // Sadece kaynak eşleştiyse (madde yoksa) tüm maddeleri görünür bırak.
-            el.style.display = matched ? 'list-item' : 'none';
-            applyHighlight(el, matched ? highlightTokens : []);
-            if (matched) itemMatchedCount += 1;
-          });
-
-          if (itemMatchedCount === 0 && sourceMatched) {
-            cardItems.forEach((el) => {
-              el.style.display = 'list-item';
-              applyHighlight(el, []);
-            });
-          }
-
-          cardSourceLinks.forEach((el, sourceIdx) => {
-            const matched = (sourceScores[sourceIdx] ?? -1) >= 0;
-            applyHighlight(el, matched ? highlightTokens : []);
-          });
-
-          const hasMatch = itemMatchedCount > 0 || sourceMatched;
-          card.style.display = hasMatch ? 'block' : 'none';
-
-          if (sourceNote) {
-            sourceNote.style.display = sourceMatched && itemMatchedCount === 0 ? 'inline-block' : 'none';
-          }
-
-          if (hasMatch) {
-            matchedBulletins += 1;
-            matchedItemsTotal += itemMatchedCount;
-          }
+          const idx = Number(card.getAttribute('data-entry-index')); const entry = entryMap.get(idx); if (!entry) { card.style.display = 'none'; return; }
+          const cardItems = Array.from(card.querySelectorAll('.summary-item')); const cardSourceLinks = Array.from(card.querySelectorAll('.source-link')); const sourceNote = card.querySelector('.source-match-note');
+          const itemScores = entry.items.map((item) => scoreItem(item, qTokens)); const sourceScores = entry.sources.map((source) => scoreItem(source, qTokens)); const sourceMatched = sourceScores.some((s) => s >= 0);
+          let itemMatchedCount = 0; cardItems.forEach((el, itemIdx) => { const matched = (itemScores[itemIdx] ?? -1) >= 0; el.style.display = matched ? 'list-item' : 'none'; applyHighlight(el, matched ? highlightTokens : []); if (matched) itemMatchedCount += 1; });
+          if (itemMatchedCount === 0 && sourceMatched) { cardItems.forEach((el) => { el.style.display = 'list-item'; applyHighlight(el, []); }); }
+          cardSourceLinks.forEach((el, sourceIdx) => { const matched = (sourceScores[sourceIdx] ?? -1) >= 0; applyHighlight(el, matched ? highlightTokens : []); });
+          const hasMatch = itemMatchedCount > 0 || sourceMatched; card.style.display = hasMatch ? 'block' : 'none'; if (sourceNote) sourceNote.style.display = sourceMatched && itemMatchedCount === 0 ? 'inline-block' : 'none';
+          if (hasMatch) { matchedBulletins += 1; matchedItemsTotal += itemMatchedCount; }
         });
-
-        noResults.style.display = matchedBulletins === 0 ? 'block' : 'none';
-        status.textContent = `"${query}" için ${matchedItemsTotal} madde / ${matchedBulletins} bülten bulundu. (ESC ile temizle)`;
+        noResults.style.display = matchedBulletins === 0 ? 'block' : 'none'; status.textContent = `"${query}" için ${matchedItemsTotal} madde / ${matchedBulletins} bülten bulundu. (ESC ile temizle)`;
       }
-
-      input.addEventListener('input', runSearch);
-      input.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-          input.value = '';
-          runSearch();
-        }
-      });
+      input.addEventListener('input', runSearch); input.addEventListener('keydown', (event) => { if (event.key === 'Escape') { input.value = ''; runSearch(); } });
     }
-
-    initSummarySearch();
-    document.addEventListener('astro:page-load', initSummarySearch);
+    initSummarySearch(); document.addEventListener('astro:page-load', initSummarySearch);
   </script>
 
   <style>
-    .sub { color: var(--secondary); margin-bottom: 1rem; }
-    .search-box { margin-bottom: 1.2rem; padding: 1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; box-shadow: var(--shadow); }
-    .search-label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
-    .search-input-wrap { position: relative; }
-    .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); opacity: 0.7; pointer-events: none; }
-    #summary-search { width: 100%; padding: 0.75rem 0.9rem 0.75rem 2.2rem; border-radius: 0.75rem; border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; }
-    #summary-search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-    .search-status { margin-top: 0.6rem; color: var(--secondary); font-size: 0.92rem; }
-
-    .list { display:grid; gap:1rem; }
-    .entry { background:var(--card-bg); border:1px solid var(--border); border-radius:1rem; padding:1rem; }
-    .entry h2 { font-size:1rem; letter-spacing:.05em; color: var(--accent); margin-bottom:.5rem; }
-    .source-match-note { display:inline-block; margin-bottom:.6rem; font-size:.82rem; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border)); border-radius: 999px; padding: .2rem .6rem; }
-    ul { padding-left: 1.1rem; color: var(--secondary); display:grid; gap:.35rem; margin-bottom: .75rem; }
-    .sources { color: var(--secondary); font-size: .92rem; display: grid; gap: .25rem; }
+    :global(#main-header) { display: none; }
+    .bulletin-hero { padding:1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+    .bulletin-hero h2 { margin:0 0 .5rem; font-size:clamp(1.5rem, 3vw, 2.1rem); }
+    .bulletin-hero p { color:var(--secondary); }
+    .main-search-box { margin:1rem; padding:1rem; background:color-mix(in srgb, var(--card-bg) 84%, transparent); border:1px solid var(--border); border-radius:1rem; }
+    .search-label { display:block; font-weight:600; margin-bottom:.5rem; }
+    .search-input-wrap { position:relative; }
+    .search-icon { position:absolute; left:.75rem; top:50%; transform:translateY(-50%); opacity:.7; pointer-events:none; }
+    #summary-search { width:100%; padding:.75rem .9rem .75rem 2.2rem; border-radius:.75rem; border:1px solid var(--border); background:var(--bg); color:var(--text); font:inherit; }
+    #summary-search:focus { outline:2px solid var(--accent); outline-offset:1px; }
+    .search-status { margin-top:.6rem; color:var(--secondary); font-size:.92rem; }
+    .list { display:grid; gap:1rem; padding:0 1rem 1rem; }
+    .entry { background:color-mix(in srgb, var(--card-bg) 84%, transparent); border:1px solid var(--border); border-radius:1rem; padding:1rem; }
+    .entry h3 { font-size:1rem; letter-spacing:.05em; color:var(--accent); margin-bottom:.5rem; }
+    .source-match-note { display:inline-block; margin-bottom:.6rem; font-size:.82rem; color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); border:1px solid color-mix(in srgb, var(--accent) 30%, var(--border)); border-radius:999px; padding:.2rem .6rem; }
+    ul { padding-left:1.1rem; color:var(--secondary); display:grid; gap:.35rem; margin-bottom:.75rem; }
+    .sources { color:var(--secondary); font-size:.92rem; display:grid; gap:.25rem; }
     .sources div { display:flex; flex-wrap:wrap; gap:.6rem; }
-    .sources a { text-decoration: underline; }
-    .empty { padding:1rem; border:1px dashed var(--border); border-radius:.8rem; color: var(--secondary); background: var(--card-bg); }
-    mark { background: #facc15; color: #111827; padding: 0 0.15rem; border-radius: 0.2rem; }
+    .sources a { text-decoration:underline; }
+    .empty { margin:1rem; padding:1rem; border:1px dashed var(--border); border-radius:.8rem; color:var(--secondary); background:color-mix(in srgb, var(--card-bg) 84%, transparent); }
+    mark { background:#facc15; color:#111827; padding:0 .15rem; border-radius:.2rem; }
+    .bulletin-side { display:grid; gap:.25rem; padding:0 0 1rem; margin-bottom:1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+    .bulletin-side-title { color:var(--text); font-size:1rem; }
+    .bulletin-side span { color:var(--secondary); font-size:.88rem; line-height:1.55; }
+    .panel-title { font-size:1rem; color:var(--text); margin-bottom:.8rem; font-weight:800; }
+    .who-box { margin-bottom:1rem; }
+    .who-list { list-style:none; display:flex; flex-direction:column; gap:.45rem; padding:0; margin:0; }
+    .who-list a { display:flex; flex-direction:column; gap:.1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 60%, transparent); padding:.55rem 0; text-decoration:none; }
+    .who-list strong { color:var(--text); font-size:.9rem; }
+    .who-list span { color:var(--secondary); font-size:.82rem; line-height:1.5; }
   </style>
 </BaseLayout>

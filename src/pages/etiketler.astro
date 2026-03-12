@@ -1,66 +1,154 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import AppShell from '../components/AppShell.astro';
+import Login from '../components/Login.astro';
 
 const posts = (await getCollection('blog'))
-	.filter(post => !post.data.isDraft);
+  .filter((post) => !post.data.isDraft);
 
 const tagCountMap = new Map<string, number>();
-
 for (const post of posts) {
-	for (const tag of post.data.tags ?? []) {
-		const normalized = tag.toLowerCase();
-		tagCountMap.set(normalized, (tagCountMap.get(normalized) ?? 0) + 1);
-	}
+  for (const tag of post.data.tags ?? []) {
+    const normalized = tag.toLowerCase();
+    tagCountMap.set(normalized, (tagCountMap.get(normalized) ?? 0) + 1);
+  }
 }
 
 const tags = Array.from(tagCountMap.entries())
-	.map(([tag, count]) => ({ tag, count }))
-	.sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, 'tr'));
+  .map(([tag, count]) => ({ tag, count }))
+  .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, 'tr'));
 
 const title = 'Tüm Etiketler';
-const description = 'Blogdaki tüm konu etiketlerini ve yazı sayılarını keşfedin.';
+const description = 'Sitedeki tüm konu etiketlerini ve içerik yoğunluklarını keşfedin.';
+const navItems = [
+  { href: '/', label: 'Ana Sayfa' },
+  { href: '/bulten', label: 'Bülten' },
+  { href: '/etiketler', label: 'Etiketler', active: true },
+  { href: '/yazarlar', label: 'Yazarlar' },
+  { href: '/hakkimda', label: 'Hakkımda' },
+  { href: '/iletisim', label: 'İletişim' },
+];
 ---
 
-<BaseLayout title={title} description={description}>
-	<section class="tags-page">
-		<div class="tags-head">
-			<h1>{title}</h1>
-			<a href="/" class="back-link">← Ana sayfa</a>
-		</div>
+<BaseLayout shellLayout={true} title={title} description={description}>
+  <AppShell pageTitle="Etiketler" topbarTitle="Etiketler" topbarMeta={`${tags.length} etiket`} navItems={navItems} showLoginSlot={true}>
+    <Fragment slot="left-login"><Login /></Fragment>
+    <Fragment slot="mobile-login"><Login /></Fragment>
 
-		<p class="tags-subtitle">Toplam <strong>{tags.length}</strong> etiket var. Bir etikete tıklayarak arşivde filtreleyebilirsin.</p>
+    <div slot="mobile-hub">
+      <label class="mobile-search" aria-label="Ara">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12Zm0-2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Z"/></svg>
+        <input id="tag-search-mobile" type="search" placeholder="Etiket ara" />
+      </label>
+    </div>
 
-		<div class="tags-grid">
-			{tags.map((item) => (
-				<a href={`/blog-arsivi?tag=${item.tag}`} class="tag-card">
-					<span>#{item.tag}</span>
-					<strong>{item.count}</strong>
-				</a>
-			))}
-		</div>
-	</section>
+    <section class="tags-hero">
+      <p class="tags-eyebrow">KONU HARİTASI</p>
+      <h2>Tüm etiketler tek bir akış dilinde.</h2>
+      <p>Bir etikete dokun, ana akışta filtrelenmiş görünüme geç. Böylece site içindeki konu kümeleri daha hızlı keşfedilebilir.</p>
+    </section>
+
+    <div class="tags-summary">
+      <p>Toplam <strong>{tags.length}</strong> etiket var. En yoğun başlıklar, sitenin düşünce izlerini gösteriyor.</p>
+    </div>
+
+    <div class="tags-grid" id="tags-grid">
+      {tags.map((item) => (
+        <a href={`/?tag=${item.tag}`} class="tag-card" data-tag={item.tag.toLocaleLowerCase('tr-TR')}>
+          <span>#{item.tag}</span>
+          <strong>{item.count}</strong>
+        </a>
+      ))}
+    </div>
+
+    <Fragment slot="right-rail">
+      <div class="search-box tags-panel">
+        <p>Ara</p>
+        <input id="tag-search-input" type="search" placeholder="Etiket ismi yaz..." />
+        <a href="/?search=">Ana akışta filtrele →</a>
+      </div>
+      <section class="who-box">
+        <h2 class="panel-title">Öne Çıkanlar</h2>
+        <ul class="who-list">
+          {tags.slice(0, 5).map((item) => (
+            <li>
+              <a href={`/?tag=${item.tag}`}>
+                <strong>#{item.tag}</strong>
+                <span>{item.count} yazı</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h2 class="panel-title">Not</h2>
+        <ul class="trend-list tags-notes">
+          <li><span>Etiketler konu kümeleri gibi çalışır.</span></li>
+          <li><span>Bir etikete tıklayınca ana akış filtrelenir.</span></li>
+          <li><span>Yoğun etiketler sitenin ana düşünce damarını gösterir.</span></li>
+        </ul>
+      </section>
+    </Fragment>
+  </AppShell>
+
+  <script>
+    function initTagSearch() {
+      const desktopInput = document.getElementById('tag-search-input');
+      const mobileInput = document.getElementById('tag-search-mobile');
+      const items = Array.from(document.querySelectorAll('.tag-card[data-tag]'));
+      if ((!desktopInput && !mobileInput) || items.length === 0) return;
+
+      const applyFilter = (raw) => {
+        const query = (raw || '').toLocaleLowerCase('tr-TR').trim();
+        items.forEach((item) => {
+          const value = (item.getAttribute('data-tag') || '').toLocaleLowerCase('tr-TR');
+          item.style.display = !query || value.includes(query) ? '' : 'none';
+        });
+      };
+
+      const bind = (input, twin) => {
+        if (!input || input.dataset.bound === '1') return;
+        input.dataset.bound = '1';
+        input.addEventListener('input', () => {
+          if (twin && twin.value !== input.value) twin.value = input.value;
+          applyFilter(input.value);
+        });
+      };
+
+      bind(desktopInput, mobileInput);
+      bind(mobileInput, desktopInput);
+      applyFilter(desktopInput?.value || mobileInput?.value || '');
+    }
+
+    initTagSearch();
+    document.addEventListener('astro:page-load', initTagSearch);
+  </script>
+
+  <style>
+    :global(#main-header) { display: none; }
+    .tags-hero { padding:1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+    .tags-eyebrow { color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:.08em; font-size:.78rem; margin-bottom:.65rem; }
+    .tags-hero h2 { margin:0 0 .6rem; font-size:clamp(1.5rem, 3vw, 2.1rem); line-height:1.18; }
+    .tags-hero p { color:var(--secondary); max-width:60ch; }
+    .tags-summary { padding:1rem; color:var(--secondary); border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+    .tags-summary strong { color:var(--text); }
+    .tags-grid { display:flex; flex-wrap:wrap; gap:.75rem; padding:1rem; }
+    .tag-card { display:inline-flex; align-items:center; gap:.55rem; border:1px solid color-mix(in srgb, var(--border) 80%, transparent); background:color-mix(in srgb, var(--card-bg) 80%, transparent); padding:.68rem 1rem; border-radius:999px; text-decoration:none; color:var(--text); transition:all .2s ease; }
+    .tag-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+    .tag-card strong { color:var(--accent); }
+    .tags-panel input { width:100%; border:1px solid color-mix(in srgb, var(--border) 70%, transparent); background:color-mix(in srgb, white 6%, transparent); color:var(--secondary); padding:.55rem .65rem; border-radius:999px; margin-bottom:.45rem; }
+    .tags-panel a { color:var(--accent); text-decoration:none; font-size:.9rem; }
+    .panel-title { font-size:1rem; color:var(--text); margin-bottom:.8rem; font-weight:800; }
+    .search-box { padding:0 0 1rem; margin-bottom:1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+    .search-box p { font-weight:600; margin-bottom:.35rem; }
+    .who-box { margin-bottom:1rem; }
+    .who-list,.trend-list { list-style:none; display:flex; flex-direction:column; gap:.45rem; padding:0; margin:0; }
+    .who-list a,.trend-list li { display:flex; flex-direction:column; gap:.1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 60%, transparent); padding:.55rem 0; text-decoration:none; }
+    .who-list strong { color:var(--text); font-size:.9rem; }
+    .who-list span,.tags-notes span { color:var(--secondary); font-size:.82rem; line-height:1.5; }
+    .mobile-search { display:flex; align-items:center; gap:.45rem; border:1px solid color-mix(in srgb, var(--border) 70%, transparent); background:color-mix(in srgb, white 6%, transparent); color:var(--secondary); border-radius:999px; padding:.48rem .75rem; margin-bottom:.65rem; }
+    .mobile-search svg { width:14px; height:14px; fill:currentColor; flex-shrink:0; }
+    .mobile-search input { width:100%; border:0; background:transparent; color:var(--secondary); font-size:.88rem; outline:none; }
+  </style>
 </BaseLayout>
-
-<style>
-	.tags-page { max-width: 900px; margin: 0 auto; }
-	.tags-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom: 0.75rem; }
-	.tags-head h1 { margin: 0; font-size: 2rem; }
-	.back-link { font-weight: 600; }
-	.tags-subtitle { color: var(--secondary); margin-bottom: 1.25rem; }
-	.tags-grid { display:flex; flex-wrap:wrap; gap:0.75rem; }
-	.tag-card {
-		display:inline-flex;
-		align-items:center;
-		gap:0.55rem;
-		border:1px solid var(--border);
-		background: var(--card-bg);
-		padding:0.6rem 0.95rem;
-		border-radius:999px;
-		text-decoration:none;
-		color:var(--text);
-		transition: all .2s ease;
-	}
-	.tag-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-	.tag-card strong { color: var(--accent); }
-</style>

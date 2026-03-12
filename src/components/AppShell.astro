@@ -1,0 +1,243 @@
+---
+interface NavItem {
+  href: string;
+  label: string;
+  active?: boolean;
+}
+
+interface Props {
+  pageTitle: string;
+  topbarTitle?: string;
+  topbarMeta?: string;
+  navItems?: NavItem[];
+  showThemeToggle?: boolean;
+  showLoginSlot?: boolean;
+  legalLabel?: string;
+  shellClass?: string;
+}
+
+const {
+  pageTitle,
+  topbarTitle = pageTitle,
+  topbarMeta = '',
+  navItems = [],
+  showThemeToggle = true,
+  showLoginSlot = false,
+  legalLabel = 'Yasal bağlantılar',
+  shellClass = '',
+} = Astro.props;
+---
+
+<section class={`app-shell ${shellClass}`.trim()}>
+  <aside class="left-rail card">
+    <div>
+      <p class="rail-brand">Samet Başbuğ</p>
+      <h1>{pageTitle}</h1>
+    </div>
+
+    <nav class="feed-nav">
+      {navItems.map((item) => (
+        <a href={item.href} class={item.active ? 'active' : undefined}>{item.label}</a>
+      ))}
+    </nav>
+
+    {showThemeToggle && (
+      <button id="rail-theme-toggle" class="rail-theme-toggle" type="button" aria-label="Temayı Değiştir">
+        <span class="icon" data-theme-icon>🌙</span>
+        <span data-theme-label>Koyu Tema</span>
+      </button>
+    )}
+
+    {showLoginSlot && (
+      <div class="feed-login-slot">
+        <slot name="left-login" />
+      </div>
+    )}
+
+    <div class="feed-legal-links" aria-label={legalLabel}>
+      <a href="/gizlilik-politikasi">Gizlilik Politikası</a>
+      <a href="/kullanim-sartlari">Kullanım Şartları</a>
+      <a href="/cerez-politikasi">Çerez Politikası</a>
+      <a href="/topluluk-kurallari">Topluluk Kuralları</a>
+      <p class="feed-legal-copy">© 2026 Samet Başbuğ</p>
+      <a href="/rss.xml" class="feed-rss-link">RSS Feed</a>
+    </div>
+  </aside>
+
+  <main class="center-feed card">
+    <div class="feed-topbar">
+      <strong>{topbarTitle}</strong>
+      <span>{topbarMeta}</span>
+    </div>
+
+    <div class="mobile-hub" aria-label="Mobil üst alan">
+      <div class="mobile-topline" aria-label="Mobil üst bar">
+        <details class="mobile-drawer">
+          <summary aria-label="Menüyü aç">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z"/></svg>
+          </summary>
+          <button class="drawer-backdrop" type="button" aria-label="Menüyü kapat"></button>
+          <div class="mobile-drawer-panel">
+            <p class="drawer-title">Menü</p>
+            {navItems.map((item) => (
+              <a href={item.href}>{item.label}</a>
+            ))}
+            {showLoginSlot && <div class="mobile-drawer-login"><slot name="mobile-login" /></div>}
+            <div class="feed-legal-links mobile-legal-links" aria-label={legalLabel}>
+              <a href="/gizlilik-politikasi">Gizlilik Politikası</a>
+              <a href="/kullanim-sartlari">Kullanım Şartları</a>
+              <a href="/cerez-politikasi">Çerez Politikası</a>
+              <a href="/topluluk-kurallari">Topluluk Kuralları</a>
+              <p class="feed-legal-copy">© 2026 Samet Başbuğ</p>
+              <a href="/rss.xml" class="feed-rss-link">RSS Feed</a>
+            </div>
+          </div>
+        </details>
+
+        <strong class="mobile-brand">{pageTitle}</strong>
+
+        {showThemeToggle && (
+          <button class="mobile-top-theme-toggle mobile-theme-toggle" type="button" aria-label="Temayı Değiştir">
+            <span data-theme-icon>🌙</span>
+            <span data-theme-label>Koyu Tema</span>
+          </button>
+        )}
+      </div>
+
+      <slot name="mobile-hub" />
+    </div>
+
+    <slot />
+  </main>
+
+  <aside class="right-rail card">
+    <slot name="right-rail" />
+  </aside>
+</section>
+
+<script>
+  function initAppShellDrawer() {
+    const drawer = document.querySelector('.mobile-drawer');
+    if (!drawer || drawer.dataset.bound === '1') return;
+    drawer.dataset.bound = '1';
+
+    document.addEventListener('click', (event) => {
+      if (!drawer.open) return;
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (!drawer.contains(target)) drawer.removeAttribute('open');
+    });
+
+    drawer.querySelectorAll('a, .drawer-backdrop, .mobile-theme-toggle, [data-auth-login], [data-auth-logout]').forEach((el) => {
+      el.addEventListener('click', () => drawer.removeAttribute('open'));
+    });
+  }
+
+  function applyAppShellMobileMode() {
+    const isMobile = window.matchMedia('(max-width: 820px), (hover: none) and (pointer: coarse)').matches;
+    document.documentElement.classList.toggle('feed-mobile-mode', isMobile);
+    document.documentElement.classList.toggle('force-mobile-ui', isMobile);
+  }
+
+  function initAppShellThemeToggle() {
+    const buttons = Array.from(document.querySelectorAll('#rail-theme-toggle, .mobile-theme-toggle'));
+    if (buttons.length === 0) return;
+
+    const syncThemeButtons = () => {
+      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const isDark = theme === 'dark';
+      buttons.forEach((btn) => {
+        const iconEl = btn.querySelector('[data-theme-icon]');
+        const labelEl = btn.querySelector('[data-theme-label]');
+        if (iconEl) iconEl.textContent = isDark ? '🌙' : '☀️';
+        if (labelEl) labelEl.textContent = isDark ? 'Koyu Tema' : 'Açık Tema';
+      });
+    };
+
+    syncThemeButtons();
+    buttons.forEach((btn) => {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('theme', next); } catch {}
+        syncThemeButtons();
+      });
+    });
+  }
+
+  applyAppShellMobileMode();
+  initAppShellDrawer();
+  initAppShellThemeToggle();
+  window.addEventListener('resize', applyAppShellMobileMode);
+  document.addEventListener('astro:page-load', () => {
+    applyAppShellMobileMode();
+    initAppShellDrawer();
+    initAppShellThemeToggle();
+  });
+</script>
+
+<style>
+  :global(html),
+  :global(body) {
+    overflow-x: hidden;
+  }
+
+  :global(main) {
+    max-width: 1240px;
+    padding-top: 1.1rem;
+    overflow-x: hidden;
+  }
+
+  .app-shell { display: grid; grid-template-columns: 240px minmax(0, 1fr) 280px; gap: 1rem; align-items: start; margin-top: 0.2rem; min-width: 0; width: 100%; max-width: 100%; }
+  .card { background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+  .left-rail,.right-rail { position: sticky; top: 1.1rem; padding: 0.9rem 1rem 1rem; }
+  .left-rail { padding-left: 0.8rem; }
+  .rail-brand { color: var(--accent); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .left-rail h1 { margin-top: 0.2rem; margin-bottom: 0.9rem; font-size: 1.3rem; }
+  .feed-nav { display:flex; flex-direction:column; align-items:flex-start; gap:0.5rem; margin-bottom:1rem; text-align:left; }
+  .feed-nav a { color:var(--secondary); text-decoration:none; padding:0.5rem 0; font-weight:600; transition:color .18s ease; }
+  .feed-nav a:hover,.feed-nav a.active { color:var(--text); }
+  .rail-theme-toggle { margin-top:.5rem; display:inline-flex; align-items:center; gap:.45rem; background:transparent; border:1px solid color-mix(in srgb, var(--border) 70%, transparent); color:var(--secondary); padding:.5rem .7rem; border-radius:999px; cursor:pointer; font:inherit; font-size:.88rem; }
+  .rail-theme-toggle:hover { color:var(--text); border-color:var(--accent); }
+  .feed-login-slot { margin-top:.65rem; display:flex; justify-content:flex-start; }
+  .feed-legal-links { margin-top:1rem; padding-top:.95rem; border-top:1px solid color-mix(in srgb, var(--border) 48%, transparent); display:grid; grid-template-columns:max-content max-content; gap:.45rem .95rem; align-items:start; justify-content:start; max-width:100%; }
+  .feed-legal-links a { color:var(--secondary); text-decoration:none; font-size:.77rem; line-height:1.25; width:fit-content; white-space:nowrap; }
+  .feed-legal-links a:hover { color:var(--text); }
+  .feed-legal-copy { grid-column:1 / -1; margin:0.18rem 0 0; color:color-mix(in srgb, var(--secondary) 92%, transparent); font-size:.76rem; line-height:1.4; }
+  .feed-rss-link { grid-column:1 / -1; width:fit-content; margin-top:.15rem; color:var(--text) !important; font-size:.82rem !important; font-weight:800; letter-spacing:.02em; }
+  .feed-rss-link:hover { color:var(--accent) !important; }
+  .center-feed { overflow:hidden; border-left:1px solid color-mix(in srgb, var(--border) 70%, transparent); border-right:1px solid color-mix(in srgb, var(--border) 70%, transparent); min-width:0; width:100%; max-width:100%; }
+  .feed-topbar { display:flex; justify-content:space-between; gap:1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); padding:.9rem 1rem; font-size:.92rem; color:var(--secondary); background:transparent; }
+  .feed-topbar strong { color:var(--text); }
+  .mobile-topline,.mobile-hub { display:none; }
+  @media (max-width: 820px) {
+    :global(main) { max-width:100%!important; width:100%!important; margin:0!important; padding:0!important; }
+    .app-shell { grid-template-columns:1fr!important; width:100%!important; max-width:100%!important; margin:0!important; gap:0!important; }
+    .left-rail,.right-rail,.feed-topbar { display:none!important; }
+    .mobile-hub { display:block!important; padding:.75rem; border-bottom:1px solid color-mix(in srgb, var(--border) 60%, transparent); background:transparent; }
+    .center-feed { border-left:0; border-right:0; overflow:visible; }
+    .mobile-topline { display:flex!important; align-items:center; gap:.7rem; margin-bottom:.7rem; }
+    .mobile-brand { font-size:1rem; font-weight:800; }
+    .mobile-top-theme-toggle { margin-left:auto; height:32px; border-radius:999px; border:1px solid color-mix(in srgb, var(--border) 70%, transparent); background:transparent; color:var(--secondary); display:inline-flex; align-items:center; justify-content:center; gap:.3rem; padding:0 .6rem; font-size:.78rem; }
+    .mobile-drawer { position:relative; }
+    .mobile-drawer summary { list-style:none; display:grid; place-items:center; width:34px; height:34px; border-radius:.65rem; border:1px solid var(--border); background:var(--muted); cursor:pointer; }
+    .mobile-drawer summary::-webkit-details-marker { display:none; }
+    .mobile-drawer summary svg { width:18px; height:18px; fill:currentColor; }
+    .drawer-backdrop { display:none; }
+    .mobile-drawer[open] .drawer-backdrop { display:block; position:fixed; inset:0; background:rgba(2,6,23,.28); border:0; z-index:18; }
+    .mobile-drawer-panel { position:absolute; top:calc(100% + .7rem); left:0; min-width:210px; z-index:50; background:rgba(11,15,25,.95); border:1px solid color-mix(in srgb, white 18%, var(--border)); border-radius:.75rem; box-shadow:0 12px 30px rgba(0,0,0,.35); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); padding:.35rem .6rem; }
+    .drawer-title { font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--secondary); padding:.25rem 0; margin-bottom:.1rem; }
+    .mobile-drawer-panel a { display:block; padding:.5rem 0; color:var(--text); text-decoration:none; font-size:.9rem; border-bottom:1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+    .mobile-drawer-login { margin-top:.2rem; padding-top:.55rem; border-top:1px solid color-mix(in srgb, var(--border) 55%, transparent); }
+    .mobile-legal-links { max-width:none; margin-top:.7rem; padding-top:.7rem; gap:.38rem .7rem; grid-template-columns:max-content max-content; }
+  }
+  :global(html.force-mobile-ui) main { max-width:100%!important; width:100%!important; margin:0!important; padding:0!important; }
+  :global(html.force-mobile-ui) .app-shell { grid-template-columns:1fr!important; width:100%!important; max-width:100%!important; margin:0!important; gap:0!important; }
+  :global(html.force-mobile-ui) .left-rail,:global(html.force-mobile-ui) .right-rail,:global(html.force-mobile-ui) .feed-topbar { display:none!important; }
+  :global(html.force-mobile-ui) .mobile-hub { display:block!important; }
+  :global(html.force-mobile-ui) .mobile-topline { display:flex!important; }
+  :global(html.force-mobile-ui) .center-feed { border-left:0!important; border-right:0!important; overflow:visible!important; }
+</style>

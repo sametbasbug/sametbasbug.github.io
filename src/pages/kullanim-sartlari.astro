@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Kullanım Şartları"
+  description="Samet Başbuğ sitesi için kullanım şartları."
+>
+  <section class="legal-page">
+    <h1>Kullanım Şartları</h1>
+    <p class="updated">Son güncelleme: 11.03.2026</p>
+
+    <p>Bu internet sitesini kullanan herkes aşağıdaki kullanım şartlarını kabul etmiş sayılır.</p>
+
+    <h2>1. Hizmetin Kapsamı</h2>
+    <p>
+      Bu site, içerik yayınlama, kullanıcı hesabı oluşturma, profil görüntüleme, gönderilere yorum yapma ve beğeni bırakma gibi özellikler sunabilir.
+    </p>
+    <p>
+      Site sahibi, hizmetin kapsamını dilediği zaman değiştirme, güncelleme, geçici olarak durdurma veya sonlandırma hakkını saklı tutar.
+    </p>
+
+    <h2>2. Hesap Kullanımı</h2>
+    <p>Kullanıcılar siteye desteklenen giriş yöntemleri üzerinden hesap oluşturarak erişebilir.</p>
+    <p>Kullanıcı:</p>
+    <ul>
+      <li>doğru ve güncel bilgi sunmaktan</li>
+      <li>kendi hesabının kullanımından</li>
+      <li>kullanıcı adı seçiminin hukuka ve genel ahlak kurallarına uygun olmasından</li>
+    </ul>
+    <p>sorumludur.</p>
+
+    <h2>3. Kullanıcı Adları</h2>
+    <p><code>@</code> ile başlayan kullanıcı adları alınabilir. Ancak aşağıdaki türde kullanıcı adları yasaktır:</p>
+    <ul>
+      <li>başkasını taklit eden</li>
+      <li>aldatıcı veya yanıltıcı olan</li>
+      <li>hakaret, nefret söylemi veya küfür içeren</li>
+      <li>marka, kişi veya kurumları kötüye kullanmaya yönelik olan</li>
+      <li>hukuka aykırı içerik barındıran</li>
+    </ul>
+    <p>Site sahibi, uygun görmediği kullanıcı adlarını kaldırma, değiştirme veya ilgili hesabı sınırlandırma hakkını saklı tutar.</p>
+
+    <h2>4. Yorumlar ve Kullanıcı İçeriği</h2>
+    <p>Kullanıcılar, site üzerinde yorum yapabilir ve diğer etkileşim araçlarını kullanabilir.</p>
+    <p>Kullanıcılar şu içerikleri paylaşamaz:</p>
+    <ul>
+      <li>hakaret, tehdit veya taciz içeren içerikler</li>
+      <li>nefret söylemi</li>
+      <li>yasa dışı içerikler</li>
+      <li>spam veya reklam amaçlı içerikler</li>
+      <li>üçüncü kişilerin haklarını ihlal eden içerikler</li>
+      <li>yanıltıcı, zararlı veya kötüye kullanım amaçlı içerikler</li>
+    </ul>
+    <p>Kullanıcı tarafından paylaşılan içeriklerin hukuki sorumluluğu kullanıcıya aittir.</p>
+
+    <h2>5. İçerik Kaldırma ve Hesap Kısıtlama</h2>
+    <p>Site sahibi, aşağıdaki durumlarda içerik kaldırma veya hesap erişimini sınırlandırma hakkına sahiptir:</p>
+    <ul>
+      <li>kullanım şartlarının ihlali</li>
+      <li>spam veya kötüye kullanım</li>
+      <li>teknik güvenlik riski oluşturulması</li>
+      <li>hukuki yükümlülük doğuran durumlar</li>
+      <li>topluluk düzenini bozucu davranışlar</li>
+    </ul>
+
+    <h2>6. Fikri Mülkiyet</h2>
+    <p>
+      Sitede yer alan tasarım, yazı, görsel, marka, arayüz ve diğer içerikler aksi belirtilmedikçe site sahibine veya ilgili hak sahiplerine aittir.
+    </p>
+    <p>İzinsiz kopyalama, çoğaltma, ticari kullanım veya yeniden yayınlama yasaktır.</p>
+
+    <h2>7. Hizmet Sürekliliği ve Sorumluluk Sınırı</h2>
+    <p>Site mümkün olduğunca kesintisiz sunulmaya çalışılsa da aşağıdaki nedenlerle erişim sorunları yaşanabilir:</p>
+    <ul>
+      <li>teknik arıza</li>
+      <li>bakım çalışması</li>
+      <li>altyapı kaynaklı kesinti</li>
+      <li>veri kaybı</li>
+      <li>üçüncü taraf servis hataları</li>
+    </ul>
+    <p>Site sahibi, hizmetin kesintisiz veya hatasız çalışacağını garanti etmez.</p>
+
+    <h2>8. Üçüncü Taraf Hizmetler</h2>
+    <p>
+      Sitede Firebase, Google ile giriş ve benzeri üçüncü taraf altyapılar kullanılabilir. Bu hizmetlerden kaynaklanan sınırlamalar veya kesintiler,
+      doğrudan site sahibinin kontrolünde olmayabilir.
+    </p>
+
+    <h2>9. Değişiklikler</h2>
+    <p>Bu Kullanım Şartları zaman zaman güncellenebilir. Güncel metin yayımlandığı anda yürürlüğe girer.</p>
+  </section>
+
+  <style>
+    .legal-page { max-width: 820px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow); }
+    .updated { color: var(--secondary); margin-bottom: 1.5rem; }
+    h2 { text-align: left; margin-top: 2rem; margin-bottom: 0.8rem; letter-spacing: normal; text-transform: none; color: var(--text); font-size: 1.25rem; }
+    p, li { color: var(--secondary); }
+    ul { padding-left: 1.3rem; display: grid; gap: 0.45rem; }
+    code { background: var(--muted); padding: 0.1rem 0.35rem; border-radius: 0.4rem; }
+  </style>
+</BaseLayout>

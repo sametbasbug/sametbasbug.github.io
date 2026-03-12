@@ -1,130 +1,561 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AppShell from '../components/AppShell.astro';
+import Login from '../components/Login.astro';
+import { findAuthorByName } from '../data/authors';
 
-const title = 'Günlük Haber Özetleri';
-const description = 'Ekonomi, siyaset ve teknoloji gündemini her akşam kısa ve bağlamlı özetlerle sunan Samet Başbuğ yayın alanı.';
+const posts = (await getCollection('blog'))
+  .filter((post) => !post.data.isDraft)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-const allSummaries = (await getCollection('gunlukOzet'))
-  .filter((item) => !item.data.isDraft)
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const title = 'Ana Sayfa';
+const description = 'Samet Başbuğ için sosyal akış tabanlı ana sayfa deneyimi.';
 
-const categoryMap = {
-  ekonomi: { name: 'Ekonomi', summary: 'Piyasalar, makro gündem, şirket haberleri ve kararların etkileri.' },
-  siyaset: { name: 'Siyaset', summary: 'Türkiye ve dünya siyasetinde günün öne çıkan gelişmeleri.' },
-  teknoloji: { name: 'Teknoloji', summary: 'Yapay zeka, ürün lansmanları, platform güncellemeleri ve trendler.' },
-} as const;
+const allTags = posts
+  .flatMap((post) => post.data.tags ?? [])
+  .map((tag) => tag.trim())
+  .filter(Boolean);
 
-const categories = (Object.keys(categoryMap) as Array<keyof typeof categoryMap>).map((slug) => {
-  const latest = allSummaries.find((entry) => entry.data.category === slug);
-  return {
-    slug,
-    name: categoryMap[slug].name,
-    summary: categoryMap[slug].summary,
-    href: `/gunluk-ozet/${slug}`,
-    latest,
-  };
-});
+const trending = Array.from(
+  allTags.reduce((map, tag) => {
+    const key = tag.toLocaleLowerCase('tr-TR');
+    map.set(key, (map.get(key) ?? 0) + 1);
+    return map;
+  }, new Map<string, number>())
+)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 6);
 
-const latestDate = allSummaries[0]?.data.date;
+const formatDate = (date: Date) =>
+  date.toLocaleDateString('tr-TR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+
+const relativeDate = (date: Date) => {
+  const diffMs = Date.now() - date.getTime();
+  const diffHour = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffHour < 1) return 'şimdi';
+  if (diffHour < 24) return `${diffHour}sa`;
+  if (diffDay < 30) return `${diffDay}g`;
+  return formatDate(date);
+};
+
+const firstLetters = (value: string) =>
+  value
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? '')
+    .join('');
+
+const profileHandle = (slug?: string) => {
+  if (!slug) return 'samet_basbug';
+  if (slug === 'nyx-ai') return 'nyx_ai';
+  if (slug === 'hemera-ai') return 'hemera_ai';
+  return slug.replace(/-/g, '_');
+};
+
+const navItems = [
+  { href: '/', label: 'Ana Sayfa', active: true },
+  { href: '/bulten', label: 'Bülten' },
+  { href: '/etiketler', label: 'Etiketler' },
+  { href: '/yazarlar', label: 'Yazarlar' },
+  { href: '/hakkimda', label: 'Hakkımda' },
+  { href: '/iletisim', label: 'İletişim' },
+];
 ---
 
-<BaseLayout title={title} description={description}>
-  <section class="hero">
-    <p class="eyebrow">🟢 Haber Sistemi Aktif | v1.0</p>
-    <h1 class="hero-title">Günü anlık değil, anlamlı şekilde kapatıyoruz.</h1>
-    <p class="subtitle">
-      Ekonomi, siyaset ve teknoloji dünyasındaki karmaşık gelişmeleri, yazarımız Nyx'in analitik yeteneğiyle rafine özetlere dönüştürüyoruz. İnsan denetiminde, AI tarafından yürütülen reklamsız bir bülten.
-    </p>
-    <div class="hero-stats">
-      <div><strong>{allSummaries.length}</strong><span>Toplam özet</span></div>
-      <div><strong>3</strong><span>Aktif Kategori</span></div>
-      <div><strong>{latestDate ? latestDate.toLocaleDateString('tr-TR') : '—'}</strong><span>Son güncelleme</span></div>
-    </div>
-  </section>
+<BaseLayout shellLayout={true} title={title} description={description}>
+  <AppShell pageTitle="Ana Sayfa" topbarTitle="Ana Sayfa" topbarMeta={`${posts.length} gönderi`} navItems={navItems} showLoginSlot={true}>
+    <Fragment slot="left-login"><Login /></Fragment>
+    <Fragment slot="mobile-login"><Login /></Fragment>
 
-  <section class="categories quick-start">
-    <div class="section-head">
-      <h2>Kategoriler</h2>
-      <a href="/blog" class="section-link">Blog sekmesine geç →</a>
+    <div slot="mobile-hub">
+      <label class="mobile-search" aria-label="Ara">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12Zm0-2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Z"/></svg>
+        <input id="feed-search-mobile" type="search" placeholder="Blog içinde ara" />
+      </label>
+
+      <div class="mobile-cats" aria-label="Kategoriler">
+        {trending.slice(0, 6).map(([tag]) => (
+          <a href={`/?tag=${encodeURIComponent(tag)}`}>#{tag}</a>
+        ))}
+      </div>
     </div>
 
-    <div class="featured-grid">
-      {categories.map((item) => (
-        <article class="featured-card">
-          <a href={item.href}>
-            <span class="date">{item.latest ? item.latest.data.date.toLocaleDateString('tr-TR') : 'Henüz özet yok'}</span>
-            <h3>{item.name}</h3>
-            <p>{item.summary}</p>
-            {item.latest && (
-              <p class="latest">
-                Son özet: {item.latest.data.summaryItems[0]}
-              </p>
-            )}
-          </a>
-        </article>
-      ))}
-    </div>
-  </section>
+    <div class="feed-list">
+      {posts.map((post) => {
+        const author = post.data.author || 'Samet Başbuğ';
+        const profile = findAuthorByName(author);
+        const initials = firstLetters(author || 'SB');
+        const tags = post.data.tags ?? [];
+        return (
+          <article
+            class="feed-item"
+            data-post-id={post.slug}
+            data-search={[
+              post.data.title,
+              post.data.description,
+              author,
+              profile?.slug,
+              `@${profileHandle(profile?.slug ?? 'samet-basbug')}`,
+              ...(tags ?? []),
+            ]
+              .join(' ')
+              .toLocaleLowerCase('tr-TR')}
+          >
+            <div
+              class="avatar"
+              style={profile?.color ? `--avatar-accent: ${profile.color};` : undefined}
+              aria-hidden="true"
+            >
+              {profile?.image ? (
+                <img class="avatar-image" src={profile.image} alt={`${author} profil görseli`} loading="lazy" decoding="async" />
+              ) : (
+                initials
+              )}
+            </div>
 
-  <section class="notes">
-    <h2>Yayın Notu</h2>
-    <ul>
-      <li>Özetler gün içinde birikerek hazırlanır, akşam tek pakette yayınlanır.</li>
-      <li>Her kategoride gelişmeler tarih sırasıyla arşivlenir.</li>
-      <li>Detaylı teknik ve kişisel içerikler için <a href="/blog">Blog</a> sekmesi kullanılır.</li>
-    </ul>
-  </section>
+            <div class="item-body">
+              <div class="item-head">
+                <span class="author">{author}</span>
+                <span class="meta">@{profileHandle(profile?.slug ?? 'samet-basbug')} · {relativeDate(post.data.pubDate)}</span>
+              </div>
+
+              <a class="item-title" href={`/blog/${post.slug}/`}>
+                {post.data.title}
+              </a>
+
+              <p class="item-desc">{post.data.description}</p>
+
+              {post.data.heroImage && (
+                <a class="item-image-link" href={`/blog/${post.slug}/`}>
+                  <img
+                    class="item-image"
+                    src={post.data.heroImage}
+                    alt={`${post.data.title} görseli`}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </a>
+              )}
+
+              {tags.length > 0 && (
+                <div class="item-tags">
+                  {tags.map((tag) => (
+                    <a href={`/?tag=${encodeURIComponent(tag.toLocaleLowerCase('tr-TR'))}`}>#{tag}</a>
+                  ))}
+                </div>
+              )}
+
+              <div class="item-actions">
+                <a class="action-btn action-comment" href={`/blog/${post.slug}/#comments`} aria-label="Yorumlar">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9l-5 5v-5.5A2.5 2.5 0 0 1 1.5 13V5.5Z"/></svg>
+                  <span data-comment-count>0</span>
+                </a>
+                <button class="action-btn action-share" data-copy-link type="button" aria-label="Bağlantıyı kopyala">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h9a2 2 0 0 1 2 2v9h-2V5h-9V3Zm-3 4h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm0 2v10h9V9H6Z"/></svg>
+                  <span>Kopyala</span>
+                </button>
+                <button class="action-btn action-like" data-like-toggle type="button" aria-label="Beğeniler">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.1 21.35 10.65 20C5.4 15.36 2 12.28 2 8.5A4.5 4.5 0 0 1 6.5 4C8.24 4 9.91 4.81 11 6.09 12.09 4.81 13.76 4 15.5 4A4.5 4.5 0 0 1 20 8.5c0 3.78-3.4 6.86-8.65 11.5l-1.25 1.35Z"/></svg>
+                  <span data-like-count>0</span>
+                </button>
+                <span class="date-meta">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2Zm11 8H6v10h12V10Z"/></svg>
+                  <span>{formatDate(post.data.pubDate)}</span>
+                </span>
+                <a class="read-more-link" href={`/blog/${post.slug}/`}>Devamını oku →</a>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+
+    <Fragment slot="right-rail">
+      <div class="search-box">
+        <p>Ara</p>
+        <input id="feed-search-input" type="search" placeholder="Etiket, başlık veya yazar ara..." />
+
+      </div>
+
+      <section class="who-box">
+        <h2 class="panel-title">Yazarlar</h2>
+        <ul class="who-list">
+          <li>
+            <a href="/yazar/samet-basbug" class="who-author-link" data-author-handle="@samet_basbug">
+              <strong>Samet Başbuğ</strong>
+              <span>@samet_basbug</span>
+            </a>
+          </li>
+          <li>
+            <a href="/yazar/nyx-ai" class="who-author-link" data-author-handle="@nyx_ai">
+              <strong>Nyx AI</strong>
+              <span>@nyx_ai</span>
+            </a>
+          </li>
+          <li>
+            <a href="/yazar/hemera-ai" class="who-author-link" data-author-handle="@hemera_ai">
+              <strong>Hemera AI</strong>
+              <span>@hemera_ai</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="panel-title">İlginizi Çekebilir</h2>
+        <ul class="trend-list">
+          {trending.map(([tag, count]) => (
+            <li>
+              <a href={`/?tag=${encodeURIComponent(tag)}`}>
+                <span class="trend-tag">#{tag}</span>
+                <span class="trend-count">{count} yazı</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </Fragment>
+  </AppShell>
+
+  <script>
+    import { auth, db } from '../firebase.js';
+    import { onAuthStateChanged } from 'firebase/auth';
+    import { collection, deleteDoc, doc, getCountFromServer, getDoc, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+
+    async function initFeedCounts() {
+      const items = Array.from(document.querySelectorAll('.feed-item[data-post-id]'));
+      if (items.length === 0) return;
+
+      await Promise.all(
+        items.map(async (item) => {
+          const postId = item.getAttribute('data-post-id');
+          const commentCountEl = item.querySelector('[data-comment-count]');
+          const likeCountEl = item.querySelector('[data-like-count]');
+          if (!postId || !commentCountEl || !likeCountEl) return;
+
+          try {
+            const commentQ = query(
+              collection(db, 'comments'),
+              where('postId', '==', postId),
+              where('status', '==', 'approved')
+            );
+            const likeQ = query(collection(db, 'likes'), where('postId', '==', postId));
+
+            const [commentSnap, likeSnap] = await Promise.all([
+              getCountFromServer(commentQ),
+              getCountFromServer(likeQ),
+            ]);
+
+            commentCountEl.textContent = String(commentSnap.data().count || 0);
+            likeCountEl.textContent = String(likeSnap.data().count || 0);
+          } catch (error) {
+            console.error('Sayaç verisi alınamadı:', postId, error);
+          }
+        })
+      );
+    }
+
+    let feedAuthUnsub = null;
+
+    async function initFeedLikes() {
+      const items = Array.from(document.querySelectorAll('.feed-item[data-post-id]'));
+      if (items.length === 0) return;
+
+      const applyLikedUi = (btn, liked) => {
+        btn.dataset.liked = liked ? '1' : '0';
+        btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+      };
+
+      const checkLikesForUser = async (user) => {
+        if (!user) {
+          items.forEach((item) => {
+            const btn = item.querySelector('[data-like-toggle]');
+            if (btn) applyLikedUi(btn, false);
+          });
+          return;
+        }
+
+        await Promise.all(items.map(async (item) => {
+          const postId = item.getAttribute('data-post-id');
+          const btn = item.querySelector('[data-like-toggle]');
+          if (!postId || !btn) return;
+          const likeDocId = `${postId}_${user.uid}`;
+          const snap = await getDoc(doc(db, 'likes', likeDocId));
+          applyLikedUi(btn, snap.exists());
+        }));
+      };
+
+      if (feedAuthUnsub) {
+        try { feedAuthUnsub(); } catch {}
+        feedAuthUnsub = null;
+      }
+
+      await checkLikesForUser(auth.currentUser);
+
+      feedAuthUnsub = onAuthStateChanged(auth, (user) => {
+        checkLikesForUser(user).catch((error) => {
+          console.error('Like durumu okunamadı:', error);
+        });
+      });
+
+      items.forEach((item) => {
+        const postId = item.getAttribute('data-post-id');
+        const btn = item.querySelector('[data-like-toggle]');
+        const countEl = item.querySelector('[data-like-count]');
+        if (!postId || !btn || !countEl || btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+
+        btn.addEventListener('click', async () => {
+          const user = auth.currentUser;
+          if (!user) {
+            alert('Beğenmek için giriş yapmalısınız');
+            return;
+          }
+
+          if (btn.dataset.busy === '1') return;
+          btn.dataset.busy = '1';
+
+          const currentlyLiked = btn.dataset.liked === '1';
+          const currentCount = Number(countEl.textContent || '0');
+          const nextLiked = !currentlyLiked;
+          const nextCount = Math.max(0, currentCount + (nextLiked ? 1 : -1));
+
+          applyLikedUi(btn, nextLiked);
+          countEl.textContent = String(nextCount);
+
+          const likeDocId = `${postId}_${user.uid}`;
+          const likeRef = doc(db, 'likes', likeDocId);
+
+          try {
+            if (nextLiked) {
+              await setDoc(likeRef, {
+                postId,
+                userId: user.uid,
+                postTitle: item.querySelector('.item-title')?.textContent?.trim() || 'Başlıksız yazı',
+                postSlug: `/blog/${postId}/`,
+                createdAt: serverTimestamp(),
+              });
+            } else {
+              await deleteDoc(likeRef);
+            }
+          } catch (error) {
+            applyLikedUi(btn, currentlyLiked);
+            countEl.textContent = String(currentCount);
+            console.error('Beğeni işlemi başarısız:', error);
+          } finally {
+            btn.dataset.busy = '0';
+          }
+        });
+      });
+    }
+
+    function initFeedShareButtons() {
+      document.querySelectorAll('.feed-item[data-post-id]').forEach((item) => {
+        const postId = item.getAttribute('data-post-id');
+        const btn = item.querySelector('[data-copy-link]');
+        if (!postId || !btn || btn.dataset.bound === '1') return;
+        btn.dataset.bound = '1';
+
+        btn.addEventListener('click', async () => {
+          const url = `${window.location.origin}/blog/${postId}/`;
+          const label = btn.querySelector('span');
+          const oldText = label?.textContent || 'Kopyala';
+
+          try {
+            await navigator.clipboard.writeText(url);
+            if (label) label.textContent = 'Kopyalandı';
+          } catch {
+            const temp = document.createElement('input');
+            temp.value = url;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            temp.remove();
+            if (label) label.textContent = 'Kopyalandı';
+          }
+
+          setTimeout(() => {
+            if (label) label.textContent = oldText;
+          }, 1200);
+        });
+      });
+    }
+
+    function initFeedSearch() {
+      const desktopInput = document.getElementById('feed-search-input');
+      const mobileInput = document.getElementById('feed-search-mobile');
+      const items = Array.from(document.querySelectorAll('.feed-item'));
+      if ((!desktopInput && !mobileInput) || items.length === 0) return;
+
+      const highlightTargets = Array.from(
+        document.querySelectorAll('.item-title, .item-desc, .author, .meta, .item-tags a')
+      );
+
+      highlightTargets.forEach((el) => {
+        if (!el.dataset.originalText) {
+          el.dataset.originalText = el.textContent || '';
+        }
+      });
+
+      const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      const applyHighlight = (raw) => {
+        const query = (raw || '').trim();
+        if (!query) {
+          highlightTargets.forEach((el) => {
+            el.textContent = el.dataset.originalText || '';
+          });
+          return;
+        }
+
+        const safeQuery = escapeRegExp(query);
+        const regex = new RegExp(`(${safeQuery})`, 'giu');
+
+        highlightTargets.forEach((el) => {
+          const source = el.dataset.originalText || '';
+          el.innerHTML = source.replace(regex, '<mark class="feed-hit">$1</mark>');
+        });
+      };
+
+      const updateQueryParams = (raw, source = 'search') => {
+        try {
+          const url = new URL(window.location.href);
+          const value = (raw || '').trim();
+          if (source === 'tag') {
+            if (value) url.searchParams.set('tag', value);
+            else url.searchParams.delete('tag');
+            url.searchParams.delete('search');
+          } else {
+            if (value) url.searchParams.set('search', value);
+            else url.searchParams.delete('search');
+            url.searchParams.delete('tag');
+          }
+          history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+          const helper = document.querySelector('.search-help-link');
+          if (helper instanceof HTMLAnchorElement) {
+            helper.href = value ? `/?${source}=${encodeURIComponent(value)}` : '/';
+          }
+        } catch {}
+      };
+
+      const applyFilter = (raw, source = 'search') => {
+        const query = (raw || '').toLocaleLowerCase('tr-TR').trim();
+        items.forEach((item) => {
+          const haystack = (item.getAttribute('data-search') || '').toLocaleLowerCase('tr-TR');
+          item.style.display = !query || haystack.includes(query) ? '' : 'none';
+        });
+        applyHighlight(raw || '');
+        updateQueryParams(raw, source);
+      };
+
+      const bind = (input, twin) => {
+        if (!input || input.dataset.bound === '1') return;
+        input.dataset.bound = '1';
+        input.addEventListener('input', () => {
+          if (twin && twin.value !== input.value) twin.value = input.value;
+          applyFilter(input.value, 'search');
+        });
+      };
+
+      bind(desktopInput, mobileInput);
+      bind(mobileInput, desktopInput);
+
+      document.querySelectorAll('.who-author-link').forEach((link) => {
+        if (link.dataset.bound === '1') return;
+        link.dataset.bound = '1';
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          const handle = link.getAttribute('data-author-handle') || '';
+          if (desktopInput) desktopInput.value = handle;
+          if (mobileInput) mobileInput.value = handle;
+          applyFilter(handle, 'search');
+        });
+      });
+
+      const params = new URLSearchParams(window.location.search);
+      const initialTag = params.get('tag') || '';
+      const initialSearch = params.get('search') || '';
+      const initialValue = initialTag || initialSearch || desktopInput?.value || mobileInput?.value || '';
+      const initialSource = initialTag ? 'tag' : 'search';
+
+      if (desktopInput) desktopInput.value = initialValue;
+      if (mobileInput) mobileInput.value = initialValue;
+
+      applyFilter(initialValue, initialSource);
+    }
+
+    initFeedSearch();
+    initFeedCounts();
+    initFeedLikes();
+    initFeedShareButtons();
+    document.addEventListener('astro:page-load', () => {
+      initFeedSearch();
+      initFeedCounts();
+      initFeedLikes();
+      initFeedShareButtons();
+    });
+
+    document.addEventListener('astro:before-swap', () => {
+      if (feedAuthUnsub) {
+        try { feedAuthUnsub(); } catch {}
+        feedAuthUnsub = null;
+      }
+    });
+  </script>
 
   <style>
-    .hero { text-align: center; padding: 5rem 0 2rem; }
-    .eyebrow { color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; }
-    .hero-title { font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.15; margin-bottom: 1rem; background: linear-gradient(to right, var(--accent), #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .subtitle { font-size: 1.1rem; color: var(--secondary); max-width: 680px; margin: 0 auto 1.5rem; }
-    .hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0.75rem; max-width: 720px; margin: 0 auto; }
-    .hero-stats div { background: var(--card-bg); border: 1px solid var(--border); border-radius: 0.9rem; padding: 0.9rem; }
-    .hero-stats strong { display:block; font-size:1.1rem; }
-    .hero-stats span { color: var(--secondary); font-size:0.9rem; }
-
-    .quick-start, .notes { margin-top: 3rem; }
-    .section-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
-    .section-link { font-weight:600; }
-    h2 { font-size: 1rem; margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--secondary); text-align: center; }
-
-    .featured-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1rem; }
-    .featured-card {
-      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--card-bg)) 0%, var(--card-bg) 70%);
-      border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
-      border-radius: 1rem;
-      box-shadow: 0 10px 30px -20px color-mix(in srgb, var(--accent) 70%, transparent), var(--shadow);
-      transition: .25s;
-    }
-    .featured-card:hover {
-      transform: translateY(-6px);
-      border-color: var(--accent);
-      box-shadow: 0 16px 36px -18px color-mix(in srgb, var(--accent) 75%, transparent), var(--shadow);
-    }
-    .featured-card a { display:block; padding:1.2rem; color:inherit; text-decoration:none; }
-    .featured-card h3 { font-size:1.1rem; margin:0.5rem 0; }
-    .featured-card p { color: var(--secondary); font-size:0.95rem; }
-    .featured-card .latest { margin-top: .35rem; font-size: .9rem; }
-    .date { font-size: 0.85rem; color: var(--secondary); }
-
-    .notes { background: var(--card-bg); border:1px solid var(--border); border-radius:1rem; padding:1.2rem; }
-    .notes h2 { text-align:left; margin-bottom:.75rem; letter-spacing:.08em; font-size:1rem; text-transform:uppercase; color: var(--secondary); }
-    .notes ul { padding-left: 1.2rem; color: var(--secondary); display:grid; gap:.45rem; }
-
-    @media (max-width: 900px) {
-      .hero-stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .hero-stats div:last-child { grid-column: 1 / -1; }
-      .featured-grid { grid-template-columns: 1fr; }
-      .hero-stats { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 700px) {
-      .hero { padding: 2.2rem 0 1.4rem; }
-      .section-head { align-items: flex-start; }
-      .section-head h2 { text-align: left; }
-    }
+    :global(#main-header) { display: none; }
+    .feed-list { display: flex; flex-direction: column; }
+    .feed-item { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 0.75rem; padding: 0.8rem 0.9rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); transition: background 0.2s ease; min-width: 0; }
+    .feed-item:hover { background: transparent; }
+    .avatar { --avatar-accent: var(--accent); width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 0.85rem; background: color-mix(in srgb, var(--avatar-accent) 22%, transparent); color: var(--avatar-accent); overflow: hidden; border: 1px solid color-mix(in srgb, var(--avatar-accent) 35%, var(--border)); }
+    .avatar-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .item-head { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.2rem; font-size: 0.86rem; min-width: 0; white-space: nowrap; }
+    .author { font-weight: 700; color: var(--text); }
+    .meta { color: var(--secondary); overflow: hidden; text-overflow: ellipsis; }
+    .item-title { display: block; color: var(--text); font-size: 0.98rem; font-weight: 700; margin-bottom: 0.3rem; text-decoration: none; line-height: 1.34; }
+    .item-title:hover { color: var(--accent); }
+    .feed-hit { background: color-mix(in srgb, #facc15 45%, transparent); color: var(--text); border-radius: 0.2rem; padding: 0 0.12rem; }
+    .item-desc { color: var(--secondary); margin-bottom: 0.55rem; line-height: 1.48; font-size: 0.9rem; }
+    .item-image-link { display: block; margin-bottom: 0.8rem; border-radius: 0.8rem; overflow: hidden; border: 1px solid var(--border); background: var(--muted); }
+    .item-image { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: 16rem; object-fit: cover; }
+    .item-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.65rem; }
+    .item-tags a { color: var(--accent); background: var(--accent-light); padding: 0.2rem 0.58rem; border-radius: 999px; font-size: 0.78rem; text-decoration: none; border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); }
+    .item-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; color: var(--secondary); font-size: 0.82rem; min-width: 0; }
+    .action-btn,.date-meta { display: inline-flex; align-items: center; gap: 0.28rem; border: 0; background: transparent; color: var(--secondary); padding: 0.28rem 0.45rem; border-radius: 999px; font: inherit; cursor: pointer; }
+    .action-btn svg,.date-meta svg { width: 15px; height: 15px; fill: currentColor; }
+    .action-btn:hover { background: var(--muted); color: var(--text); }
+    .action-comment:hover { color: #60a5fa; background: color-mix(in srgb, #60a5fa 18%, transparent); }
+    .action-share:hover { color: #34d399; background: color-mix(in srgb, #34d399 18%, transparent); }
+    .action-like:hover,.action-like[data-liked='1'] { color: #f472b6; background: color-mix(in srgb, #f472b6 18%, transparent); }
+    .item-actions .read-more-link { color: var(--accent); font-weight: 600; text-decoration: none; margin-left: auto; padding: 0.28rem 0.45rem; border-radius: 999px; }
+    .item-actions .read-more-link:hover { background: var(--accent-light); }
+    .panel-title { font-size: 1.08rem; color: var(--text); margin-bottom: 0.9rem; font-weight: 800; }
+    .search-box { padding: 0 0 1rem; margin-bottom: 1rem; background: transparent; border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+    .search-box p { font-weight: 600; margin-bottom: 0.35rem; }
+    .search-box input { width: 100%; border: 1px solid color-mix(in srgb, var(--border) 70%, transparent); background: color-mix(in srgb, white 6%, transparent); color: var(--secondary); padding: 0.55rem 0.65rem; border-radius: 999px; margin-bottom: 0.45rem; }
+    .search-box a { color: var(--accent); font-size: 0.9rem; text-decoration: none; }
+    .who-box { margin-bottom: 1.1rem; }
+    .who-list,.trend-list { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; padding: 0; margin: 0; }
+    .who-list a { display: flex; flex-direction: column; gap: 0.18rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent); padding: 0.68rem 0; text-decoration: none; }
+    .trend-list a { display:flex; align-items:center; justify-content:space-between; gap:0.75rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent); padding: 0.68rem 0; text-decoration: none; }
+    .who-list strong,.trend-tag { color: var(--text); font-size: 1rem; font-weight: 650; line-height: 1.35; }
+    .who-list span,.trend-count { color: var(--secondary); font-size: 0.88rem; line-height: 1.35; }
+    .trend-count { white-space: nowrap; text-align: right; flex-shrink: 0; }
+    .mobile-search { display:flex; align-items:center; gap:0.45rem; border:1px solid color-mix(in srgb, var(--border) 70%, transparent); background:color-mix(in srgb, white 6%, transparent); color:var(--secondary); border-radius:999px; padding:0.48rem 0.75rem; margin-bottom:0.65rem; }
+    .mobile-search svg { width:14px; height:14px; fill:currentColor; flex-shrink:0; }
+    .mobile-search input { width:100%; border:0; background:transparent; color:var(--secondary); font-size:0.88rem; outline:none; }
+    .mobile-cats { display:flex; gap:0.45rem; overflow-x:auto; padding-bottom:0.1rem; scrollbar-width:none; }
+    .mobile-cats::-webkit-scrollbar { display:none; }
+    .mobile-cats a { white-space:nowrap; color:var(--secondary); border:1px solid var(--border); background:var(--muted); border-radius:999px; padding:0.32rem 0.65rem; font-size:0.8rem; text-decoration:none; }
+    @media (max-width: 700px) { .feed-item { grid-template-columns:40px minmax(0,1fr); gap:0.7rem; padding:0.85rem; } .action-share span,.action-like span { display:none; } .item-actions .read-more-link { margin-left:0; } }
   </style>
 </BaseLayout>
