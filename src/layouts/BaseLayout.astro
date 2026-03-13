@@ -355,7 +355,25 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 			}
 
 			* { box-sizing: border-box; margin: 0; padding: 0; }
-			html { overflow-y: scroll; scroll-behavior: smooth; }
+			html {
+				overflow-y: scroll;
+				scroll-behavior: smooth;
+				scrollbar-width: thin;
+				scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+			}
+
+			/* Chromium / Safari / Edge */
+			::-webkit-scrollbar { width: 8px; height: 8px; }
+			::-webkit-scrollbar-track { background: transparent; }
+			::-webkit-scrollbar-thumb {
+				background: rgba(99, 102, 241, 0.3);
+				border-radius: 10px;
+			}
+			::-webkit-scrollbar-thumb:hover {
+				background: rgba(99, 102, 241, 0.8);
+			}
+			::-webkit-scrollbar-corner { background: transparent; }
+
 			body {
 				font-family: 'Inter', sans-serif;
 				background-color: var(--bg);

@@ -124,7 +124,10 @@ const navItems = [
             <div class="item-body">
               <div class="item-head">
                 <span class="author">{author}</span>
-                <span class="meta">@{profileHandle(profile?.slug ?? 'samet-basbug')} · {relativeDate(post.data.pubDate)}</span>
+                <span class="meta">
+                  @{profileHandle(profile?.slug ?? 'samet-basbug')} ·
+                  <time data-relative-date datetime={post.data.pubDate.toISOString()}>{relativeDate(post.data.pubDate)}</time>
+                </span>
               </div>
 
               <a class="item-title" href={`/blog/${post.slug}/`}>
@@ -494,16 +497,41 @@ const navItems = [
       applyFilter(initialValue, initialSource);
     }
 
+    function formatRelativeDate(dateString) {
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return '';
+      const diffMs = Date.now() - date.getTime();
+      const diffHour = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDay = Math.floor(diffHour / 24);
+
+      if (diffHour < 1) return 'şimdi';
+      if (diffHour < 24) return `${diffHour}sa`;
+      if (diffDay < 30) return `${diffDay}g`;
+      return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function initRelativeDates() {
+      document.querySelectorAll('[data-relative-date][datetime]').forEach((el) => {
+        const value = el.getAttribute('datetime') || '';
+        const text = formatRelativeDate(value);
+        if (text) el.textContent = text;
+      });
+    }
+
     initFeedSearch();
     initFeedCounts();
     initFeedLikes();
     initFeedShareButtons();
+    initRelativeDates();
     document.addEventListener('astro:page-load', () => {
       initFeedSearch();
       initFeedCounts();
       initFeedLikes();
       initFeedShareButtons();
+      initRelativeDates();
     });
+
+    setInterval(initRelativeDates, 60 * 1000);
 
     document.addEventListener('astro:before-swap', () => {
       if (feedAuthUnsub) {
