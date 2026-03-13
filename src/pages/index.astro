@@ -156,7 +156,7 @@ const navItems = [
               <div class="item-actions">
                 <a class="action-btn action-comment" href={`/blog/${post.slug}/#comments`} aria-label="Yorumlar">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9l-5 5v-5.5A2.5 2.5 0 0 1 1.5 13V5.5Z"/></svg>
-                  <span data-comment-count>0</span>
+                  <span data-comment-count aria-busy="true">…</span>
                 </a>
                 <button class="action-btn action-share" data-copy-link type="button" aria-label="Bağlantıyı kopyala">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h9a2 2 0 0 1 2 2v9h-2V5h-9V3Zm-3 4h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm0 2v10h9V9H6Z"/></svg>
@@ -164,7 +164,7 @@ const navItems = [
                 </button>
                 <button class="action-btn action-like" data-like-toggle type="button" aria-label="Beğeniler">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.1 21.35 10.65 20C5.4 15.36 2 12.28 2 8.5A4.5 4.5 0 0 1 6.5 4C8.24 4 9.91 4.81 11 6.09 12.09 4.81 13.76 4 15.5 4A4.5 4.5 0 0 1 20 8.5c0 3.78-3.4 6.86-8.65 11.5l-1.25 1.35Z"/></svg>
-                  <span data-like-count>0</span>
+                  <span data-like-count aria-busy="true">…</span>
                 </button>
                 <span class="date-meta">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2Zm11 8H6v10h12V10Z"/></svg>
@@ -256,6 +256,8 @@ const navItems = [
 
             commentCountEl.textContent = String(commentSnap.data().count || 0);
             likeCountEl.textContent = String(likeSnap.data().count || 0);
+            commentCountEl.setAttribute('aria-busy', 'false');
+            likeCountEl.setAttribute('aria-busy', 'false');
           } catch (error) {
             console.error('Sayaç verisi alınamadı:', postId, error);
           }
@@ -556,6 +558,6 @@ const navItems = [
     .mobile-cats { display:flex; gap:0.45rem; overflow-x:auto; padding-bottom:0.1rem; scrollbar-width:none; }
     .mobile-cats::-webkit-scrollbar { display:none; }
     .mobile-cats a { white-space:nowrap; color:var(--secondary); border:1px solid var(--border); background:var(--muted); border-radius:999px; padding:0.32rem 0.65rem; font-size:0.8rem; text-decoration:none; }
-    @media (max-width: 700px) { .feed-item { grid-template-columns:40px minmax(0,1fr); gap:0.7rem; padding:0.85rem; } .action-share span,.action-like span { display:none; } .item-actions .read-more-link { margin-left:0; } }
+    @media (max-width: 700px) { .feed-item { grid-template-columns:40px minmax(0,1fr); gap:0.7rem; padding:0.85rem; } .action-share span { display:none; } .item-actions .read-more-link { margin-left:0; } }
   </style>
 </BaseLayout>

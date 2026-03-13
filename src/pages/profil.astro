@@ -88,25 +88,24 @@ const navItems = [
       import { isUsernameBanned } from '../utils/blacklist.js';
 
       const provider = new GoogleAuthProvider();
-      const shell = document.querySelector('[data-profile-shell]');
-      if (!shell) console.warn('Profile shell bulunamadı, profil init atlandı.');
 
-      const userPanel = shell?.querySelector('[data-user-panel]');
-      const authGuard = shell?.querySelector('[data-auth-guard]');
-      const dashboard = shell?.querySelector('[data-dashboard]');
-      const userAvatar = shell?.querySelector('[data-user-avatar]');
-      const userFallback = shell?.querySelector('[data-user-fallback]');
-      const userName = shell?.querySelector('[data-user-name]');
-      const userEmail = shell?.querySelector('[data-user-email]');
-      const userHandle = shell?.querySelector('[data-user-handle]');
-      const usernameClaim = shell?.querySelector('[data-username-claim]');
-      const usernameInput = shell?.querySelector('[data-username-input]');
-      const usernameSaveBtn = shell?.querySelector('[data-username-save]');
-      const usernameMsg = shell?.querySelector('[data-username-msg]');
-      const likesList = shell?.querySelector('[data-likes-list]');
-      const likeCount = shell?.querySelector('[data-like-count]');
-      const loginBtn = shell?.querySelector('[data-login-btn]');
-      const logoutBtn = document.querySelector('[data-logout-btn]');
+      let shell = null;
+      let userPanel = null;
+      let authGuard = null;
+      let dashboard = null;
+      let userAvatar = null;
+      let userFallback = null;
+      let userName = null;
+      let userEmail = null;
+      let userHandle = null;
+      let usernameClaim = null;
+      let usernameInput = null;
+      let usernameSaveBtn = null;
+      let usernameMsg = null;
+      let likesList = null;
+      let likeCount = null;
+      let loginBtn = null;
+      let logoutBtn = null;
 
       let likesUnsub = null;
       let authUnsub = null;
@@ -206,7 +205,29 @@ const navItems = [
       };
 
       const bootProfile = async () => {
-        if (!shell) return;
+        shell = document.querySelector('[data-profile-shell]');
+        if (!shell) {
+          console.warn('Profile shell bulunamadı, profil init atlandı.');
+          return;
+        }
+
+        userPanel = shell.querySelector('[data-user-panel]');
+        authGuard = shell.querySelector('[data-auth-guard]');
+        dashboard = shell.querySelector('[data-dashboard]');
+        userAvatar = shell.querySelector('[data-user-avatar]');
+        userFallback = shell.querySelector('[data-user-fallback]');
+        userName = shell.querySelector('[data-user-name]');
+        userEmail = shell.querySelector('[data-user-email]');
+        userHandle = shell.querySelector('[data-user-handle]');
+        usernameClaim = shell.querySelector('[data-username-claim]');
+        usernameInput = shell.querySelector('[data-username-input]');
+        usernameSaveBtn = shell.querySelector('[data-username-save]');
+        usernameMsg = shell.querySelector('[data-username-msg]');
+        likesList = shell.querySelector('[data-likes-list]');
+        likeCount = shell.querySelector('[data-like-count]');
+        loginBtn = shell.querySelector('[data-login-btn]');
+        logoutBtn = document.querySelector('[data-logout-btn]');
+
         if (loginBtn && !loginBtn.dataset.bound) {
           loginBtn.dataset.bound = '1';
           loginBtn.addEventListener('click', async () => { try { await signInWithPopup(auth, provider); } catch (error) { console.error('Giriş hatası:', error); } });
@@ -252,7 +273,28 @@ const navItems = [
         });
       };
 
-      const cleanupProfile = () => { cleanupLikesListener(); if (authUnsub) { try { authUnsub(); } catch {} authUnsub = null; } currentUser = null; };
+      const cleanupProfile = () => {
+        cleanupLikesListener();
+        if (authUnsub) { try { authUnsub(); } catch {} authUnsub = null; }
+        currentUser = null;
+        shell = null;
+        userPanel = null;
+        authGuard = null;
+        dashboard = null;
+        userAvatar = null;
+        userFallback = null;
+        userName = null;
+        userEmail = null;
+        userHandle = null;
+        usernameClaim = null;
+        usernameInput = null;
+        usernameSaveBtn = null;
+        usernameMsg = null;
+        likesList = null;
+        likeCount = null;
+        loginBtn = null;
+        logoutBtn = null;
+      };
       bootProfile(); document.addEventListener('astro:page-load', bootProfile); document.addEventListener('astro:before-swap', cleanupProfile);
     </script>
   </AppShell>
