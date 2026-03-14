@@ -72,24 +72,58 @@ const {
 
     <div class="mobile-hub" aria-label="Mobil üst alan">
       <div class="mobile-topline" aria-label="Mobil üst bar">
-        <details class="mobile-drawer">
+        <details class="mobile-drawer" open>
           <summary aria-label="Menüyü aç">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z"/></svg>
           </summary>
           <button class="drawer-backdrop" type="button" aria-label="Menüyü kapat"></button>
-          <div class="mobile-drawer-panel">
-            <p class="drawer-title">Menü</p>
-            {navItems.map((item) => (
-              <a href={item.href}>{item.label}</a>
-            ))}
-            {showLoginSlot && <div class="mobile-drawer-login"><slot name="mobile-login" /></div>}
-            <div class="feed-legal-links mobile-legal-links" aria-label={legalLabel}>
-              <a href="/gizlilik-politikasi">Gizlilik Politikası</a>
-              <a href="/kullanim-sartlari">Kullanım Şartları</a>
-              <a href="/cerez-politikasi">Çerez Politikası</a>
-              <a href="/topluluk-kurallari">Topluluk Kuralları</a>
-              <p class="feed-legal-copy">© 2026 Samet Başbuğ</p>
-              <a href="/rss.xml" class="feed-rss-link">RSS Feed</a>
+          <div class="mobile-drawer-panel" role="dialog" aria-label="Mobil menü" aria-modal="true">
+            <div class="drawer-head">
+              <div class="drawer-head-meta">
+                <strong>Samet Başbuğ</strong>
+                <a href="/rss.xml" class="drawer-rss-link">RSS Feed</a>
+              </div>
+              <button class="drawer-close" type="button" aria-label="Menüyü kapat">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7l1.4-1.4 6.3 6.3 6.3-6.3 1.4 1.4Z"/></svg>
+              </button>
+            </div>
+
+            <nav class="mobile-drawer-nav" aria-label="Mobil gezinme">
+              {navItems.map((item) => {
+                const iconPath =
+                  item.href === '/'
+                    ? 'M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1v-10.5Z'
+                    : item.href === '/bulten'
+                      ? 'M4 6h16v12H4z M4 9h16 M7 12h5 M7 15h9'
+                      : item.href === '/etiketler'
+                        ? 'M3 11.2 11.2 3H21v9.8L12.8 21 3 11.2Zm12.2-4.7a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6Z'
+                        : item.href === '/yazarlar'
+                          ? 'M7.5 11a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm9 1a2.5 2.5 0 1 0-2.1-3.9 4.9 4.9 0 0 1 .1 3.8c.6.1 1.3.1 2 .1Zm-9 2c3.3 0 6 1.8 6 4v2H1.5v-2c0-2.2 2.7-4 6-4Zm9.1.2c2.4.2 4.4 1.8 4.4 3.8v2h-4.2v-2c0-1.4-.6-2.7-1.7-3.8h1.5Z'
+                          : item.href === '/hakkimda'
+                            ? 'M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 5a1.3 1.3 0 1 0 0 2.6A1.3 1.3 0 0 0 12 7Zm-1.2 5.2V17h2.4v-4.8h-2.4Z'
+                            : item.href === '/iletisim'
+                              ? 'M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z M4 7l8 6 8-6'
+                              : 'M4 5h16v14H4z';
+
+                return (
+                  <a href={item.href} class={item.active ? 'active' : undefined}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d={iconPath} /></svg>
+                    <span>{item.label}</span>
+                  </a>
+                );
+              })}
+            </nav>
+
+            <div class="mobile-drawer-footer">
+              {showLoginSlot && <div class="mobile-drawer-login"><slot name="mobile-login" /></div>}
+
+              <div class="feed-legal-links mobile-legal-links" aria-label={legalLabel}>
+                <a href="/gizlilik-politikasi">Gizlilik Politikası</a>
+                <a href="/kullanim-sartlari">Kullanım Şartları</a>
+                <a href="/cerez-politikasi">Çerez Politikası</a>
+                <a href="/topluluk-kurallari">Topluluk Kuralları</a>
+                <p class="feed-legal-copy">© 2026 Samet Başbuğ</p>
+              </div>
             </div>
           </div>
         </details>
@@ -121,15 +155,41 @@ const {
     if (!drawer || drawer.dataset.bound === '1') return;
     drawer.dataset.bound = '1';
 
+    const summary = drawer.querySelector('summary');
+
+    const closeDrawer = () => {
+      drawer.dataset.open = '0';
+      if (summary) summary.setAttribute('aria-expanded', 'false');
+    };
+
+    const openDrawer = () => {
+      drawer.dataset.open = '1';
+      if (summary) summary.setAttribute('aria-expanded', 'true');
+    };
+
+    if (summary) {
+      summary.setAttribute('aria-expanded', 'false');
+      summary.addEventListener('click', (event) => {
+        event.preventDefault();
+        const isOpen = drawer.dataset.open === '1';
+        if (isOpen) closeDrawer();
+        else openDrawer();
+      });
+    }
+
     document.addEventListener('click', (event) => {
-      if (!drawer.open) return;
+      if (drawer.dataset.open !== '1') return;
       const target = event.target;
       if (!(target instanceof Node)) return;
-      if (!drawer.contains(target)) drawer.removeAttribute('open');
+      if (!drawer.contains(target)) closeDrawer();
     });
 
-    drawer.querySelectorAll('a, .drawer-backdrop, .mobile-theme-toggle, [data-auth-login], [data-auth-logout]').forEach((el) => {
-      el.addEventListener('click', () => drawer.removeAttribute('open'));
+    drawer.querySelectorAll('a, .drawer-backdrop, .drawer-close, .mobile-theme-toggle, [data-auth-login], [data-auth-logout]').forEach((el) => {
+      el.addEventListener('click', () => closeDrawer());
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && drawer.dataset.open === '1') closeDrawer();
     });
   }
 
@@ -182,11 +242,11 @@ const {
 <style>
   :global(main) {
     max-width: 1240px;
-    padding-top: 1.1rem;
+    padding: 1.1rem 1rem 0;
     overflow: visible;
   }
 
-  .app-shell { display: grid; grid-template-columns: 240px minmax(0, 1fr) 280px; gap: 1rem; align-items: start; margin-top: 0.2rem; min-width: 0; width: 100%; max-width: 100%; }
+  .app-shell { display: grid; grid-template-columns: 240px minmax(0, 680px) 280px; gap: 1rem; align-items: start; justify-content: center; margin-top: 0.2rem; min-width: 0; width: 100%; max-width: 100%; }
   .card { background: transparent; border: 0; border-radius: 0; box-shadow: none; }
   .left-rail,.right-rail { position: sticky; top: 2.3rem; padding: 0.9rem 1rem 1rem; }
   .left-rail { padding-left: 0.8rem; }
@@ -221,13 +281,109 @@ const {
     .mobile-drawer summary { list-style:none; display:grid; place-items:center; width:34px; height:34px; border-radius:.65rem; border:1px solid var(--border); background:var(--muted); cursor:pointer; }
     .mobile-drawer summary::-webkit-details-marker { display:none; }
     .mobile-drawer summary svg { width:18px; height:18px; fill:currentColor; }
-    .drawer-backdrop { display:none; }
-    .mobile-drawer[open] .drawer-backdrop { display:block; position:fixed; inset:0; background:rgba(2,6,23,.28); border:0; z-index:18; }
-    .mobile-drawer-panel { position:absolute; top:calc(100% + .7rem); left:0; min-width:210px; z-index:50; background:rgba(11,15,25,.95); border:1px solid color-mix(in srgb, white 18%, var(--border)); border-radius:.75rem; box-shadow:0 12px 30px rgba(0,0,0,.35); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); padding:.35rem .6rem; }
-    .drawer-title { font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--secondary); padding:.25rem 0; margin-bottom:.1rem; }
-    .mobile-drawer-panel a { display:block; padding:.5rem 0; color:var(--text); text-decoration:none; font-size:.9rem; border-bottom:1px solid color-mix(in srgb, var(--border) 60%, transparent); }
-    .mobile-drawer-login { margin-top:.2rem; padding-top:.55rem; border-top:1px solid color-mix(in srgb, var(--border) 55%, transparent); }
-    .mobile-legal-links { max-width:none; margin-top:.7rem; padding-top:.7rem; gap:.38rem .7rem; grid-template-columns:max-content max-content; }
+
+    .drawer-backdrop { display:none; border:0; }
+    .mobile-drawer[data-open='1'] .drawer-backdrop {
+      display:block;
+      position:fixed;
+      inset:0;
+      background:rgba(2,6,23,.48);
+      backdrop-filter:blur(2px);
+      -webkit-backdrop-filter:blur(2px);
+      z-index:69;
+    }
+
+    .mobile-drawer-panel {
+      position:fixed;
+      top:0;
+      left:0;
+      bottom:0;
+      width:75vw;
+      max-width:320px;
+      z-index:70;
+      background:color-mix(in srgb, #030712 94%, black);
+      border-right:1px solid color-mix(in srgb, white 12%, var(--border));
+      box-shadow:4px 0 15px rgba(0, 0, 0, 0.5);
+      display:flex;
+      flex-direction:column;
+      padding:1rem 1rem 1rem;
+      transform:translateX(-102%);
+      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .mobile-drawer[data-open='1'] .mobile-drawer-panel { transform:translateX(0); }
+
+    .drawer-head {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:.65rem;
+      margin-bottom:1rem;
+      padding-top:calc(env(safe-area-inset-top, 0px) + .45rem);
+      padding-left:1.5rem;
+      padding-right:0;
+    }
+    .drawer-head-meta { display:flex; flex-direction:column; gap:.2rem; min-width:0; }
+    .drawer-head strong { color:var(--text); font-size:1.1rem; font-weight:800; line-height:1.2; }
+    .drawer-rss-link { color:var(--accent); font-size:.78rem; font-weight:700; text-decoration:none; width:fit-content; }
+    .drawer-rss-link:hover { color:var(--text); }
+    .drawer-close { width:38px; height:38px; margin-right:-.2rem; border-radius:.6rem; border:1px solid color-mix(in srgb, var(--border) 80%, transparent); background:transparent; color:var(--secondary); display:grid; place-items:center; cursor:pointer; }
+    .drawer-close svg { width:20px; height:20px; fill:currentColor; }
+
+    .mobile-drawer-nav {
+      display:flex;
+      flex-direction:column;
+      gap:1rem;
+      padding:0;
+      margin:0;
+    }
+    .mobile-drawer-nav a {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start !important;
+      width: 100%;
+      padding-left: 2.5rem;
+      gap: 1rem;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 1.12rem;
+      font-weight: 500;
+    }
+    .mobile-drawer-nav a svg { width:20px; height:20px; opacity:.95; flex-shrink:0; }
+    .mobile-drawer-nav a svg path {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .mobile-drawer-nav a.active,
+    .mobile-drawer-nav a:hover { color:var(--accent); }
+
+    .mobile-drawer-footer { margin-top:auto; }
+    .mobile-drawer-login {
+      padding-top:.9rem;
+      padding-left:2.5rem;
+      padding-right:1rem;
+      border-top:1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    }
+    .mobile-drawer-login :global(*) {
+      width:100%;
+      max-width:100%;
+      margin-left:0 !important;
+      margin-right:0 !important;
+    }
+    .mobile-legal-links {
+      max-width:none;
+      margin-top:.85rem;
+      padding-top:.75rem;
+      padding-left:2.5rem;
+      padding-right:1rem;
+      gap:.4rem .7rem;
+      grid-template-columns:1fr 1fr;
+      border-top:1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    }
+    .mobile-legal-links a { font-size:.75rem; white-space:normal; }
+    .mobile-legal-links a:nth-child(even) { justify-self:end; text-align:right; }
   }
   :global(html.force-mobile-ui) main { max-width:100%!important; width:100%!important; margin:0!important; padding:0!important; }
   :global(html.force-mobile-ui) .app-shell { grid-template-columns:1fr!important; width:100%!important; max-width:100%!important; margin:0!important; gap:0!important; }

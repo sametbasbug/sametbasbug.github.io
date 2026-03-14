@@ -98,6 +98,7 @@ const navItems = [
           <article
             class="feed-item"
             data-post-id={post.slug}
+            data-post-url={`/blog/${post.slug}/`}
             data-search={[
               post.data.title,
               post.data.description,
@@ -394,6 +395,25 @@ const navItems = [
       });
     }
 
+    function initFeedCardNavigation() {
+      const interactiveSelector = 'a, button, input, textarea, select, label, summary, [role="button"]';
+
+      document.querySelectorAll('.feed-item[data-post-url]').forEach((item) => {
+        if (item.dataset.cardNavBound === '1') return;
+        item.dataset.cardNavBound = '1';
+
+        item.addEventListener('click', (event) => {
+          const target = event.target;
+          if (!(target instanceof Element)) return;
+          if (target.closest(interactiveSelector)) return;
+
+          const url = item.getAttribute('data-post-url');
+          if (!url) return;
+          window.location.href = url;
+        });
+      });
+    }
+
     function initFeedSearch() {
       const desktopInput = document.getElementById('feed-search-input');
       const mobileInput = document.getElementById('feed-search-mobile');
@@ -522,12 +542,14 @@ const navItems = [
     initFeedCounts();
     initFeedLikes();
     initFeedShareButtons();
+    initFeedCardNavigation();
     initRelativeDates();
     document.addEventListener('astro:page-load', () => {
       initFeedSearch();
       initFeedCounts();
       initFeedLikes();
       initFeedShareButtons();
+      initFeedCardNavigation();
       initRelativeDates();
     });
 
@@ -544,8 +566,9 @@ const navItems = [
   <style>
     :global(#main-header) { display: none; }
     .feed-list { display: flex; flex-direction: column; }
-    .feed-item { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 0.75rem; padding: 0.8rem 0.9rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); transition: background 0.2s ease; min-width: 0; }
-    .feed-item:hover { background: transparent; }
+    .feed-item { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 0.75rem; margin-inline: -1rem; padding: 0.8rem calc(0.9rem + 1rem); border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); transition: background 0.2s ease; min-width: 0; cursor: pointer; }
+    .feed-item:hover,
+    .feed-item:focus-within { background: color-mix(in srgb, var(--muted) 72%, transparent); }
     .avatar { --avatar-accent: var(--accent); width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 0.85rem; background: color-mix(in srgb, var(--avatar-accent) 22%, transparent); color: var(--avatar-accent); overflow: hidden; border: 1px solid color-mix(in srgb, var(--avatar-accent) 35%, var(--border)); }
     .avatar-image { width: 100%; height: 100%; object-fit: cover; display: block; }
     .item-head { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.2rem; font-size: 0.86rem; min-width: 0; white-space: nowrap; }
@@ -586,6 +609,6 @@ const navItems = [
     .mobile-cats { display:flex; gap:0.45rem; overflow-x:auto; padding-bottom:0.1rem; scrollbar-width:none; }
     .mobile-cats::-webkit-scrollbar { display:none; }
     .mobile-cats a { white-space:nowrap; color:var(--secondary); border:1px solid var(--border); background:var(--muted); border-radius:999px; padding:0.32rem 0.65rem; font-size:0.8rem; text-decoration:none; }
-    @media (max-width: 700px) { .feed-item { grid-template-columns:40px minmax(0,1fr); gap:0.7rem; padding:0.85rem; } .action-share span { display:none; } .item-actions .read-more-link { margin-left:0; } }
+    @media (max-width: 700px) { .feed-item { grid-template-columns:40px minmax(0,1fr); gap:0.7rem; margin-inline:0; padding:0.85rem; } .action-share span { display:none; } .item-actions .read-more-link { display:none; } }
   </style>
 </BaseLayout>
