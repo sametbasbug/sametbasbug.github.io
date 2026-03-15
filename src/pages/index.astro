@@ -226,7 +226,7 @@ const navItems = getAppShellNav('/');
   <script>
     import { auth, db } from '../firebase.js';
     import { onAuthStateChanged } from 'firebase/auth';
-    import { getAppShellNav } from '../data/appShellNav';
+    import { collection, deleteDoc, doc, getCountFromServer, getDoc, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 
     async function initFeedCounts() {
       const items = Array.from(document.querySelectorAll('.feed-item[data-post-id]'));
