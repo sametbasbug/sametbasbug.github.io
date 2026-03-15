@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import AppShell from '../components/AppShell.astro';
 import Login from '../components/Login.astro';
 import { findAuthorByName } from '../data/authors';
+import { getAppShellNav } from '../data/appShellNav';
 
 const posts = (await getCollection('blog'))
   .filter((post) => !post.data.isDraft)
@@ -60,14 +61,7 @@ const profileHandle = (slug?: string) => {
   return slug.replace(/-/g, '_');
 };
 
-const navItems = [
-  { href: '/', label: 'Ana Sayfa', active: true },
-  { href: '/bulten', label: 'Bülten' },
-  { href: '/etiketler', label: 'Etiketler' },
-  { href: '/yazarlar', label: 'Yazarlar' },
-  { href: '/hakkimda', label: 'Hakkımda' },
-  { href: '/iletisim', label: 'İletişim' },
-];
+const navItems = getAppShellNav('/');
 ---
 
 <BaseLayout shellLayout={true} title={title} description={description}>
@@ -232,7 +226,7 @@ const navItems = [
   <script>
     import { auth, db } from '../firebase.js';
     import { onAuthStateChanged } from 'firebase/auth';
-    import { collection, deleteDoc, doc, getCountFromServer, getDoc, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+    import { getAppShellNav } from '../data/appShellNav';
 
     async function initFeedCounts() {
       const items = Array.from(document.querySelectorAll('.feed-item[data-post-id]'));

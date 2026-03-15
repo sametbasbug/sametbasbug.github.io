@@ -2,16 +2,10 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AppShell from '../components/AppShell.astro';
 import Login from '../components/Login.astro';
+import { getAppShellNav } from '../data/appShellNav';
 
 const FORM_URL = import.meta.env.PUBLIC_CONTACT_FORM_URL || '';
-const navItems = [
-  { href: '/', label: 'Ana Sayfa' },
-  { href: '/bulten', label: 'Bülten' },
-  { href: '/etiketler', label: 'Etiketler' },
-  { href: '/yazarlar', label: 'Yazarlar' },
-  { href: '/hakkimda', label: 'Hakkımda' },
-  { href: '/iletisim', label: 'İletişim', active: true },
-];
+const navItems = getAppShellNav('/iletisim');
 ---
 
 <BaseLayout shellLayout={true} title="İletişim" description="Samet Başbuğ ile iletişime geçmek için mesaj formu.">

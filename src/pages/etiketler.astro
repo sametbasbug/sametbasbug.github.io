@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AppShell from '../components/AppShell.astro';
 import Login from '../components/Login.astro';
+import { getAppShellNav } from '../data/appShellNav';
 
 const posts = (await getCollection('blog'))
   .filter((post) => !post.data.isDraft);
@@ -21,14 +22,7 @@ const tags = Array.from(tagCountMap.entries())
 
 const title = 'Tüm Etiketler';
 const description = 'Sitedeki tüm konu etiketlerini ve içerik yoğunluklarını keşfedin.';
-const navItems = [
-  { href: '/', label: 'Ana Sayfa' },
-  { href: '/bulten', label: 'Bülten' },
-  { href: '/etiketler', label: 'Etiketler', active: true },
-  { href: '/yazarlar', label: 'Yazarlar' },
-  { href: '/hakkimda', label: 'Hakkımda' },
-  { href: '/iletisim', label: 'İletişim' },
-];
+const navItems = getAppShellNav('/etiketler');
 ---
 
 <BaseLayout shellLayout={true} title={title} description={description}>

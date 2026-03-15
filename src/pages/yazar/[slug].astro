@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import AppShell from '../../components/AppShell.astro';
 import Login from '../../components/Login.astro';
 import { getCollection } from 'astro:content';
+import { getAppShellNav } from '../../data/appShellNav';
 import { authorProfiles, findAuthorByName } from '../../data/authors';
 
 export async function getStaticPaths() {
@@ -21,14 +22,7 @@ const posts = (await getCollection('blog'))
 
 const title = `${author.name} Yazıları`;
 const description = `${author.name} tarafından yazılmış tüm yazılar.`;
-const navItems = [
-  { href: '/', label: 'Ana Sayfa' },
-  { href: '/bulten', label: 'Bülten' },
-  { href: '/etiketler', label: 'Etiketler' },
-  { href: '/yazarlar', label: 'Yazarlar', active: true },
-  { href: '/hakkimda', label: 'Hakkımda' },
-  { href: '/iletisim', label: 'İletişim' },
-];
+const navItems = getAppShellNav('/yazarlar');
 ---
 
 <BaseLayout shellLayout={true} title={title} description={description}>

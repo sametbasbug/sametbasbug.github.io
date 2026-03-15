@@ -1,21 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AppShell from '../components/AppShell.astro';
+import Login from '../components/Login.astro';
+import { getAppShellNav } from '../data/appShellNav';
 
 const title = 'Admin Paneli';
 const description = 'Sadece yönetici erişimine açık yorum moderasyon ekranı.';
-const navItems = [
-  { href: '/', label: 'Ana Sayfa' },
-  { href: '/bulten', label: 'Bülten' },
-  { href: '/etiketler', label: 'Etiketler' },
-  { href: '/yazarlar', label: 'Yazarlar' },
-  { href: '/hakkimda', label: 'Hakkımda' },
-  { href: '/iletisim', label: 'İletişim' },
-];
+const navItems = getAppShellNav('/admin');
 ---
 
 <BaseLayout shellLayout={true} title={title} description={description} noindex={true}>
-  <AppShell pageTitle="Admin" topbarTitle="Admin Paneli" topbarMeta="Yorum moderasyonu" navItems={navItems} shellClass="app-shell-focus app-shell-reading">
+  <AppShell pageTitle="Admin" topbarTitle="Admin Paneli" topbarMeta="Yorum moderasyonu" navItems={navItems} showLoginSlot={true} shellClass="app-shell-focus app-shell-reading app-shell-rail-offset">
+    <Fragment slot="left-login"><Login /></Fragment>
+    <Fragment slot="mobile-login"><Login /></Fragment>
     <section class="admin-panel-body" data-admin-shell>
       <header class="admin-header">
         <p class="admin-kicker">Gizli Alan</p>

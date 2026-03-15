@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import AppShell from '../components/AppShell.astro';
 import Login from '../components/Login.astro';
 import { getCollection } from 'astro:content';
+import { getAppShellNav } from '../data/appShellNav';
 
 const title = 'Bülten';
 const description = 'Günlük haber özetlerinin akış kabuğuna taşınmış bülten görünümü.';
@@ -29,14 +30,7 @@ const categories = (Object.keys(categoryMap) as Array<keyof typeof categoryMap>)
 });
 
 const latestDate = allSummaries[0]?.data.date;
-const navItems = [
-  { href: '/', label: 'Ana Sayfa' },
-  { href: '/bulten', label: 'Bülten', active: true },
-  { href: '/etiketler', label: 'Etiketler' },
-  { href: '/yazarlar', label: 'Yazarlar' },
-  { href: '/hakkimda', label: 'Hakkımda' },
-  { href: '/iletisim', label: 'İletişim' },
-];
+const navItems = getAppShellNav('/bulten');
 const formatDate = (date: Date) =>
   date.toLocaleDateString('tr-TR', {
     day: '2-digit',

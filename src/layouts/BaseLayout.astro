@@ -88,7 +88,6 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 	</head>
 	<body class={shellLayout ? 'app-shell-layout' : undefined}>
 		<div id="progress-bar"></div>
-		<div id="reading-progress"></div>
 		
 		<!-- Back to Top Button -->
 		<button id="back-to-top" class="back-to-top" aria-label="Ba�a D�n">
@@ -179,7 +178,6 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 			// Header Scroll, Reading Progress & Back to Top
 			function handleScroll() {
 				const header = document.getElementById('main-header');
-				const readingBar = document.getElementById('reading-progress');
 				const backToTop = document.getElementById('back-to-top');
 				
 				if (header) {
@@ -190,18 +188,6 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 					}
 				}
 
-				if (readingBar) {
-					if (window.location.pathname.startsWith('/blog/')) {
-						readingBar.style.display = 'block';
-						const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-						if (totalHeight > 0) {
-							const progress = (window.scrollY / totalHeight) * 100;
-							readingBar.style.width = progress + '%';
-						}
-					} else {
-						readingBar.style.display = 'none';
-					}
-				}
 
 				if (backToTop) {
 					if (window.scrollY > 300) {
@@ -393,10 +379,6 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 				z-index: 9999; transition: width 0.3s ease;
 			}
 
-			#reading-progress {
-				position: fixed; top: 0; left: 0; width: 0%; height: 3px;
-				background: var(--accent); z-index: 9998; opacity: 0.8;
-			}
 
 			/* Back to Top Button */
 			.back-to-top {

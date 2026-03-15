@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import AppShell from '../../components/AppShell.astro';
 import Login from '../../components/Login.astro';
 import { getCollection } from 'astro:content';
+import { getAppShellNav } from '../../data/appShellNav';
 
 const categoryLabels = {
   ekonomi: 'Ekonomi',
@@ -25,14 +26,7 @@ const entries = (await getCollection('gunlukOzet'))
 const categoryName = categoryLabels[kategori];
 const title = `Bülten | ${categoryName}`;
 const description = `${categoryName} gündeminin tarih bazlı bülten arşivi.`;
-const navItems = [
-  { href: '/', label: 'Ana Sayfa' },
-  { href: '/bulten', label: 'Bülten', active: true },
-  { href: '/etiketler', label: 'Etiketler' },
-  { href: '/yazarlar', label: 'Yazarlar' },
-  { href: '/hakkimda', label: 'Hakkımda' },
-  { href: '/iletisim', label: 'İletişim' },
-];
+const navItems = getAppShellNav('/bulten');
 
 const searchIndex = entries.map((entry, index) => ({
   index,
