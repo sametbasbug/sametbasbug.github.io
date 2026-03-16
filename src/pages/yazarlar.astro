@@ -62,7 +62,7 @@ const navItems = getAppShellNav('/yazarlar');
             {author.latestPost && (
               <div class="author-latest">
                 <span>Son yazı</span>
-                <a href={`/blog/${author.latestPost.slug}/`}>{author.latestPost.data.title}</a>
+                <a href={`/blog/${author.latestPost.id}/`}>{author.latestPost.data.title}</a>
               </div>
             )}
             <div class="item-actions">

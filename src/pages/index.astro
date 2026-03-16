@@ -1,4 +1,4 @@
----
+﻿---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AppShell from '../components/AppShell.astro';
@@ -91,14 +91,14 @@ const navItems = getAppShellNav('/');
         return (
           <article
             class="feed-item"
-            data-post-id={post.slug}
-            data-post-url={`/blog/${post.slug}/`}
+            data-post-id={post.id}
+            data-post-url={`/blog/${post.id}/`}
             data-search={[
               post.data.title,
               post.data.description,
               author,
               profile?.slug,
-              `@${profileHandle(profile?.slug ?? 'samet-basbug')}`,
+              `@${profileHandle(profile?.slug ?? 'samet-basbug')}` ,
               ...(tags ?? []),
             ]
               .join(' ')
@@ -125,14 +125,14 @@ const navItems = getAppShellNav('/');
                 </span>
               </div>
 
-              <a class="item-title" href={`/blog/${post.slug}/`}>
+              <a class="item-title" href={`/blog/${post.id}/`}>
                 {post.data.title}
               </a>
 
               <p class="item-desc">{post.data.description}</p>
 
               {post.data.heroImage && (
-                <a class="item-image-link" href={`/blog/${post.slug}/`}>
+                <a class="item-image-link" href={`/blog/${post.id}/`}>
                   <img
                     class="item-image"
                     src={post.data.heroImage}
@@ -152,7 +152,7 @@ const navItems = getAppShellNav('/');
               )}
 
               <div class="item-actions">
-                <a class="action-btn action-comment" href={`/blog/${post.slug}/#comments`} aria-label="Yorumlar">
+                <a class="action-btn action-comment" href={`/blog/${post.id}/#comments`} aria-label="Yorumlar">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9l-5 5v-5.5A2.5 2.5 0 0 1 1.5 13V5.5Z"/></svg>
                   <span data-comment-count aria-busy="true">…</span>
                 </a>
@@ -168,7 +168,7 @@ const navItems = getAppShellNav('/');
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2Zm11 8H6v10h12V10Z"/></svg>
                   <span>{formatDate(post.data.pubDate)}</span>
                 </span>
-                <a class="read-more-link" href={`/blog/${post.slug}/`}>Devamını oku →</a>
+                <a class="read-more-link" href={`/blog/${post.id}/`}>Devamını oku →</a>
               </div>
             </div>
           </article>
@@ -257,7 +257,7 @@ const navItems = getAppShellNav('/');
             commentCountEl.setAttribute('aria-busy', 'false');
             likeCountEl.setAttribute('aria-busy', 'false');
           } catch (error) {
-            console.error('Sayaç verisi alınamadı:', postId, error);
+            console.error('Saya? verisi al?namad?:', postId, error);
           }
         })
       );
@@ -302,7 +302,7 @@ const navItems = getAppShellNav('/');
 
       feedAuthUnsub = onAuthStateChanged(auth, (user) => {
         checkLikesForUser(user).catch((error) => {
-          console.error('Like durumu okunamadı:', error);
+          console.error('Like durumu okunamad?:', error);
         });
       });
 
@@ -316,7 +316,7 @@ const navItems = getAppShellNav('/');
         btn.addEventListener('click', async () => {
           const user = auth.currentUser;
           if (!user) {
-            alert('Beğenmek için giriş yapmalısınız');
+            alert('Be?enmek i?in giri? yapmal?s?n?z');
             return;
           }
 
@@ -339,7 +339,7 @@ const navItems = getAppShellNav('/');
               await setDoc(likeRef, {
                 postId,
                 userId: user.uid,
-                postTitle: item.querySelector('.item-title')?.textContent?.trim() || 'Başlıksız yazı',
+                postTitle: item.querySelector('.item-title')?.textContent?.trim() || 'Ba?l?ks?z yaz?',
                 postSlug: `/blog/${postId}/`,
                 createdAt: serverTimestamp(),
               });
@@ -349,7 +349,7 @@ const navItems = getAppShellNav('/');
           } catch (error) {
             applyLikedUi(btn, currentlyLiked);
             countEl.textContent = String(currentCount);
-            console.error('Beğeni işlemi başarısız:', error);
+            console.error('Be?eni i?lemi ba?ar?s?z:', error);
           } finally {
             btn.dataset.busy = '0';
           }
@@ -371,7 +371,7 @@ const navItems = getAppShellNav('/');
 
           try {
             await navigator.clipboard.writeText(url);
-            if (label) label.textContent = 'Kopyalandı';
+            if (label) label.textContent = 'Kopyaland?';
           } catch {
             const temp = document.createElement('input');
             temp.value = url;
@@ -379,7 +379,7 @@ const navItems = getAppShellNav('/');
             temp.select();
             document.execCommand('copy');
             temp.remove();
-            if (label) label.textContent = 'Kopyalandı';
+            if (label) label.textContent = 'Kopyaland?';
           }
 
           setTimeout(() => {
@@ -518,7 +518,7 @@ const navItems = getAppShellNav('/');
       const diffHour = Math.floor(diffMs / (1000 * 60 * 60));
       const diffDay = Math.floor(diffHour / 24);
 
-      if (diffHour < 1) return 'şimdi';
+      if (diffHour < 1) return '?imdi';
       if (diffHour < 24) return `${diffHour}sa`;
       if (diffDay < 30) return `${diffDay}g`;
       return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -606,3 +606,4 @@ const navItems = getAppShellNav('/');
     @media (max-width: 700px) { .feed-item { grid-template-columns:40px minmax(0,1fr); gap:0.7rem; margin-inline:0; padding:0.85rem; } .action-share span { display:none; } .item-actions .read-more-link { display:none; } }
   </style>
 </BaseLayout>
+

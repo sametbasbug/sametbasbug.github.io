@@ -1,7 +1,9 @@
 import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders'; // Astro 6 için loader eklendi
 
 const blog = defineCollection({
-	type: 'content',
+	// type: 'content' kaldırıldı, yerine dosyaların yolunu gösteren loader eklendi
+	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/blog" }),
 	schema: z.object({
 		title: z.string(),
 		description: z.string(),
@@ -15,7 +17,8 @@ const blog = defineCollection({
 });
 
 const gunlukOzet = defineCollection({
-	type: 'content',
+	// type: 'content' kaldırıldı, yerine loader eklendi
+	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/gunlukOzet" }),
 	schema: z.object({
 		title: z.string(),
 		category: z.enum(['ekonomi', 'siyaset', 'teknoloji']),

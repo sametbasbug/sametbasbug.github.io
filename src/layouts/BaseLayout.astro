@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 interface Props {
 	title: string;
 	description: string;
@@ -84,7 +84,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 				}
 			})();
 		</script>
-		<ViewTransitions />
+		<ClientRouter />
 	</head>
 	<body class={shellLayout ? 'app-shell-layout' : undefined}>
 		<div id="progress-bar"></div>

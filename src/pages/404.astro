@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AppShell from '../components/AppShell.astro';
+import Login from '../components/Login.astro';
 import { getAppShellNav } from '../data/appShellNav';
 
 const title = 'Sayfa Bulunamadı';
@@ -9,7 +10,9 @@ const navItems = getAppShellNav();
 ---
 
 <BaseLayout shellLayout={true} title={title} description={description} noindex={true}>
-  <AppShell pageTitle="404" topbarTitle="404" topbarMeta="Yol kayboldu" navItems={navItems}>
+  <AppShell pageTitle="404" topbarTitle="404" topbarMeta="Yol kayboldu" navItems={navItems} showLoginSlot={true}>
+    <Fragment slot="left-login"><Login /></Fragment>
+    <Fragment slot="mobile-login"><Login /></Fragment>
     <section class="error-hero">
       <p class="error-code">404</p>
       <h2>Aradığın sayfa burada değil.</h2>

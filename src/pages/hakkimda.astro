@@ -73,7 +73,7 @@ const navItems = getAppShellNav('/hakkimda');
         <ul class="trend-list latest-posts">
           {latestPosts.map((post) => (
             <li>
-              <a href={`/blog/${post.slug}/`}>
+              <a href={`/blog/${post.id}/`}>
                 <span class="trend-tag">{post.data.title}</span>
                 <span class="trend-count">{post.data.pubDate.toLocaleDateString('tr-TR')}</span>
               </a>

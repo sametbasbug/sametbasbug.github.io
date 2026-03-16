@@ -1,5 +1,5 @@
----
-import { type CollectionEntry, getCollection } from 'astro:content';
+﻿---
+import { type CollectionEntry, getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AppShell from '../../components/AppShell.astro';
 import Login from '../../components/Login.astro';
@@ -10,26 +10,33 @@ import { getAppShellNav } from '../../data/appShellNav';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-    props: post,
-  }));
+  return posts
+    .filter((post) => !post.data.isDraft)
+    .map((post) => ({
+      params: { slug: post.id },
+    }));
 }
 type Props = CollectionEntry<'blog'>;
 
-const post = Astro.props;
-const { Content } = await post.render();
-
+const routeSlug = Astro.params.slug;
 const posts = (await getCollection('blog'))
   .filter((post) => !post.data.isDraft)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-const currentIndex = posts.findIndex((p) => p.slug === post.slug);
+const post = posts.find((item) => item.id === routeSlug) as Props | undefined;
+
+if (!post) {
+  throw new Error(`Blog post not found for id: ${routeSlug}`);
+}
+
+const { Content } = await render(post);
+
+const currentIndex = posts.findIndex((p) => p.id === post.id);
 const nextPost = posts[currentIndex - 1];
 const prevPost = posts[currentIndex + 1];
 const authorProfile = findAuthorByName(post.data.author);
 const relatedByTag = posts
-  .filter((item) => item.slug !== post.slug)
+  .filter((item) => item.id !== post.id)
   .filter((item) => (item.data.tags ?? []).some((tag) => (post.data.tags ?? []).includes(tag)))
   .slice(0, 3);
 
@@ -88,8 +95,8 @@ const navItems = getAppShellNav();
         <Content />
       </div>
 
-      <LikeButton postId={post.slug} postTitle={post.data.title} postSlug={`/blog/${post.slug}/`} />
-      <CommentSection postId={post.slug} />
+      <LikeButton postId={post.id} postTitle={post.data.title} postSlug={`/blog/${post.id}/`} />
+      <CommentSection postId={post.id} />
 
       <div class="share-section">
         <span class="share-label">İçeriği Paylaş</span>
@@ -108,14 +115,14 @@ const navItems = getAppShellNav();
 
       <nav class="post-nav">
         {prevPost ? (
-          <a href={`/blog/${prevPost.slug}/`} class="nav-card prev">
+          <a href={`/blog/${prevPost.id}/`} class="nav-card prev">
             <span class="nav-label">← Önceki Yazı</span>
             <span class="nav-title">{prevPost.data.title}</span>
           </a>
         ) : <div />}
 
         {nextPost ? (
-          <a href={`/blog/${nextPost.slug}/`} class="nav-card next">
+          <a href={`/blog/${nextPost.id}/`} class="nav-card next">
             <span class="nav-label">Sonraki Yazı →</span>
             <span class="nav-title">{nextPost.data.title}</span>
           </a>
@@ -130,7 +137,7 @@ const navItems = getAppShellNav();
         <span>{post.data.description}</span>
         <div class="post-meta-grid">
           <div><strong>Tarih</strong><span>{post.data.pubDate.toLocaleDateString('tr-TR')}</span></div>
-          <div><strong>Yazar</strong><span>{post.data.author ?? 'Samet Başbuğ'}</span></div>
+          <div><strong>Yazar</strong><span>{post.data.author ?? 'Samet BaÅŸbuÄŸ'}</span></div>
         </div>
       </div>
 
@@ -150,7 +157,7 @@ const navItems = getAppShellNav();
           <h2 class="panel-title">Benzer İçerikler</h2>
           <div class="related-list">
             {relatedByTag.map((item) => (
-              <a href={`/blog/${item.slug}/`}>
+              <a href={`/blog/${item.id}/`}>
                 <strong>{item.data.title}</strong>
                 <span>{item.data.pubDate.toLocaleDateString('tr-TR')}</span>
               </a>
@@ -214,3 +221,4 @@ const navItems = getAppShellNav();
     @media (max-width: 820px) { .post-topbar{flex-direction:row;align-items:center;justify-content:space-between;} .topbar-links{justify-content:flex-end;margin-left:auto;} .post-article{padding:.85rem;} .post-nav{grid-template-columns:1fr;} }
   </style>
 </BaseLayout>
+

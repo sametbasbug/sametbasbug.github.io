@@ -16,9 +16,9 @@
     "briefing:v1:run:ci": "node scripts/briefing-v1-run-ci.mjs"
   },
   "dependencies": {
-    "@astrojs/rss": "^4.0.15",
-    "@astrojs/sitemap": "^3.7.0",
-    "astro": "^5.17.1",
+    "@astrojs/rss": "^4.0.17",
+    "@astrojs/sitemap": "^3.7.1",
+    "astro": "^6.0.4",
     "firebase": "^12.10.0"
   }
 }
