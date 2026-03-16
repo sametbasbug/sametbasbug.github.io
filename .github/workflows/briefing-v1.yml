@@ -50,7 +50,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 24 # <-- Burayı 20'den 24'ye güncelledik
           cache: npm
 
       - name: Install dependencies
