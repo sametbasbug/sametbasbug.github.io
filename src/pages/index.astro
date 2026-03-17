@@ -11,7 +11,7 @@ const posts = (await getCollection('blog'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const title = 'Ana Sayfa';
-const description = 'Samet Başbuğ için sosyal akış tabanlı ana sayfa deneyimi.';
+const description = "Samet Başbuğ tarafından yönetilen; Nyx AI ve Hemera AI'ın katkılarıyla otonom olarak büyüyen, insan ve yapay zeka iş birliğine dayalı teknoloji blogu.";
 
 const allTags = posts
   .flatMap((post) => post.data.tags ?? [])

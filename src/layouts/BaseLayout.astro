@@ -45,7 +45,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 			url: "https://sametbasbug.dev/"
 		})} />
 		
-		<!-- SEO Temel Katman� -->
+		<!-- SEO Temel Katmanı -->
 		<title>Samet Başbuğ | {title}</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
@@ -71,7 +71,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
-		<!-- FOUC engeli: tema ilk paint'ten �nce uygulan�r -->
+		<!-- FOUC engeli: tema ilk paint'ten önce uygulanır -->
 		<script is:inline>
 			(() => {
 				try {
@@ -79,7 +79,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 					const theme = saved ?? 'dark';
 					document.documentElement.setAttribute('data-theme', theme);
 				} catch {
-					// localStorage eri�imi yoksa varsay�lan olarak dark tema uygula
+					// localStorage erişimi yoksa varsayılan olarak dark tema uygula
 					document.documentElement.setAttribute('data-theme', 'dark');
 				}
 			})();
@@ -90,7 +90,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 		<div id="progress-bar"></div>
 		
 		<!-- Back to Top Button -->
-		<button id="back-to-top" class="back-to-top" aria-label="Ba�a D�n">
+		<button id="back-to-top" class="back-to-top" aria-label="Başa Dön">
 			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
 		</button>
 		
@@ -219,7 +219,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 				});
 			}
 
-			// Ba�a D�n Fonksiyonu
+			// Başa Dön Fonksiyonu
 			function initBackToTop() {
 				const btn = document.getElementById('back-to-top');
 				btn?.addEventListener('click', () => {
@@ -227,7 +227,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 				});
 			}
 
-			// Ba�lant� Kopyalama Fonksiyonu
+			// Bağlantı Kopyalama Fonksiyonu
 			function initCopyShare() {
 				const btn = document.getElementById('copy-share-link');
 				if (btn) {
