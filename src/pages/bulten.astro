@@ -57,7 +57,6 @@ const formatDate = (date: Date) =>
     </div>
 
     <div class="bulletin-hero">
-      <p class="bulletin-eyebrow">🟢 Haber Sistemi Aktif | v1.0</p>
       <h2>Günü anlık değil, anlamlı şekilde kapatıyoruz.</h2>
       <p>
         Ekonomi, siyaset ve teknoloji dünyasındaki karmaşık gelişmeleri rafine özetlere dönüştüren bülten alanı.
@@ -73,7 +72,13 @@ const formatDate = (date: Date) =>
 
     <div class="feed-list bulletin-list">
       {categories.map((item) => (
-        <article class="feed-item bulletin-item" data-search={`${item.name} ${item.summary} ${item.latest?.data.summaryItems?.join(' ') ?? ''}`.toLocaleLowerCase('tr-TR')}>
+        <article
+          class="feed-item bulletin-item"
+          data-bulletin-url={item.href}
+          data-search={`${item.name} ${item.summary}`.toLocaleLowerCase('tr-TR')}
+          tabindex="0"
+          role="link"
+        >
           <div class="avatar bulletin-avatar" aria-hidden="true">{item.name.slice(0, 1)}</div>
           <div class="item-body">
             <div class="item-head">
@@ -82,11 +87,6 @@ const formatDate = (date: Date) =>
             </div>
             <a class="item-title" href={item.href}>{item.name} Bülteni</a>
             <p class="item-desc">{item.summary}</p>
-            {item.latest && (
-              <div class="bulletin-points">
-                {item.latest.data.summaryItems.slice(0, 3).map((point) => <p>{point}</p>)}
-              </div>
-            )}
             <div class="item-actions">
               <span class="date-meta">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2Zm11 8H6v10h12V10Z"/></svg>
@@ -105,19 +105,6 @@ const formatDate = (date: Date) =>
         <input id="bulletin-search-input" type="search" placeholder="Kategori veya özet ara..." />
         <a href="/gunluk-ozet">Tüm bülten arşivine geç →</a>
       </div>
-      <section class="who-box">
-        <h2 class="panel-title">Kategoriler</h2>
-        <ul class="who-list">
-          {categories.map((item) => (
-            <li>
-              <a href={item.href} class="bulletin-filter-link" data-filter={item.name.toLocaleLowerCase('tr-TR')}>
-                <strong>{item.name}</strong>
-                <span>{item.latest ? formatDate(item.latest.data.date) : 'Henüz yayın yok'}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
       <section>
         <h2 class="panel-title">Yayın Notu</h2>
         <ul class="trend-list bulletin-notes">
@@ -171,14 +158,56 @@ const formatDate = (date: Date) =>
       applyFilter(desktopInput?.value || mobileInput?.value || '');
     }
 
+    function initBulletinCardHover() {
+      document.querySelectorAll('.bulletin-item').forEach((card) => {
+        if (card.dataset.hoverBound === '1') return;
+        card.dataset.hoverBound = '1';
+
+        card.addEventListener('mouseenter', () => card.classList.add('is-hovered'));
+        card.addEventListener('mouseleave', () => card.classList.remove('is-hovered'));
+        card.addEventListener('focusin', () => card.classList.add('is-focused'));
+        card.addEventListener('focusout', () => card.classList.remove('is-focused'));
+      });
+    }
+
+    function initBulletinCardNavigation() {
+      document.querySelectorAll('.bulletin-item[data-bulletin-url]').forEach((card) => {
+        if (card.dataset.navBound === '1') return;
+        card.dataset.navBound = '1';
+
+        const navigate = () => {
+          const href = card.getAttribute('data-bulletin-url');
+          if (href) window.location.href = href;
+        };
+
+        card.addEventListener('click', (event) => {
+          if (event.defaultPrevented) return;
+          if (event.target instanceof Element && event.target.closest('a, button, input, textarea, select, label')) return;
+          navigate();
+        });
+
+        card.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            navigate();
+          }
+        });
+      });
+    }
+
     initBulletinSearch();
-    document.addEventListener('astro:page-load', initBulletinSearch);
+    initBulletinCardHover();
+    initBulletinCardNavigation();
+    document.addEventListener('astro:page-load', () => {
+      initBulletinSearch();
+      initBulletinCardHover();
+      initBulletinCardNavigation();
+    });
   </script>
 
   <style>
     :global(#main-header) { display: none; }
     .bulletin-hero { padding:1.15rem 1rem .6rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); }
-    .bulletin-eyebrow { color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin-bottom:.65rem; font-size:.78rem; }
     .bulletin-hero h2 { margin:0 0 .55rem; font-size:clamp(1.45rem, 3vw, 2rem); line-height:1.2; }
     .bulletin-hero p { color:var(--secondary); max-width:62ch; }
     .bulletin-stats { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:.75rem; padding:.95rem 1rem 1.1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); }
@@ -186,7 +215,12 @@ const formatDate = (date: Date) =>
     .bulletin-stats strong { display:block; font-size:1.05rem; }
     .bulletin-stats span { color:var(--secondary); font-size:.88rem; }
     .feed-list { display:flex; flex-direction:column; }
-    .feed-item { display:grid; grid-template-columns:42px minmax(0, 1fr); gap:.75rem; padding:.8rem .9rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); min-width:0; }
+    .feed-item { display:grid; grid-template-columns:42px minmax(0, 1fr); gap:.75rem; margin-inline:-1rem; padding:.8rem calc(.9rem + 1rem); border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); min-width:0; }
+    .bulletin-item { cursor:pointer; transition: background .2s ease; }
+    .bulletin-item:hover,
+    .bulletin-item:focus-within,
+    .bulletin-item.is-hovered,
+    .bulletin-item.is-focused { background: color-mix(in srgb, var(--muted) 72%, transparent); }
     .avatar { width:42px; height:42px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:.85rem; background:color-mix(in srgb, var(--accent) 22%, transparent); color:var(--accent); overflow:hidden; border:1px solid color-mix(in srgb, var(--accent) 35%, var(--border)); }
     .bulletin-avatar { background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 20%, transparent), color-mix(in srgb, #818cf8 22%, transparent)); }
     .item-head { display:flex; align-items:center; gap:.4rem; margin-bottom:.2rem; font-size:.86rem; min-width:0; white-space:nowrap; }
@@ -195,9 +229,6 @@ const formatDate = (date: Date) =>
     .item-title { display:block; color:var(--text); font-size:.98rem; font-weight:700; margin-bottom:.3rem; text-decoration:none; line-height:1.34; }
     .item-title:hover { color:var(--accent); }
     .item-desc { color:var(--secondary); margin-bottom:.55rem; line-height:1.48; font-size:.9rem; }
-    .bulletin-points { display:grid; gap:.45rem; margin-bottom:.7rem; }
-    .bulletin-points p { position:relative; padding-left:.95rem; color:var(--secondary); font-size:.88rem; line-height:1.5; }
-    .bulletin-points p::before { content:''; position:absolute; left:0; top:.58rem; width:.4rem; height:.4rem; border-radius:50%; background:var(--accent); }
     .item-actions { display:flex; flex-wrap:wrap; align-items:center; gap:.6rem; color:var(--secondary); font-size:.82rem; min-width:0; }
     .date-meta { display:inline-flex; align-items:center; gap:.28rem; color:var(--secondary); padding:.28rem .45rem; border-radius:999px; }
     .date-meta svg { width:15px; height:15px; fill:currentColor; }
@@ -219,6 +250,6 @@ const formatDate = (date: Date) =>
     .mobile-cats { display:flex; gap:.45rem; overflow-x:auto; padding-bottom:.1rem; scrollbar-width:none; -ms-overflow-style:none; }
     .mobile-cats::-webkit-scrollbar { display:none; }
     .mobile-cats a { white-space:nowrap; color:var(--secondary); border:1px solid var(--border); background:var(--muted); border-radius:999px; padding:.32rem .65rem; font-size:.8rem; text-decoration:none; }
-    @media (max-width: 820px) { .bulletin-stats{grid-template-columns:1fr;} }
+    @media (max-width: 820px) { .bulletin-stats{grid-template-columns:1fr;} .feed-item{margin-inline:0; padding:.85rem;} }
   </style>
 </BaseLayout>

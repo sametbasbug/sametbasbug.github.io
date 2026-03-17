@@ -35,17 +35,6 @@ const formatDate = (date: Date) =>
     year: 'numeric',
   });
 
-const relativeDate = (date: Date) => {
-  const diffMs = Date.now() - date.getTime();
-  const diffHour = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDay = Math.floor(diffHour / 24);
-
-  if (diffHour < 1) return 'şimdi';
-  if (diffHour < 24) return `${diffHour}sa`;
-  if (diffDay < 30) return `${diffDay}g`;
-  return formatDate(date);
-};
-
 const firstLetters = (value: string) =>
   value
     .split(/\s+/)
@@ -119,10 +108,7 @@ const navItems = getAppShellNav('/');
             <div class="item-body">
               <div class="item-head">
                 <span class="author">{author}</span>
-                <span class="meta">
-                  @{profileHandle(profile?.slug ?? 'samet-basbug')} ·
-                  <time data-relative-date datetime={post.data.pubDate.toISOString()}>{relativeDate(post.data.pubDate)}</time>
-                </span>
+                <span class="meta">@{profileHandle(profile?.slug ?? 'samet-basbug')}</span>
               </div>
 
               <a class="item-title" href={`/blog/${post.id}/`}>
@@ -371,7 +357,7 @@ const navItems = getAppShellNav('/');
 
           try {
             await navigator.clipboard.writeText(url);
-            if (label) label.textContent = 'Kopyaland?';
+            if (label) label.textContent = 'Kopyalandı';
           } catch {
             const temp = document.createElement('input');
             temp.value = url;
@@ -379,7 +365,7 @@ const navItems = getAppShellNav('/');
             temp.select();
             document.execCommand('copy');
             temp.remove();
-            if (label) label.textContent = 'Kopyaland?';
+            if (label) label.textContent = 'Kopyalandı';
           }
 
           setTimeout(() => {
@@ -511,43 +497,18 @@ const navItems = getAppShellNav('/');
       applyFilter(initialValue, initialSource);
     }
 
-    function formatRelativeDate(dateString) {
-      const date = new Date(dateString);
-      if (Number.isNaN(date.getTime())) return '';
-      const diffMs = Date.now() - date.getTime();
-      const diffHour = Math.floor(diffMs / (1000 * 60 * 60));
-      const diffDay = Math.floor(diffHour / 24);
-
-      if (diffHour < 1) return '?imdi';
-      if (diffHour < 24) return `${diffHour}sa`;
-      if (diffDay < 30) return `${diffDay}g`;
-      return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
-    }
-
-    function initRelativeDates() {
-      document.querySelectorAll('[data-relative-date][datetime]').forEach((el) => {
-        const value = el.getAttribute('datetime') || '';
-        const text = formatRelativeDate(value);
-        if (text) el.textContent = text;
-      });
-    }
-
     initFeedSearch();
     initFeedCounts();
     initFeedLikes();
     initFeedShareButtons();
     initFeedCardNavigation();
-    initRelativeDates();
     document.addEventListener('astro:page-load', () => {
       initFeedSearch();
       initFeedCounts();
       initFeedLikes();
       initFeedShareButtons();
       initFeedCardNavigation();
-      initRelativeDates();
     });
-
-    setInterval(initRelativeDates, 60 * 1000);
 
     document.addEventListener('astro:before-swap', () => {
       if (feedAuthUnsub) {

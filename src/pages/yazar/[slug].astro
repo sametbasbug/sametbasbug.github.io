@@ -20,13 +20,13 @@ const posts = (await getCollection('blog'))
   .filter((post) => findAuthorByName(post.data.author)?.slug === author.slug)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-const title = `${author.name} YazÄ±larÄ±`;
-const description = `${author.name} tarafÄ±ndan yazÄ±lmÄ±ÅŸ tÃ¼m yazÄ±lar.`;
+const title = `${author.name} Yazıları`;
+const description = `${author.name} tarafından yazılmış tüm yazılar.`;
 const navItems = getAppShellNav('/yazarlar');
 ---
 
 <BaseLayout shellLayout={true} title={title} description={description}>
-  <AppShell pageTitle={author.name} topbarTitle={author.name} topbarMeta={`${posts.length} yazÄ±`} navItems={navItems} showLoginSlot={true}>
+  <AppShell pageTitle={author.name} topbarTitle={author.name} topbarMeta={`${posts.length} yazı`} navItems={navItems} showLoginSlot={true}>
     <Fragment slot="left-login"><Login /></Fragment>
     <Fragment slot="mobile-login"><Login /></Fragment>
 
@@ -47,8 +47,8 @@ const navItems = getAppShellNav('/yazarlar');
     </section>
 
     <div class="author-actions">
-      <a href="/yazarlar">â† TÃ¼m yazarlara dÃ¶n</a>
-      <span>{posts.length} yayÄ±n</span>
+      <a href="/yazarlar">← Tüm yazarlara dön</a>
+      <span>{posts.length} yayın</span>
     </div>
 
     <div class="feed-list author-post-list">
@@ -56,7 +56,7 @@ const navItems = getAppShellNav('/yazarlar');
         <article class="feed-item author-post-item">
           <div class="avatar mini-avatar" style={author.color ? `--avatar-accent:${author.color};` : undefined} aria-hidden="true">
             {author.image ? (
-              <img class="avatar-image" src={author.image} alt={`${author.name} profil gÃ¶rseli`} loading="lazy" decoding="async" />
+              <img class="avatar-image" src={author.image} alt={`${author.name} profil görseli`} loading="lazy" decoding="async" />
             ) : (
               author.name.slice(0, 1)
             )}
@@ -72,7 +72,7 @@ const navItems = getAppShellNav('/yazarlar');
             <p class="item-desc">{post.data.description}</p>
 
             <div class="item-actions">
-              <a class="read-more-link" href={`/blog/${post.id}/`}>YazÄ±yÄ± aÃ§ â†’</a>
+              <a class="read-more-link" href={`/blog/${post.id}/`}>Yazıyı aç →</a>
             </div>
           </div>
         </article>
@@ -81,23 +81,23 @@ const navItems = getAppShellNav('/yazarlar');
 
     <Fragment slot="right-rail">
       <div class="search-box author-panel">
-        <p>Profil Ã–zeti</p>
+        <p>Profil Özeti</p>
         <strong class="author-panel-title">{author.name}</strong>
         <span>{author.role}</span>
       </div>
 
       <section class="who-box">
-        <h2 class="panel-title">KÄ±sa Bilgi</h2>
+        <h2 class="panel-title">Kısa Bilgi</h2>
         <ul class="who-list">
-          <li><span>{posts.length} yayÄ±n bu profile ait</span></li>
-          <li><span>Yazar profili yeni akÄ±ÅŸ tasarÄ±mÄ±na entegre edildi</span></li>
-          <li><span>DiÄŸer yazarlar iÃ§in /yazarlar alanÄ±na dÃ¶nebilirsin</span></li>
+          <li><span>{posts.length} yayın bu profile ait</span></li>
+          <li><span>Yazar profili yeni akış tasarımına entegre edildi</span></li>
+          <li><span>Diğer yazarlar için /yazarlar alanına dönebilirsin</span></li>
         </ul>
       </section>
 
       {posts.length > 0 && (
         <section>
-          <h2 class="panel-title">Son YazÄ±</h2>
+          <h2 class="panel-title">Son Yazı</h2>
           <ul class="trend-list latest-post-box">
             <li>
               <a href={`/blog/${posts[0].id}/`}>

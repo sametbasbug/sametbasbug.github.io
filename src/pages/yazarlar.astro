@@ -44,7 +44,13 @@ const navItems = getAppShellNav('/yazarlar');
 
     <div class="feed-list authors-list">
       {authors.map((author) => (
-        <article class="feed-item author-feed-item" data-search={`${author.name} ${author.role} ${author.bio}`.toLocaleLowerCase('tr-TR')}>
+        <article
+          class="feed-item author-feed-item"
+          data-author-url={`/yazar/${author.slug}/`}
+          data-search={`${author.name} ${author.role} ${author.bio}`.toLocaleLowerCase('tr-TR')}
+          tabindex="0"
+          role="link"
+        >
           <div class="avatar author-avatar" style={author.color ? `--avatar-accent: ${author.color};` : undefined} aria-hidden="true">
             {author.image ? (
               <img class="avatar-image" src={author.image} alt={`${author.name} profil görseli`} loading="lazy" decoding="async" />
@@ -65,9 +71,6 @@ const navItems = getAppShellNav('/yazarlar');
                 <a href={`/blog/${author.latestPost.id}/`}>{author.latestPost.data.title}</a>
               </div>
             )}
-            <div class="item-actions">
-              <a class="read-more-link" href={`/yazar/${author.slug}/`}>Profili aç →</a>
-            </div>
           </div>
         </article>
       ))}
@@ -79,19 +82,6 @@ const navItems = getAppShellNav('/yazarlar');
         <input id="author-search-input" type="search" placeholder="İsim, rol veya biyografi ara..." />
         <a href="/">Ana sayfaya dön →</a>
       </div>
-      <section class="who-box">
-        <h2 class="panel-title">Hızlı Geçiş</h2>
-        <ul class="who-list">
-          {authors.map((author) => (
-            <li>
-              <a href={`/yazar/${author.slug}/`} class="author-filter-link" data-filter={author.name.toLocaleLowerCase('tr-TR')}>
-                <strong>{author.name}</strong>
-                <span>{author.role}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
       <section>
         <h2 class="panel-title">Özet</h2>
         <ul class="trend-list authors-notes">
@@ -130,23 +120,45 @@ const navItems = getAppShellNav('/yazarlar');
       bind(desktopInput, mobileInput);
       bind(mobileInput, desktopInput);
 
-      document.querySelectorAll('.author-filter-link').forEach((link) => {
-        if (link.dataset.bound === '1') return;
-        link.dataset.bound = '1';
-        link.addEventListener('click', (event) => {
-          event.preventDefault();
-          const filter = link.getAttribute('data-filter') || '';
-          if (desktopInput) desktopInput.value = filter;
-          if (mobileInput) mobileInput.value = filter;
-          applyFilter(filter);
-        });
-      });
-
       applyFilter(desktopInput?.value || mobileInput?.value || '');
     }
 
+    function initAuthorCardNavigation() {
+      document.querySelectorAll('.author-feed-item[data-author-url]').forEach((card) => {
+        if (card.dataset.navBound === '1') return;
+        card.dataset.navBound = '1';
+
+        const navigate = () => {
+          const href = card.getAttribute('data-author-url');
+          if (href) window.location.href = href;
+        };
+
+        card.addEventListener('mouseenter', () => card.classList.add('is-hovered'));
+        card.addEventListener('mouseleave', () => card.classList.remove('is-hovered'));
+        card.addEventListener('focusin', () => card.classList.add('is-focused'));
+        card.addEventListener('focusout', () => card.classList.remove('is-focused'));
+
+        card.addEventListener('click', (event) => {
+          if (event.defaultPrevented) return;
+          if (event.target instanceof Element && event.target.closest('a, button, input, textarea, select, label')) return;
+          navigate();
+        });
+
+        card.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            navigate();
+          }
+        });
+      });
+    }
+
     initAuthorSearch();
-    document.addEventListener('astro:page-load', initAuthorSearch);
+    initAuthorCardNavigation();
+    document.addEventListener('astro:page-load', () => {
+      initAuthorSearch();
+      initAuthorCardNavigation();
+    });
   </script>
 
   <style>
@@ -155,7 +167,13 @@ const navItems = getAppShellNav('/yazarlar');
     .authors-intro h2 { margin: 0 0 0.45rem; font-size: clamp(1.4rem, 3vw, 1.9rem); }
     .authors-intro p { color: var(--secondary); max-width: 60ch; }
     .feed-list { display:flex; flex-direction:column; }
-    .feed-item { display:grid; grid-template-columns: 56px minmax(0,1fr); gap:0.85rem; padding:1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); min-width:0; }
+    .feed-item { display:grid; grid-template-columns: 56px minmax(0,1fr); gap:0.85rem; margin-inline:-1rem; padding:1rem calc(1rem + 1rem); border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); min-width:0; }
+    .author-feed-item { cursor:pointer; transition: background .2s ease; }
+    .author-feed-item:hover,
+    .author-feed-item:focus-within,
+    .author-feed-item.is-hovered,
+    .author-feed-item.is-focused { background: color-mix(in srgb, var(--muted) 72%, transparent); }
+    .author-feed-item:focus-visible { outline:2px solid color-mix(in srgb, var(--accent) 55%, white); outline-offset:-2px; }
     .avatar { --avatar-accent: var(--accent); width:56px; height:56px; border-radius:18px; display:grid; place-items:center; font-weight:700; font-size:1rem; background: color-mix(in srgb, var(--avatar-accent) 18%, transparent); color: var(--avatar-accent); overflow:hidden; border:1px solid color-mix(in srgb, var(--avatar-accent) 35%, var(--border)); }
     .avatar-image { width:100%; height:100%; object-fit:cover; display:block; }
     .author-item-head { align-items:flex-start; }
@@ -184,6 +202,6 @@ const navItems = getAppShellNav('/yazarlar');
     .mobile-search { display:flex; align-items:center; gap:0.45rem; border:1px solid color-mix(in srgb, var(--border) 70%, transparent); background:color-mix(in srgb, white 6%, transparent); color:var(--secondary); border-radius:999px; padding:0.48rem 0.75rem; margin-bottom:0.65rem; }
     .mobile-search svg { width:14px; height:14px; fill:currentColor; flex-shrink:0; }
     .mobile-search input { width:100%; border:0; background:transparent; color:var(--secondary); font-size:0.88rem; outline:none; }
-    @media (max-width: 700px) { .feed-item { grid-template-columns:48px minmax(0,1fr); gap:0.75rem; padding:0.9rem; } .avatar { width:48px; height:48px; border-radius:16px; } .item-title { font-size:0.95rem; } .item-desc { font-size:0.88rem; } }
+    @media (max-width: 700px) { .feed-item { grid-template-columns:48px minmax(0,1fr); gap:0.75rem; margin-inline:0; padding:0.9rem; } .avatar { width:48px; height:48px; border-radius:16px; } .item-title { font-size:0.95rem; } .item-desc { font-size:0.88rem; } }
   </style>
 </BaseLayout>
