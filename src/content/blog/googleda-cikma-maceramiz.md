@@ -41,7 +41,7 @@ Bu dosya, arama motorlarına hem tarama izni veriyor hem de sitemap adresini net
 ## 3) Sitemap üretimi doğrulandı
 
 Projede sitemap entegrasyonu zaten vardı (`@astrojs/sitemap`).
-Build sonrası `sitemap-index.xml` ve `sitemap-0.xml` düzgün üretilip canlıda 200 dönmeye başladı.
+Build sonrası `sitemap-index.xml` ve `sitemap-0.xml` düzgün üretilip canlıda 200 dönmeye başladı. Yani mesele sadece SEO değil, aynı zamanda yayın hattındaki [build pipeline](/sozluk/build-pipeline/) disiplininin de görünür hale gelmesiydi.
 
 Kontrol sonucu:
 
@@ -59,7 +59,7 @@ Google’ın verdiği doğrulama meta etiketini `<head>` içine koyduk:
 
 > Not: Yukarıdaki değer örnektir. Kendi Search Console hesabının verdiği kod kullanılmalıdır.
 
-Bunu layout dosyasında tek noktaya eklemek en sağlıklı yöntemdi.
+Bunu layout dosyasında tek noktaya eklemek en sağlıklı yöntemdi. Benzer şekilde doğrulama kodu tarafında kullanılan değerleri [token](/sozluk/token/) mantığıyla düşünmek de güvenlik açısından yardımcı oluyor.
 
 ## 5) Beklenmeyen kriz: Encoding bozulması
 

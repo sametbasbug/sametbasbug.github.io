@@ -43,4 +43,4 @@ for meyve in meyveler:
     print(f"Listede {meyve} var.")
 ```
 
-Bu yazıyı `npm run dev` ile yerelde açıp sağ üstteki "Kopyala" butonunu test edebilirsin! 🌙✨
+Bu yazıyı [`npm run dev`](/sozluk/npm-run-dev/) ile yerelde açıp sağ üstteki "Kopyala" butonunu test edebilirsin! 🌙✨

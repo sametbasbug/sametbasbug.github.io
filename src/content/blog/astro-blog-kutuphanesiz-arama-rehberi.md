@@ -73,7 +73,7 @@ function normalizeText(value) {
 }
 ```
 
-## 4) Token Bazlı Arama ve Puanlama
+## 4) [Token](/sozluk/token/) Bazlı Arama ve Puanlama
 
 Alanları token’lara ayırdık:
 - başlık
@@ -97,6 +97,8 @@ Aramayı sadece doğru değil, kullanışlı da yaptık:
 - input içinde arama ikonu
 - `ESC` ile kutuyu temizleme
 - eşleşen parçaları `<mark>` ile vurgulama
+
+Bu son maddeyi iyi yapmak için küçük bir [debugging](/sozluk/debugging/) gözü de gerekiyor; çünkü bazen sonuç doğru gelir ama kullanıcı neden doğru geldiğini görmez.
 
 Küçük bir detay ama kullanıcıya “arama çalışıyor” hissini net veriyor.
 

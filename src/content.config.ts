@@ -32,4 +32,26 @@ const gunlukOzet = defineCollection({
 	}),
 });
 
-export const collections = { blog, gunlukOzet };
+const sozluk = defineCollection({
+	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/sozluk" }),
+	schema: z.object({
+		title: z.string(),
+		description: z.string(),
+		category: z.enum(['teknik-terimler', 'komutlar-ve-araclar', 'ai-ve-otomasyon']),
+		summary: z.string(),
+		aliases: z.array(z.string()).optional(),
+		related: z.array(z.string()).optional(),
+		example: z.object({
+			title: z.string().optional(),
+			body: z.string(),
+		}).optional(),
+		confusedWith: z.array(z.object({
+			slug: z.string(),
+			title: z.string(),
+			note: z.string(),
+		})).optional(),
+		isDraft: z.boolean().optional(),
+	}),
+});
+
+export const collections = { blog, gunlukOzet, sozluk };

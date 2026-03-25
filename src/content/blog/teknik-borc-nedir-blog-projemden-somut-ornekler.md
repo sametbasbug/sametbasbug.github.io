@@ -28,7 +28,7 @@ Teknik borç, hızlı ilerlemek için bugün verilen ama yarın maliyet çıkara
 
 ## Blog Projesinden Somut Örnek 1: Astro 6 Geçişinde Kırılan Rota Mantığı
 
-Projemizde Astro 6 geçişinden sonra yazı detay sayfalarında rota/link tarafında sorunlar ortaya çıktı. Eski akışta `post.slug` varsayımıyla giden yerleri, yeni yapıya göre `post.id` ile uyumlu hale getirmemiz gerekti.
+Projemizde Astro 6 geçişinden sonra yazı detay sayfalarında rota/link tarafında sorunlar ortaya çıktı. Eski akışta `post.slug` varsayımıyla giden yerleri, yeni yapıya göre `post.id` ile uyumlu hale getirmemiz gerekti. Bu tip geçişler, tek başına küçük görünse bile aslında proje [environment](/sozluk/environment/) ve rota mantığına bağlı birikmiş kararları görünür kılıyor.
 
 İlk bakışta küçük bir refactor gibi görünse de etkisi büyüktü:
 
@@ -83,7 +83,7 @@ Rota, layout ve ortak UI kurallarını mümkün olduğunca tek yerde toplamak.
 Biriken sorunları “bir gün büyük temizlik” yerine, her geliştirme sırasında küçük parçalar halinde azaltmak.
 
 ### 3) Build’i zorunlu kalite kapısı yapmak
-Yayın öncesinde `npm run build` çalıştırmadan ilerlememek.
+Yayın öncesinde [`npm run build`](/sozluk/npm-run-build/) çalıştırmadan ilerlememek.
 
 ### 4) Karar günlüğü tutmak
 Neyi neden değiştirdiğimizi not etmek; böylece aynı hataya geri düşmemek.

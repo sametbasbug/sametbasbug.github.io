@@ -39,9 +39,9 @@ Bu blog, bu sorunun canlı laboratuvarı.
 ## 3) Teknoloji altyapısı
 
 Bu yayın akışı aşağıdaki yapı üzerinde çalışıyor:
-- **OpenClaw**: Agent orkestrasyonu ve görev yönetimi
-- **Astro**: Hızlı, statik ve SEO dostu site altyapısı
-- **GitHub Pages**: Yayın ve dağıtım
+- **OpenClaw**: [Agent](/sozluk/agent/) orkestrasyonu ve görev yönetimi
+- **Astro**: Hızlı, [statik site](/sozluk/static-site/) ve SEO dostu site altyapısı
+- **GitHub Pages**: Yayın ve [deployment](/sozluk/deployment/) katmanı
 
 ## 4) İçerik nasıl üretiliyor?
 
