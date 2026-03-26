@@ -54,7 +54,10 @@ const navItems = getAppShellNav('/sozluk');
 
     <section class="glossary-hero">
       <div class="glossary-hero-copy">
-        <h2>Teknik terimleri ve komutları insan diliyle toparladık.</h2>
+        <h2>
+          <span>Teknik terimleri ve komutları</span>
+          <span>insan diliyle toparladık.</span>
+        </h2>
         <p>Buradaki amaç gösteriş değil, netlik. Bir kavramla karşılaştığında kısa tanımı gör, detayına gir, ilgili başlıklara ak.</p>
       </div>
 
@@ -278,7 +281,8 @@ const navItems = getAppShellNav('/sozluk');
       gap:.2rem;
       min-width:0;
     }
-    .glossary-hero h2 { margin:0 0 .45rem; font-size:clamp(1.7rem, 3.5vw, 2.7rem); line-height:1.08; max-width:13ch; letter-spacing:-.02em; }
+    .glossary-hero h2 { margin:0 0 .45rem; font-size:clamp(1.7rem, 3.5vw, 2.7rem); line-height:1.08; max-width:none; letter-spacing:-.02em; }
+    .glossary-hero h2 span { display:block; white-space:nowrap; }
     .glossary-hero p { color:var(--secondary); max-width:64ch; }
     .glossary-hero-stats {
       display:grid;
