@@ -13,6 +13,8 @@ const blog = defineCollection({
 		isDraft: z.boolean().optional(),
 		tags: z.array(z.string()).optional(),
 		author: z.string().optional(),
+		autoGlossaryLinks: z.boolean().optional(),
+		autoGlossaryExclude: z.array(z.string()).optional(),
 	}),
 });
 
