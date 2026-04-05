@@ -85,20 +85,21 @@ const targetFiles = CATEGORIES.map((category) => ({
 }));
 
 const promptPath = path.join(dayDir, 'nyx-prompt.md');
-const playbookPath = path.join(projectRoot, 'NYX_BRIEFING_PLAYBOOK.md');
+const briefingSystemPath = path.join(projectRoot, 'BRIEFING_SYSTEM.md');
 const promptText = `# Nyx Günlük Özet Promptu (${date})
 
-Aşağıdaki ham veriyi kullanarak 3 kategori için kısa, tarafsız ve tekrarları birleştiren akşam özeti üret.
+Aşağıdaki ham veriyi kullanarak 3 kategori için günlük briefing üret.
 
-## Referans (Önce Oku)
-- Nyx playbook: ${playbookPath}
+## Tek Referans (Önce Oku)
+- Briefing system: ${briefingSystemPath}
 
-## Kurallar
-- Her kategori için tam 10 madde.
-- Her madde 2-3 cümlelik doyurucu bir paragraf olsun.
-- Spekülatif ifade kullanma, doğrulanmamış bilgiyi dışarıda bırak.
-- Aynı olayın tekrar eden başlıklarını mümkünse birleştir ama toplam 10 güçlü madde üret.
-- Sonuna Kaynaklar alanını düzgün doldur.
+## Kısa görev tanımı
+- Her kategori için tam 10 briefing paragrafı yaz.
+- Draft mantığında değil, final edit mantığında çalış.
+- Olay + önem + etki katmanını kur.
+- Kaynak yoğunlaşmasını temizle.
+- sources alanını \`Site Adı - Haber adı\` formatıyla doldur.
+- Final içerik bitmeden işi tamamlandı sayma.
 
 ## Girdi
 - Ham veri dosyası: ${rawInputPath}
@@ -107,11 +108,13 @@ Aşağıdaki ham veriyi kullanarak 3 kategori için kısa, tarafsız ve tekrarla
 ${targetFiles.map((t) => `- ${t.category}: ${t.path}`).join('\n')}
 
 ## Uygulama adımı
-1) Önce Nyx playbook'u oku ve kuralları uygula.
+1) Önce BRIEFING_SYSTEM.md dosyasını oku ve kuralları uygula.
 2) Ham veriyi kategori bazında tara.
-3) Her kategori için ilgili markdown dosyasını doldur.
-4) summaryItems alanına 10 maddeyi yaz.
-5) sources alanına kullanılan kaynakları name + url olarak ekle.
+3) Gerekirse taslak iskeleti yalnız ara adım olarak kullan; final metni mutlaka güçlendir.
+4) Her kategori için ilgili markdown dosyasını final hale getir.
+5) summaryItems alanına 10 maddeyi yaz.
+6) sources alanına kullanılan kaynakları name + url olarak ekle.
+7) İş final değilse tamamlandı deme.
 `;
 
 fs.writeFileSync(promptPath, promptText, 'utf8');

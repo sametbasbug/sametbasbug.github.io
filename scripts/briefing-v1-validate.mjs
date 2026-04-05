@@ -3,6 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const CATEGORIES = ['ekonomi', 'siyaset', 'teknoloji'];
+const RAW_SOURCE_NAME_RE = /^(feeds?|rss|tr)$/i;
+const MAX_ITEMS_PER_SOURCE = 3;
+const MIN_DISTINCT_SOURCES = 5;
 
 function parseArgs(argv) {
   const out = {};
@@ -59,16 +62,26 @@ function getSummaryItems(markdown) {
   return items;
 }
 
-function getSourceUrls(markdown) {
+function getSources(markdown) {
   const lines = markdown.split(/\r?\n/);
-  const urls = [];
+  const sources = [];
+  let current = null;
 
   for (const line of lines) {
-    const m = line.match(/^\s*url\s*:\s*"([^"]+)"\s*$/i);
-    if (m) urls.push(m[1]);
+    const nameMatch = line.match(/^\s*-\s*name\s*:\s*"([^"]*)"\s*$/i);
+    if (nameMatch) {
+      current = { name: nameMatch[1].trim(), url: '' };
+      sources.push(current);
+      continue;
+    }
+
+    const urlMatch = line.match(/^\s*url\s*:\s*"([^"]+)"\s*$/i);
+    if (urlMatch && current) {
+      current.url = urlMatch[1].trim();
+    }
   }
 
-  return urls;
+  return sources;
 }
 
 function isValidHttpUrl(value) {
@@ -78,6 +91,21 @@ function isValidHttpUrl(value) {
   } catch {
     return false;
   }
+}
+
+function extractSiteLabel(source) {
+  const name = (source.name || '').trim();
+  if (!name) return '';
+  const [site] = name.split(' - ');
+  return (site || '').trim();
+}
+
+function countBy(arr) {
+  const map = new Map();
+  for (const item of arr) {
+    map.set(item, (map.get(item) || 0) + 1);
+  }
+  return map;
 }
 
 const args = parseArgs(process.argv.slice(2));
@@ -109,7 +137,10 @@ for (const category of CATEGORIES) {
   }
 
   const items = getSummaryItems(content).filter((x) => x && x !== '');
-  const urls = getSourceUrls(content);
+  const sources = getSources(content);
+  const urls = sources.map((s) => s.url).filter(Boolean);
+  const siteLabels = sources.map(extractSiteLabel).filter(Boolean);
+  const distinctSiteLabels = [...new Set(siteLabels)];
 
   const errors = [];
   const warns = [];
@@ -127,6 +158,32 @@ for (const category of CATEGORIES) {
 
   if (/\[Saat\]\s*Başlık/i.test(content) || /https:\/\/\.\.\./i.test(content)) {
     errors.push('placeholder metin kalmış ([Saat] veya https://...)');
+  }
+
+  if (sources.some((s) => !s.name || !s.url)) {
+    errors.push('name/url çifti eksik source kaydı var');
+  }
+
+  const malformedNames = sources.filter((s) => !s.name.includes(' - '));
+  if (malformedNames.length > 0) {
+    errors.push(`source adı formatı bozuk (${malformedNames.length}) · beklenen: Site Adı - Haber adı`);
+  }
+
+  const rawNames = siteLabels.filter((name) => RAW_SOURCE_NAME_RE.test(name));
+  if (rawNames.length > 0) {
+    errors.push(`ham/bozuk source adı var: ${[...new Set(rawNames)].join(', ')}`);
+  }
+
+  const sourceUsage = countBy(siteLabels);
+  const overusedSources = [...sourceUsage.entries()].filter(([, count]) => count > MAX_ITEMS_PER_SOURCE);
+  if (overusedSources.length > 0) {
+    errors.push(`aynı kaynak aşırı kullanılmış: ${overusedSources.map(([name, count]) => `${name} (${count})`).join(', ')} · max ${MAX_ITEMS_PER_SOURCE}`);
+  }
+
+  if (distinctSiteLabels.length < MIN_DISTINCT_SOURCES) {
+    const msg = `farklı kaynak sayısı düşük (${distinctSiteLabels.length}) · min: ${MIN_DISTINCT_SOURCES}`;
+    if (strict) errors.push(msg);
+    else warns.push(msg);
   }
 
   console.log(`\n[${category.toUpperCase()}] ${path.basename(filePath)}`);
