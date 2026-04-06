@@ -83,9 +83,7 @@ const {
                 <strong>Samet Başbuğ</strong>
                 <a href="/rss.xml" class="drawer-rss-link">RSS Feed</a>
               </div>
-              <button class="drawer-close" type="button" aria-label="Menüyü kapat">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7l1.4-1.4 6.3 6.3 6.3-6.3 1.4 1.4Z"/></svg>
-              </button>
+              
             </div>
 
             <nav class="mobile-drawer-nav" aria-label="Mobil gezinme">
@@ -186,7 +184,7 @@ const {
       if (!drawer.contains(target)) closeDrawer();
     });
 
-    drawer.querySelectorAll('a, .drawer-backdrop, .drawer-close, .mobile-theme-toggle, [data-auth-login], [data-auth-logout]').forEach((el) => {
+    drawer.querySelectorAll('a, .drawer-backdrop, .mobile-theme-toggle, [data-auth-login], [data-auth-logout]').forEach((el) => {
       el.addEventListener('click', () => closeDrawer());
     });
 
@@ -304,7 +302,7 @@ const {
       width:75vw;
       max-width:320px;
       z-index:70;
-      background:color-mix(in srgb, #030712 94%, black);
+      background:#050816;
       border-right:0;
       box-shadow:8px 0 22px rgba(0, 0, 0, 0.42);
       display:flex;
@@ -312,6 +310,11 @@ const {
       padding:1rem 1rem 1rem;
       transform:translateX(-102%);
       transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    :global(html[data-theme='light']) .mobile-drawer-panel {
+      background:var(--card-bg);
+      border-right:0;
+      box-shadow:8px 0 22px rgba(0, 0, 0, 0.28);
     }
     .mobile-drawer[data-open='1'] .mobile-drawer-panel { transform:translateX(0); }
 
@@ -329,8 +332,6 @@ const {
     .drawer-head strong { color:var(--text); font-size:1.1rem; font-weight:800; line-height:1.2; }
     .drawer-rss-link { color:var(--accent); font-size:.78rem; font-weight:700; text-decoration:none; width:fit-content; }
     .drawer-rss-link:hover { color:var(--text); }
-    .drawer-close { width:38px; height:38px; margin-right:-.2rem; border-radius:.6rem; border:1px solid color-mix(in srgb, var(--border) 80%, transparent); background:transparent; color:var(--secondary); display:grid; place-items:center; cursor:pointer; }
-    .drawer-close svg { width:20px; height:20px; fill:currentColor; }
 
     .mobile-drawer-nav {
       display:flex;
