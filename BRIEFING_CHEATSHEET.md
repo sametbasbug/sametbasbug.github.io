@@ -24,7 +24,7 @@
 - `briefing:v1:draft` → ham veriden ilk taslak summary oluşturur
 - `briefing:v1:validate` → kalite kontrol (min 3 madde, geçerli source, placeholder kontrol)
 - `briefing:v1:report` → `validate-report.md` üretir
-- `build` → yayın öncesi teknik kontrol
+- `build` → yayın öncesi teknik kontrol.
 
 ---
 
