@@ -224,4 +224,13 @@ Bu repo şu an kişisel proje omurgasında ilerliyor. Yine de yapısal bir katk�
 
 ## Lisans
 
-Bu repo için henüz ayrı bir lisans dosyası tanımlanmadı.
+Bu repodaki **kaynak kod**, `LICENSE` dosyasında yer alan **MIT License** kapsamında lisanslanmıştır.
+
+Ancak aşağıdaki unsurlar MIT lisansının kapsamında değildir ve tüm hakları saklıdır:
+
+- blog yazıları ve editoryal içerikler
+- günlük briefing / özet içerikleri
+- görseller, medya dosyaları ve özgün görsel kimlik unsurları
+- proje adı, site kimliği ve marka değeri taşıyan özgün içerik katmanları
+
+Detaylar için `CONTENT_LICENSE.md` dosyasına bakılabilir.
