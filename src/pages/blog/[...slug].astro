@@ -38,7 +38,64 @@ const authorProfile = findAuthorByName(post.data.author);
 const latestPosts = posts.filter((item) => item.id !== post.id).slice(0, 3);
 
 const navItems = getAppShellNav();
+const siteUrl = Astro.site ?? new URL(Astro.url.origin);
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const heroImageUrl = post.data.heroImage ? new URL(post.data.heroImage, siteUrl).toString() : undefined;
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.pubDate.toISOString(),
+  dateModified: (post.data.updatedDate ?? post.data.pubDate).toISOString(),
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': canonicalUrl,
+  },
+  isAccessibleForFree: true,
+  author: {
+    '@type': 'Person',
+    name: post.data.author ?? 'Samet Başbuğ',
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Samet Başbuğ',
+    logo: {
+      '@type': 'ImageObject',
+      url: new URL('/favicon-96x96.png', siteUrl).toString(),
+    },
+  },
+  image: heroImageUrl ? [heroImageUrl] : undefined,
+  keywords: post.data.tags?.join(', '),
+};
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Ana Sayfa',
+      item: new URL('/', siteUrl).toString(),
+    },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Blog',
+      item: new URL('/', siteUrl).toString(),
+    },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: post.data.title,
+      item: canonicalUrl,
+    },
+  ],
+};
+const articleStructuredData = [articleSchema, breadcrumbSchema];
 ---
+
+<script type="application/ld+json" set:html={JSON.stringify(articleStructuredData)} />
 
 <BaseLayout shellLayout={true} title={post.data.title} description={post.data.description}>
   <AppShell pageTitle="İçerik" topbarTitle="İçerik" topbarMeta={post.data.pubDate.toLocaleDateString('tr-TR')} navItems={navItems} showLoginSlot={true} shellClass="app-shell-wide app-shell-reading">
