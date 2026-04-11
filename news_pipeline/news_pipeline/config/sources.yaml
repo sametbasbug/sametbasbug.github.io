@@ -1,0 +1,21 @@
+sources:
+  - id: techcrunch
+    name: TechCrunch
+    kind: rss
+    url: https://techcrunch.com/feed/
+    category_hints: [Teknoloji]
+    enabled: true
+
+  - id: politico-eu
+    name: Politico Europe
+    kind: rss
+    url: https://www.politico.eu/feed/
+    category_hints: [Dünya, Siyaset]
+    enabled: true
+
+  - id: bbc-world
+    name: BBC World
+    kind: rss
+    url: http://feeds.bbci.co.uk/news/world/rss.xml
+    category_hints: [Dünya]
+    enabled: true
