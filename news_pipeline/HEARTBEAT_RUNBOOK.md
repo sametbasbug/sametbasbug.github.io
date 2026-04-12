@@ -22,8 +22,9 @@ cd /Volumes/KIOXIA/blog-project && bash news_pipeline/scripts/heartbeat-cycle.sh
 2. `news-pipeline process`
 3. `news-pipeline queue summary`
 4. `news-pipeline autopublish --limit 1 --min-score 0.68`
-5. `news-pipeline queue review`
-6. `news-pipeline queue list --status new`
+5. autopublish varsa ilgili dosyayı git commit + push et
+6. `news-pipeline queue review`
+7. `news-pipeline queue list --status new`
 
 ## Heartbeat karar kuralı
 
@@ -72,5 +73,6 @@ Uzun rapor dökme.
 
 Bu runbook'ta publish kararı Nyx'in editoryal değerlendirmesinden sonra heartbeat içinde gelebilir.
 Uygun aday bulunduğunda kayıt doğrudan canlı `src/content/anlikHaber/` klasörüne yazılır.
+Heartbeat script'i bu canlı dosyayı ardından otomatik git commit + push ile repoya gönderir.
 Ama `manual-review` veya kırmızı bayraklı kayıtlar otomatik publish edilmez.
 İlk güvenli modda heartbeat başına en fazla 1 kayıt publish edilir.

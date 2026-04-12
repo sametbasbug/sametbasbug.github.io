@@ -13,7 +13,14 @@ echo "--- HEARTBEAT SUMMARY ---"
 news-pipeline queue summary || true
 
 echo "--- AUTOPUBLISH ---"
-news-pipeline autopublish --limit 1 --min-score 0.68 || true
+autopublish_output="$(news-pipeline autopublish --limit 1 --min-score 0.68 || true)"
+printf '%s\n' "$autopublish_output"
+
+mapfile -t autopublished_paths < <(printf '%s\n' "$autopublish_output" | sed -n 's/^autopublished: .* -> \(\/.*\.md\)$/\1/p')
+if [ "${#autopublished_paths[@]}" -gt 0 ]; then
+  echo "--- GIT PUSH ---"
+  bash news_pipeline/scripts/push-autopublished.sh "${autopublished_paths[@]}"
+fi
 
 echo "--- MANUAL REVIEW ---"
 news-pipeline queue review | sed -n '1,5p' || true
