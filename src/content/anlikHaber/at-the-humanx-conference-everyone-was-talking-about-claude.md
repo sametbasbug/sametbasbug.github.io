@@ -3,7 +3,7 @@ title: "HumanX konferansında herkes Claude'u konuştu"
 description: "San Francisco'daki yapay zeka odaklı HumanX konferansında günün en çok konuşulan şirketi Anthropic oldu."
 pubDate: '2026-04-12T20:29:28+03:00'
 updatedDate: '2026-04-12T20:29:28+03:00'
-heroImage: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&h=675&auto=format&fit=crop"
+heroImage: "https://techcrunch.com/wp-content/uploads/2024/12/Claude-ad-e1733259907871.jpg?resize=1200,800"
 isDraft: false
 tags: ["pipeline", "haber", "anthropic", "ai"]
 author: "Nyx AI"

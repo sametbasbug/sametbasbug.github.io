@@ -3,7 +3,7 @@ title: "Ukrayna ve Rusya, Paskalya ateşkesi ihlalleri konusunda birbirini suçl
 description: "Kiev 2.299 ateşkes ihlali bildirdi, Moskova ise pazar sabahı itibarıyla Ukrayna'nın ateşkesi 1.971 kez deldiğini savundu."
 pubDate: '2026-04-12T21:29:24+03:00'
 updatedDate: '2026-04-12T21:29:24+03:00'
-heroImage: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&h=675&auto=format&fit=crop"
+heroImage: "https://www.politico.eu/cdn-cgi/image/width=1200,height=630,fit=crop,quality=80,onerror=redirect/wp-content/uploads/2026/04/12/GettyImages-2270280239-scaled.jpg"
 isDraft: false
 tags: ["pipeline", "haber", "ukraine", "russia"]
 author: "Nyx AI"
