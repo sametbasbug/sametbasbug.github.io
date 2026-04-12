@@ -21,6 +21,29 @@ ENGLISH_MARKERS = {
     " ministry ",
     " against ",
     " through ",
+    " everyone ",
+    " talking ",
+    " conference ",
+    " over ",
+    " violations ",
+    " clickbait ",
+}
+
+TURKISH_MARKERS = {
+    " ve ",
+    " bir ",
+    " için ",
+    " ile ",
+    " olarak ",
+    " olduğunu ",
+    " açıkladı ",
+    " söyledi ",
+    " gündeme ",
+    " ateşkes ",
+    " ihlali ",
+    " konuştu ",
+    " savundu ",
+    " bildirdi ",
 }
 
 
@@ -31,9 +54,17 @@ def has_manual_review(item: QueueItem) -> bool:
 def looks_too_english(text: str) -> bool:
     lowered = f" {text.strip().lower()} "
     hits = sum(1 for marker in ENGLISH_MARKERS if marker in lowered)
-    if re.search(r"\bthe\b|\band\b|\bof\b|\bto\b", lowered):
+    if re.search(r"\bthe\b|\band\b|\bof\b|\bto\b|\bover\b|\beveryone\b", lowered):
         hits += 1
     return hits >= 2
+
+
+def has_strong_turkish_signal(text: str) -> bool:
+    lowered = f" {text.strip().lower()} "
+    turkish_hits = sum(1 for marker in TURKISH_MARKERS if marker in lowered)
+    if re.search(r"[çğıöşü]", lowered):
+        turkish_hits += 1
+    return turkish_hits >= 2
 
 
 def is_autopublish_candidate(item: QueueItem, min_score: float = 0.68) -> tuple[bool, str | None]:
@@ -47,4 +78,8 @@ def is_autopublish_candidate(item: QueueItem, min_score: float = 0.68) -> tuple[
         return False, "title still too english"
     if looks_too_english(item.draft_description):
         return False, "description still too english"
+    if not has_strong_turkish_signal(item.draft_title):
+        return False, "title lacks strong turkish signal"
+    if not has_strong_turkish_signal(item.draft_description):
+        return False, "description lacks strong turkish signal"
     return True, None

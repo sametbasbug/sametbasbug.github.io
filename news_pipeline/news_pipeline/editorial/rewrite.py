@@ -63,6 +63,18 @@ PHRASE_REWRITES = [
         "Bir takip mağduru, ChatGPT'nin istismarcısının sanrılarını beslediğini ve yaptığı uyarıların dikkate alınmadığını öne sürerek OpenAI'ye dava açtı.",
     ),
     (
+        re.compile(r"Anthropic was the star of the show at San Francisco's AI-centric conference\.?", re.I),
+        "San Francisco'daki yapay zeka odaklı HumanX konferansında günün en çok konuşulan şirketi Anthropic oldu.",
+    ),
+    (
+        re.compile(r"Kyiv reported 2,299 ceasefire violations, while Moscow accused Ukraine of breaching the ceasefire 1,971 times by early Sunday\.?", re.I),
+        "Kiev 2.299 ateşkes ihlali bildirdi, Moskova ise pazar sabahı itibarıyla Ukrayna'nın ateşkesi 1.971 kez deldiğini savundu.",
+    ),
+    (
+        re.compile(r"X says it'?s reducing payments to clickbait accounts\.?", re.I),
+        "X, etkileşim tuzağına dayalı clickbait hesaplara yaptığı ödemeleri azaltacağını açıkladı.",
+    ),
+    (
         re.compile(r"OpenAI ignored three warnings that a ChatGPT user was dangerous.*", re.I),
         "Davaya göre OpenAI, tehlikeli olduğu yönünde üç ayrı uyarıya rağmen kullanıcının eski partnerine yönelik takip ve taciz sürecinde yeterli önlem almadı.",
     ),
@@ -171,6 +183,12 @@ def rewrite_title(article: NormalizedArticle) -> str:
         return "Sam Altman, New Yorker yazısı sonrası gelen suçlamalara yanıt verdi"
     if re.search(r"Stalking victim sues OpenAI", original_title, flags=re.IGNORECASE):
         return "Takip mağduru kadın, ChatGPT'nin istismarcısını cesaretlendirdiği iddiasıyla OpenAI'ye dava açtı"
+    if re.search(r"At the HumanX conference, everyone was talking about Claude", original_title, flags=re.IGNORECASE):
+        return "HumanX konferansında herkes Claude'u konuştu"
+    if re.search(r"Ukraine-Russia blame game over Easter ceasefire violations", original_title, flags=re.IGNORECASE):
+        return "Ukrayna ve Rusya, Paskalya ateşkesi ihlalleri konusunda birbirini suçladı"
+    if re.search(r"X says it'?s reducing payments to clickbait accounts", original_title, flags=re.IGNORECASE):
+        return "X, clickbait hesaplara yaptığı ödemeleri azaltacağını açıkladı"
     if re.search(r"Melania Trump's speech propels Epstein crisis", original_title, flags=re.IGNORECASE):
         return "Melania Trump'ın konuşması, Epstein krizini yeniden gündemin ön sırasına taşıdı"
     if re.search(r"Melania Trump: 'I never had a relationship with Epstein", original_title, flags=re.IGNORECASE):
