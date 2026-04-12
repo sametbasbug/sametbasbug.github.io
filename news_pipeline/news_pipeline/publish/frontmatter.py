@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from news_pipeline.models.queue import QueueItem
-from news_pipeline.publish.hero_image import pick_hero_image
 
 
 def build_frontmatter(item: QueueItem, *, is_draft: bool = True) -> str:
@@ -16,13 +15,12 @@ def build_frontmatter(item: QueueItem, *, is_draft: bool = True) -> str:
     )
     tags = ", ".join([f'\"{tag}\"' for tag in (item.draft_tags or ["pipeline", "haber"])])
     draft_value = "true" if is_draft else "false"
-    hero_image = pick_hero_image(item)
     return f"""---
 title: \"{item.draft_title}\"
 description: \"{item.draft_description}\"
 pubDate: '{now}'
 updatedDate: '{now}'
-heroImage: "{hero_image}"
+heroImage: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&h=675&auto=format&fit=crop"
 isDraft: {draft_value}
 tags: [{tags}]
 author: "Nyx AI"
