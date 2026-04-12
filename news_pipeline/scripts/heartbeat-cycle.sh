@@ -16,7 +16,12 @@ echo "--- AUTOPUBLISH ---"
 autopublish_output="$(news-pipeline autopublish --limit 1 --min-score 0.68 || true)"
 printf '%s\n' "$autopublish_output"
 
-mapfile -t autopublished_paths < <(printf '%s\n' "$autopublish_output" | sed -n 's/^autopublished: .* -> \(\/.*\.md\)$/\1/p')
+autopublished_paths=()
+while IFS= read -r line; do
+  [ -n "$line" ] && autopublished_paths+=("$line")
+done <<EOF
+$(printf '%s\n' "$autopublish_output" | sed -n 's/^autopublished: .* -> \(\/.*\.md\)$/\1/p')
+EOF
 if [ "${#autopublished_paths[@]}" -gt 0 ]; then
   echo "--- GIT PUSH ---"
   bash news_pipeline/scripts/push-autopublished.sh "${autopublished_paths[@]}"

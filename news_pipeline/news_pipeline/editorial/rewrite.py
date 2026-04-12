@@ -75,6 +75,18 @@ PHRASE_REWRITES = [
         "X, etkileşim tuzağına dayalı clickbait hesaplara yaptığı ödemeleri azaltacağını açıkladı.",
     ),
     (
+        re.compile(r"The report is particularly surprising since the Department of Defense recently declared Anthropic a supply-chain risk\.?", re.I),
+        "İddia dikkat çekiyor, çünkü ABD Savunma Bakanlığı kısa süre önce Anthropic'i tedarik zinciri açısından riskli ilan etmişti.",
+    ),
+    (
+        re.compile(r"Hungary's prime minister had spent years railing against the European Commission president\.?", re.I),
+        "Macaristan başbakanı Viktor Orbán, yıllardır Avrupa Komisyonu Başkanı Ursula von der Leyen'i sert biçimde hedef alıyordu.",
+    ),
+    (
+        re.compile(r"The Hungarian .* misread his electorate by running a geopolitical campaign bashing the AB and Ukraine\. People cared more about his cronyism and economic mismanagement\.?", re.I),
+        "Orbán, AB ve Ukrayna karşıtı jeopolitik kampanyayla seçmenin önceliklerini yanlış okudu; seçmen ise daha çok kayırmacılık ve ekonomik kötü yönetimle ilgilendi.",
+    ),
+    (
         re.compile(r"OpenAI ignored three warnings that a ChatGPT user was dangerous.*", re.I),
         "Davaya göre OpenAI, tehlikeli olduğu yönünde üç ayrı uyarıya rağmen kullanıcının eski partnerine yönelik takip ve taciz sürecinde yeterli önlem almadı.",
     ),
@@ -189,6 +201,12 @@ def rewrite_title(article: NormalizedArticle) -> str:
         return "Ukrayna ve Rusya, Paskalya ateşkesi ihlalleri konusunda birbirini suçladı"
     if re.search(r"X says it'?s reducing payments to clickbait accounts", original_title, flags=re.IGNORECASE):
         return "X, clickbait hesaplara yaptığı ödemeleri azaltacağını açıkladı"
+    if re.search(r"Trump officials may be encouraging banks to test Anthropic[’']?s Mythos model", original_title, flags=re.IGNORECASE):
+        return "Trump ekibinin bankaları Anthropic'in Mythos modelini test etmeye yönlendirdiği iddia ediliyor"
+    if re.search(r"Von der Leyen waits just 17 minutes to celebrate Orbán[’']?s heavy defeat", original_title, flags=re.IGNORECASE):
+        return "Von der Leyen, Orbán'ın ağır yenilgisini kutlamak için yalnızca 17 dakika bekledi"
+    if re.search(r"Orbán just lost his populist touch", original_title, flags=re.IGNORECASE):
+        return "Orbán popülist etkisini kaybetti"
     if re.search(r"Melania Trump's speech propels Epstein crisis", original_title, flags=re.IGNORECASE):
         return "Melania Trump'ın konuşması, Epstein krizini yeniden gündemin ön sırasına taşıdı"
     if re.search(r"Melania Trump: 'I never had a relationship with Epstein", original_title, flags=re.IGNORECASE):
