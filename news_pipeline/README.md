@@ -68,6 +68,14 @@ source news_pipeline/.venv/bin/activate
 pip install -e news_pipeline
 ```
 
+İsteğe bağlı görsel akışı için proje kökündeki `.env` dosyasına şu alan eklenebilir:
+
+```bash
+PEXELS_API_KEY=
+```
+
+Bu dosya zaten `.gitignore` içinde olduğu için key repoya girmez.
+
 ---
 
 ## Temel komutlar
@@ -168,6 +176,7 @@ Bunlar henüz tam çözülmüş değil:
 - olay düzeyinde gerçek cluster master record yok
 - source diversity mantığı temel seviyede
 - browser fallback yok
+- görsel seçimi Pexels key yoksa güvenli fallback görsele döner
 - otomatik publish yok
 
 Bu bilinçli. Önce güvenilir omurga, sonra şatafat.
