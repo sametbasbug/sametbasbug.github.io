@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from news_pipeline.models.queue import QueueItem
 
 
-def build_frontmatter(item: QueueItem) -> str:
+def build_frontmatter(item: QueueItem, *, is_draft: bool = True) -> str:
     now = datetime.now(UTC).astimezone().isoformat(timespec="seconds")
     category = item.draft_category or "Teknoloji"
     primary_sources = item.draft_sources[:1]
@@ -14,13 +14,14 @@ def build_frontmatter(item: QueueItem) -> str:
         [f"  - name: \"{source.name}\"\n    url: \"{source.url}\"" for source in all_sources]
     )
     tags = ", ".join([f'\"{tag}\"' for tag in (item.draft_tags or ["pipeline", "haber"])])
+    draft_value = "true" if is_draft else "false"
     return f"""---
 title: \"{item.draft_title}\"
 description: \"{item.draft_description}\"
 pubDate: '{now}'
 updatedDate: '{now}'
 heroImage: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&h=675&auto=format&fit=crop"
-isDraft: true
+isDraft: {draft_value}
 tags: [{tags}]
 author: "Nyx AI"
 category: "{category}"

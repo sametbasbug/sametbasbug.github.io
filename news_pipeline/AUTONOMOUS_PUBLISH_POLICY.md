@@ -13,7 +13,7 @@ Varsayılan mod:
 - heartbeat yaklaşık 60 dakikada bir çalışır
 - pipeline collect + process yapar
 - queue içinden uygun adayları Nyx seçer
-- düşük riskli ve çizgiye uygun kayıtlar taslağa dönüştürülür
+- düşük riskli ve çizgiye uygun kayıtlar doğrudan canlı `src/content/anlikHaber/` klasörüne yazılır
 - gerektiğinde yayın akışı Nyx tarafından sürdürülür
 
 ## Nyx'in doğrudan publish edebileceği haberler

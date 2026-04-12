@@ -71,5 +71,6 @@ Uzun rapor dökme.
 ## Not
 
 Bu runbook'ta publish kararı Nyx'in editoryal değerlendirmesinden sonra heartbeat içinde gelebilir.
+Uygun aday bulunduğunda kayıt doğrudan canlı `src/content/anlikHaber/` klasörüne yazılır.
 Ama `manual-review` veya kırmızı bayraklı kayıtlar otomatik publish edilmez.
 İlk güvenli modda heartbeat başına en fazla 1 kayıt publish edilir.

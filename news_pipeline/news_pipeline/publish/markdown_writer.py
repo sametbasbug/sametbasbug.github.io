@@ -9,10 +9,18 @@ from news_pipeline.publish.body_template import build_body
 from news_pipeline.publish.frontmatter import build_frontmatter
 
 
-def write_draft(content_root: Path, item: QueueItem) -> Path:
+def write_entry(content_root: Path, item: QueueItem, *, is_draft: bool = True) -> Path:
     content_root.mkdir(parents=True, exist_ok=True)
     slug = slugify(item.draft_title, lowercase=True)
     path = content_root / f"{slug}.md"
     body = build_body(item)
-    path.write_text(f"{build_frontmatter(item)}\n{body}\n", encoding="utf-8")
+    path.write_text(f"{build_frontmatter(item, is_draft=is_draft)}\n{body}\n", encoding="utf-8")
     return path
+
+
+def write_draft(content_root: Path, item: QueueItem) -> Path:
+    return write_entry(content_root, item, is_draft=True)
+
+
+def write_live(content_root: Path, item: QueueItem) -> Path:
+    return write_entry(content_root, item, is_draft=False)
