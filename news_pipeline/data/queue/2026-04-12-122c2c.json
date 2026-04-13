@@ -1,0 +1,28 @@
+{
+  "queue_id": "2026-04-12-122c2c",
+  "status": "rejected",
+  "normalized_id": "122c2c9443fa4a7d",
+  "cluster_key": "4110d78fdb8f",
+  "editorial_priority": 0.684,
+  "draft_title": "Von der Leyen, Orbán'ın ağır yenilgisini kutlamak için yalnızca 17 dakika bekledi",
+  "draft_description": "Macaristan başbakanı Viktor Orbán, yıllardır Avrupa Komisyonu Başkanı Ursula von der Leyen'i sert biçimde hedef alıyordu.",
+  "draft_category": "Siyaset",
+  "draft_tags": [
+    "pipeline",
+    "haber"
+  ],
+  "draft_sources": [
+    {
+      "name": "Politico Europe",
+      "url": "https://www.politico.eu/article/viktor-orban-ursula-von-der-leyen-rejoices-at-crushing-defeat/?utm_source=RSS_Feed&utm_medium=RSS&utm_campaign=RSS_Syndication"
+    }
+  ],
+  "supporting_sources": [],
+  "related_queue_ids": [],
+  "notes": [
+    "autopublish-withdrawn: canlıya çıkan metin taslak kalitesinde bulundu"
+  ],
+  "created_at": "2026-04-12T21:29:26.767449Z",
+  "updated_at": "2026-04-13T00:45:23.781289Z",
+  "published_slug": null
+}
