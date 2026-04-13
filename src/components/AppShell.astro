@@ -248,6 +248,12 @@ const {
     overflow: visible;
   }
 
+  :global(body.app-shell-layout main) {
+    max-width: 1240px;
+    padding: 1.1rem 1rem 0;
+    overflow: visible;
+  }
+
   .app-shell { display: grid; grid-template-columns: 240px minmax(0, 680px) 280px; gap: 1rem; align-items: start; justify-content: center; margin-top: 0.2rem; min-width: 0; width: 100%; max-width: 100%; }
   .card { background: transparent; border: 0; border-radius: 0; box-shadow: none; }
   .left-rail,.right-rail { position: sticky; top: 2.3rem; padding: 0.9rem 1rem 1rem; }
