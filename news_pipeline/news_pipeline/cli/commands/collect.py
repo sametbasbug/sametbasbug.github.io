@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from hashlib import sha1
 from pathlib import Path
 
 from news_pipeline.collectors.rss import RssCollector
@@ -27,5 +28,6 @@ def collect_command(config_path: str = "news_pipeline/news_pipeline/config/sourc
         import asyncio
         result = asyncio.run(collector.collect())
         for article in result:
-            raw_store.save(f"{source.id}-{hash(str(article.url))}", article)
+            stable_key = sha1(str(article.url).encode("utf-8")).hexdigest()[:16]
+            raw_store.save(f"{source.id}-{stable_key}", article)
         logger.info(f"collected {len(result)} raw items from {source.name}")

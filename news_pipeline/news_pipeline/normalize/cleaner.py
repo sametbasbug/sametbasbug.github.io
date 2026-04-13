@@ -9,6 +9,7 @@ class ArticleNormalizer:
     def normalize(self, raw: RawArticle, source: SourceConfig) -> NormalizedArticle:
         title = clean_text(raw.title)
         summary = clean_text(raw.summary)
+        article_snippet = clean_text(str(raw.metadata.get("article_snippet", "")))
         fingerprint = NormalizedArticle.build_fingerprint(title=title, summary=summary)
         return NormalizedArticle(
             id=fingerprint[:16],
@@ -19,7 +20,7 @@ class ArticleNormalizer:
             summary=summary,
             published_at=raw.published_at,
             image_url=raw.image_url,
-            content_snippet=summary,
+            content_snippet=article_snippet or summary,
             category_hints=source.category_hints,
             fingerprint=fingerprint,
             cluster_key=NormalizedArticle.build_cluster_key(title),

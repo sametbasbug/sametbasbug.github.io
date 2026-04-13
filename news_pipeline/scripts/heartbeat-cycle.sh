@@ -13,7 +13,7 @@ echo "--- HEARTBEAT SUMMARY ---"
 news-pipeline queue summary || true
 
 echo "--- AUTOPUBLISH ---"
-autopublish_output="$(news-pipeline autopublish --limit 1 --min-score 0.68 || true)"
+autopublish_output="$(news-pipeline autopublish --limit 1 --min-score 0.72 || true)"
 printf '%s\n' "$autopublish_output"
 
 autopublished_paths=()

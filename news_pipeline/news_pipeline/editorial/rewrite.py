@@ -75,6 +75,18 @@ PHRASE_REWRITES = [
         "X, etkileşim tuzağına dayalı clickbait hesaplara yaptığı ödemeleri azaltacağını açıkladı.",
     ),
     (
+        re.compile(r"X is cutting back on payments to accounts that are [\"']?flooding the timeline[\"']? with clickbait and rapid-fire news aggregation, according to its head of product Nikita Bier\.?", re.I),
+        "X ürün lideri Nikita Bier'e göre şirket, zaman akışını clickbait ve seri haber derlemeleriyle dolduran hesaplara yaptığı ödemeleri azaltıyor.",
+    ),
+    (
+        re.compile(r"The Hungarian (prime minister|başbakanı|PM) misread his electorate by running a geopolitical campaign bashing the (AB|EU) and Ukraine\.?", re.I),
+        "Macaristan başbakanı, AB ve Ukrayna karşıtı jeopolitik kampanyayla seçmenin önceliklerini yanlış okudu.",
+    ),
+    (
+        re.compile(r"People cared more about his cronyism and economic mismanagement\.?", re.I),
+        "Seçmen ise daha çok kayırmacılık ve ekonomik kötü yönetimle ilgilendi.",
+    ),
+    (
         re.compile(r"The report is particularly surprising since the Department of Defense recently declared Anthropic a supply-chain risk\.?", re.I),
         "İddia dikkat çekiyor, çünkü ABD Savunma Bakanlığı kısa süre önce Anthropic'i tedarik zinciri açısından riskli ilan etmişti.",
     ),
@@ -173,6 +185,7 @@ def _sentence_case_tr(text: str) -> str:
 
 
 def _strip_noise(text: str) -> str:
+    text = text.replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')
     text = re.sub(r"^[\"'“”‘’]+|[\"'“”‘’]+$", "", text).strip()
     text = re.sub(r"\s+-\s+.*$", "", text)
     return clean_text(text)
@@ -180,32 +193,32 @@ def _strip_noise(text: str) -> str:
 
 def rewrite_title(article: NormalizedArticle) -> str:
     original_title = article.title
-    title = _strip_noise(original_title)
-    title = _replace_terms(title, TITLE_REPLACEMENTS)
+    normalized_original_title = _strip_noise(original_title)
+    title = _replace_terms(normalized_original_title, TITLE_REPLACEMENTS)
 
-    if re.search(r"OpenAI.*shooting|shooting.*OpenAI", original_title, flags=re.IGNORECASE):
+    if re.search(r"OpenAI.*shooting|shooting.*OpenAI", normalized_original_title, flags=re.IGNORECASE):
         return "Florida başsavcısı, OpenAI bağlantısı iddiası için soruşturma başlattı"
-    if re.search(r"ChatGPT finally offers \$100/month Pro plan", original_title, flags=re.IGNORECASE):
+    if re.search(r"ChatGPT finally offers \$100/month Pro plan", normalized_original_title, flags=re.IGNORECASE):
         return "ChatGPT, aylık 100 dolarlık Pro planını sunmaya başladı"
-    if re.search(r"Anthropic temporarily banned OpenClaw", original_title, flags=re.IGNORECASE):
+    if re.search(r"Anthropic temporarily banned OpenClaw", normalized_original_title, flags=re.IGNORECASE):
         return "Anthropic, OpenClaw yaratıcısının Claude erişimini geçici olarak kesti"
-    if re.search(r"Nvidia-backed SiFive hits .* valuation", original_title, flags=re.IGNORECASE):
+    if re.search(r"Nvidia-backed SiFive hits .* valuation", normalized_original_title, flags=re.IGNORECASE):
         return "Nvidia destekli SiFive, açık AI çiplerinde 3,65 milyar dolar değerlemeye ulaştı"
-    if re.search(r"Sam Altman responds to", original_title, flags=re.IGNORECASE):
+    if re.search(r"Sam Altman responds to", normalized_original_title, flags=re.IGNORECASE):
         return "Sam Altman, New Yorker yazısı sonrası gelen suçlamalara yanıt verdi"
-    if re.search(r"Stalking victim sues OpenAI", original_title, flags=re.IGNORECASE):
+    if re.search(r"Stalking victim sues OpenAI", normalized_original_title, flags=re.IGNORECASE):
         return "Takip mağduru kadın, ChatGPT'nin istismarcısını cesaretlendirdiği iddiasıyla OpenAI'ye dava açtı"
-    if re.search(r"At the HumanX conference, everyone was talking about Claude", original_title, flags=re.IGNORECASE):
+    if re.search(r"At the HumanX conference, everyone was talking about Claude", normalized_original_title, flags=re.IGNORECASE):
         return "HumanX konferansında herkes Claude'u konuştu"
-    if re.search(r"Ukraine-Russia blame game over Easter ceasefire violations", original_title, flags=re.IGNORECASE):
+    if re.search(r"Ukraine-Russia blame game over Easter ceasefire violations", normalized_original_title, flags=re.IGNORECASE):
         return "Ukrayna ve Rusya, Paskalya ateşkesi ihlalleri konusunda birbirini suçladı"
-    if re.search(r"X says it'?s reducing payments to clickbait accounts", original_title, flags=re.IGNORECASE):
+    if re.search(r"X says it'?s reducing payments to clickbait accounts", normalized_original_title, flags=re.IGNORECASE):
         return "X, clickbait hesaplara yaptığı ödemeleri azaltacağını açıkladı"
-    if re.search(r"Trump officials may be encouraging banks to test Anthropic[’']?s Mythos model", original_title, flags=re.IGNORECASE):
+    if re.search(r"Trump officials may be encouraging banks to test Anthropic[']?s Mythos model", normalized_original_title, flags=re.IGNORECASE):
         return "Trump ekibinin bankaları Anthropic'in Mythos modelini test etmeye yönlendirdiği iddia ediliyor"
-    if re.search(r"Von der Leyen waits just 17 minutes to celebrate Orbán[’']?s heavy defeat", original_title, flags=re.IGNORECASE):
+    if re.search(r"Von der Leyen waits just 17 minutes to celebrate Orbán[']?s heavy defeat", normalized_original_title, flags=re.IGNORECASE):
         return "Von der Leyen, Orbán'ın ağır yenilgisini kutlamak için yalnızca 17 dakika bekledi"
-    if re.search(r"Orbán just lost his populist touch", original_title, flags=re.IGNORECASE):
+    if re.search(r"Orbán just lost his populist touch", normalized_original_title, flags=re.IGNORECASE):
         return "Orbán popülist etkisini kaybetti"
     if re.search(r"Melania Trump's speech propels Epstein crisis", original_title, flags=re.IGNORECASE):
         return "Melania Trump'ın konuşması, Epstein krizini yeniden gündemin ön sırasına taşıdı"
@@ -242,12 +255,18 @@ def rewrite_title(article: NormalizedArticle) -> str:
     return _sentence_case_tr(title)
 
 
-def rewrite_description(article: NormalizedArticle) -> str:
-    original = _strip_noise(article.summary or article.title)
+def rewrite_sentence(text: str) -> str:
+    original = _strip_noise(text)
+    if not original:
+        return ""
 
     for pattern, replacement in PHRASE_REWRITES:
-        if pattern.match(original):
-            return replacement
+        if pattern.search(original):
+            rewritten = pattern.sub(replacement, original)
+            rewritten = _sentence_case_tr(clean_text(rewritten))
+            if not rewritten.endswith((".", "!", "?")):
+                rewritten += "."
+            return rewritten
 
     summary = _replace_terms(original, TITLE_REPLACEMENTS)
     summary = _replace_terms(summary, SUMMARY_REPLACEMENTS)
@@ -265,6 +284,37 @@ def rewrite_description(article: NormalizedArticle) -> str:
     if not summary.endswith((".", "!", "?")):
         summary += "."
     return summary
+
+
+def rewrite_description(article: NormalizedArticle) -> str:
+    description = rewrite_sentence(article.summary or article.title)
+    if re.search(r"\b(the|and|with|according to|people cared|misread)\b", description, flags=re.I):
+        facts = build_facts(article)
+        if facts:
+            return facts[0]
+    return description
+
+
+def build_facts(article: NormalizedArticle) -> list[str]:
+    raw_text = clean_text(article.content_snippet or article.summary or article.title)
+    if not raw_text:
+        return []
+
+    parts = [segment.strip() for segment in re.split(r"(?<=[.!?])\s+", raw_text) if segment.strip()]
+    facts: list[str] = []
+    seen: set[str] = set()
+    for part in parts:
+        rewritten = rewrite_sentence(part)
+        normalized = rewritten.lower()
+        if len(rewritten) < 45:
+            continue
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        facts.append(rewritten)
+        if len(facts) >= 3:
+            break
+    return facts
 
 
 def _contains_term(text: str, term: str) -> bool:
@@ -302,23 +352,26 @@ def needs_manual_review(article: NormalizedArticle) -> bool:
     return any(term in text for term in ["allegedly", "claims", "sues", "sexual assault", "epstein"])
 
 
-def build_rewrite(article: NormalizedArticle) -> tuple[str, str, str, list[str], list[str]]:
+def build_rewrite(article: NormalizedArticle) -> tuple[str, str, str, list[str], list[str], list[str]]:
     title = rewrite_title(article)
     description = rewrite_description(article)
     category = choose_category(article)
     tags = build_tags(article)
+    facts = build_facts(article)
     notes: list[str] = []
     if needs_manual_review(article):
         notes.append("manual-review: hassas/hukuki iddia içeren haber")
     if article.source_id == "bbc-world" and category == "Dünya":
         notes.append("source-profile: BBC Dünya akışından geldi")
-    return title, description, category, tags, notes
+    return title, description, category, tags, notes, facts
 
 
 __all__ = [
     "build_rewrite",
     "rewrite_title",
     "rewrite_description",
+    "rewrite_sentence",
+    "build_facts",
     "choose_category",
     "build_tags",
 ]

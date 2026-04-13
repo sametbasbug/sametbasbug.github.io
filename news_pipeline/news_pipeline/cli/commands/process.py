@@ -4,6 +4,7 @@ from pathlib import Path
 
 from news_pipeline.config.loader import load_yaml
 from news_pipeline.dedupe.similarity import are_probably_duplicates, are_probably_related
+from news_pipeline.editorial.autonomy import has_withdrawn_flag
 from news_pipeline.editorial.filtering import should_keep_article
 from news_pipeline.editorial.merge import merge_related_note, merge_supporting_source
 from news_pipeline.editorial.rewrite import build_rewrite
@@ -52,7 +53,7 @@ def process_command(config_path: str = "news_pipeline/news_pipeline/config/sourc
             continue
 
         normalized_store.save(normalized.id, normalized)
-        rewritten_title, rewritten_description, rewritten_category, rewritten_tags, rewrite_notes = build_rewrite(normalized)
+        rewritten_title, rewritten_description, rewritten_category, rewritten_tags, rewrite_notes, rewritten_facts = build_rewrite(normalized)
 
         if existing_item is None:
             item = queue_service.enqueue(normalized)
@@ -66,9 +67,10 @@ def process_command(config_path: str = "news_pipeline/news_pipeline/config/sourc
         item.draft_description = rewritten_description[:240]
         item.draft_category = rewritten_category
         item.draft_tags = rewritten_tags
+        item.draft_facts = rewritten_facts
         item.draft_sources = [DraftSource(name=normalized.source_name, url=normalized.canonical_url)]
         item.editorial_priority = score_article(normalized)
-        if item.status == "rejected":
+        if item.status == "rejected" and not has_withdrawn_flag(item):
             item.status = "new"
 
         related_items = []
