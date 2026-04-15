@@ -21,10 +21,11 @@ cd /Volumes/KIOXIA/blog-project && bash news_pipeline/scripts/heartbeat-cycle.sh
 1. `news-pipeline collect`
 2. `news-pipeline process`
 3. `news-pipeline queue summary`
-4. `news-pipeline autopublish --limit 1 --min-score 0.68`
-5. autopublish varsa ilgili dosyayı git commit + push et
-6. `news-pipeline queue review`
-7. `news-pipeline queue list --status new`
+4. direct autopublish çalıştırılmaz, bu hat devre dışıdır
+5. `news-pipeline queue review`
+6. `news-pipeline queue list --status new`
+7. `bash news_pipeline/scripts/asteria-editorial-gate.sh`
+8. publish kararı Asteria editoryal kapısından geçer
 
 ## Heartbeat karar kuralı
 
@@ -44,20 +45,16 @@ Yalnız şu durumlardan biri varsa:
 
 ## Editoryal yetki
 
-Varsayılan mod: **otonom publish açık**.
+Varsayılan mod: **direct autopublish kapalı**.
 
-Nyx normal akışta şu kararları kendisi verebilir:
-- yayınla
-- beklet
-- reddet
+Heartbeat akışı artık:
+- toplar
+- işler
+- queue görünürlüğü sağlar
+- sonunda `news_pipeline/scripts/asteria-editorial-gate.sh` ile Asteria'yı çağırır
 
-Ama şu durumlarda kullanıcıya danışır:
-- hukuki riskli iddialar
-- cinsel suç / kişisel suçlama
-- tek kaynağa dayalı sert itham
-- yüksek riskli Türkiye iç siyaset dosyaları
-- itibar riski taşıyan gri alanlar
-- `manual-review` işaretli kayıtlar
+Yani heartbeat script'i kendi başına canlı publish yapmaz.
+Canlı publish kararı Asteria değerlendirmesinden geçmeden verilmez.
 
 ## Kısa mesaj formatı
 
@@ -71,8 +68,7 @@ Uzun rapor dökme.
 
 ## Not
 
-Bu runbook'ta publish kararı Nyx'in editoryal değerlendirmesinden sonra heartbeat içinde gelebilir.
-Uygun aday bulunduğunda kayıt doğrudan canlı `src/content/anlikHaber/` klasörüne yazılır.
-Heartbeat script'i bu canlı dosyayı ardından otomatik git commit + push ile repoya gönderir.
-Ama `manual-review` veya kırmızı bayraklı kayıtlar otomatik publish edilmez.
-İlk güvenli modda heartbeat başına en fazla 1 kayıt publish edilir.
+Bu runbook'ta direct autopublish devre dışıdır.
+Heartbeat script'i artık canlı `src/content/anlikHaber/` klasörüne kendi başına otomatik yazmaz ve otomatik git commit + push yapmaz.
+Bunun yerine heartbeat sonunda Asteria editoryal kapısı çağrılır.
+Amaç, veri motorunu çalışır tutarken canlı publish düğmesini kontrollü bir editoryal katmana taşımaktır.

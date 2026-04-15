@@ -13,22 +13,17 @@ echo "--- HEARTBEAT SUMMARY ---"
 news-pipeline queue summary || true
 
 echo "--- AUTOPUBLISH ---"
-autopublish_output="$(news-pipeline autopublish --limit 1 --min-score 0.72 || true)"
-printf '%s\n' "$autopublish_output"
-
-autopublished_paths=()
-while IFS= read -r line; do
-  [ -n "$line" ] && autopublished_paths+=("$line")
-done <<EOF
-$(printf '%s\n' "$autopublish_output" | sed -n 's/^autopublished: .* -> \(\/.*\.md\)$/\1/p')
-EOF
-if [ "${#autopublished_paths[@]}" -gt 0 ]; then
-  echo "--- GIT PUSH ---"
-  bash news_pipeline/scripts/push-autopublished.sh "${autopublished_paths[@]}"
-fi
+echo "disabled: direct autopublish is off, waiting for Asteria editorial gate"
 
 echo "--- MANUAL REVIEW ---"
 news-pipeline queue review | sed -n '1,5p' || true
 
 echo "--- STRONG NEW ---"
 news-pipeline queue list --status new | sed -n '1,8p' || true
+
+if [ "${RUN_ASTERIA_GATE:-1}" = "1" ]; then
+  bash news_pipeline/scripts/asteria-editorial-gate.sh || true
+else
+  echo "--- ASTERIA EDITORIAL GATE ---"
+  echo "skipped: RUN_ASTERIA_GATE=${RUN_ASTERIA_GATE:-0}"
+fi

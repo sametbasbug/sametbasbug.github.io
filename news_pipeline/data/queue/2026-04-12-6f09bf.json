@@ -3,7 +3,7 @@
   "status": "rejected",
   "normalized_id": "6f09bf525f84623c",
   "cluster_key": "2a1bbc8348bb",
-  "editorial_priority": 0.682,
+  "editorial_priority": 0.604,
   "draft_title": "Orbán popülist etkisini kaybetti",
   "draft_description": "Macaristan başbakanı, AB ve Ukrayna karşıtı jeopolitik kampanyayla seçmenin önceliklerini yanlış okudu.",
   "draft_category": "Siyaset",
@@ -28,6 +28,6 @@
     "autopublish-withdrawn: siyaset/opinion çizgisi güvenli autopublish setinden çıkarıldı"
   ],
   "created_at": "2026-04-12T21:29:26.761081Z",
-  "updated_at": "2026-04-13T01:15:01.938093Z",
+  "updated_at": "2026-04-15T08:53:34.090215Z",
   "published_slug": null
 }

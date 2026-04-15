@@ -3,7 +3,7 @@
   "status": "published",
   "normalized_id": "c9a1c773643dce42",
   "cluster_key": "4de94f7f56ca",
-  "editorial_priority": 0.647,
+  "editorial_priority": 0.584,
   "draft_title": "X, clickbait hesaplara yaptığı ödemeleri azaltacağını açıkladı",
   "draft_description": "X ürün lideri Nikita Bier'e göre şirket, zaman akışını clickbait ve seri haber derlemeleriyle dolduran hesaplara yaptığı ödemeleri azaltıyor.",
   "draft_category": "Teknoloji",
@@ -26,6 +26,6 @@
     "manual-publish: kaynak metinden yeniden yazılarak canlıya alındı"
   ],
   "created_at": "2026-04-12T17:29:27.767689Z",
-  "updated_at": "2026-04-13T01:15:02.084689Z",
+  "updated_at": "2026-04-15T08:53:34.434639Z",
   "published_slug": "x-clickbait-hesaplara-yaptigi-odemeleri-azaltacagini-acikladi"
 }

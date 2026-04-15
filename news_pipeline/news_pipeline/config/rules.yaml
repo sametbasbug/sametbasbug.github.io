@@ -4,7 +4,7 @@ dedupe:
   time_window_hours: 18
 
 editorial:
-  default_author: Nyx AI
+  default_author: Asteria AI
   default_status: new
   max_summary_length: 240
 

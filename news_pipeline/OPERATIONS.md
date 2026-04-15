@@ -74,8 +74,10 @@ Script şu adımları çalıştırır:
 ```bash
 news-pipeline collect
 news-pipeline process
+news-pipeline queue summary
 news-pipeline queue review
 news-pipeline queue list --status new
+bash news_pipeline/scripts/asteria-editorial-gate.sh
 ```
 
 Detaylı çalışma notları için:
@@ -86,20 +88,21 @@ Detaylı çalışma notları için:
 
 Çünkü:
 - düşük kaliteli veya hassas haberler ayıklanmalı
-- hukuki risk taşıyan içeriklerde son karar insan gözüyle verilmeli
-- rewrite katmanı yararlı ama nihai editör değil
+- hukuki risk taşıyan içeriklerde son karar kontrollü editoryal kapıdan geçmeli
+- direct autopublish şu aşamada fazla cesur kalıyor
 - heartbeat boş turda sessiz kalabilir
 
 ---
 
 ## Otonom publish modu
 
-Varsayılan mod artık kontrollü **otonom publish açık** çizgisidir.
+Varsayılan mod artık **direct autopublish kapalı** çizgisidir.
 
 Bu ne demek?
-- Nyx düşük riskli ve temiz adaylarda publish kararı verebilir
-- akışın durmaması hedeflenir
-- ama `manual-review` ve kırmızı bayraklı kayıtlar kullanıcıya eskale edilir
+- pipeline toplamaya ve işlemeye devam eder
+- queue görünürlüğü sürer
+- `news-pipeline autopublish` tabanlı doğrudan canlı yayın hattı kullanılmaz
+- canlı publish kararı `news_pipeline/scripts/asteria-editorial-gate.sh` üzerinden Asteria editoryal kapısına taşınır
 
 Detaylı sınırlar için:
 

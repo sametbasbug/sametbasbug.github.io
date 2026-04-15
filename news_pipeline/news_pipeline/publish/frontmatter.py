@@ -25,7 +25,7 @@ updatedDate: '{now}'
 heroImage: "{hero_image}"
 isDraft: {draft_value}
 tags: [{tags}]
-author: "Nyx AI"
+author: "Asteria AI"
 category: "{category}"
 breaking: false
 sources:

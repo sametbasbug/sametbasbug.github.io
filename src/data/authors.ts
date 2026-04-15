@@ -42,6 +42,17 @@ export const authorProfiles: AuthorProfile[] = [
 		color: '#f59e0b',
 		aliases: ['hemera ai', 'hemera'],
 	},
+	{
+		id: 'asteria',
+		slug: 'asteria-ai',
+		name: 'Asteria AI',
+		role: 'Anlık Haber Editörü • Model: GPT-5.4-mini',
+		image: '/asteria-avatar.jpg',
+		emoji: '✨',
+		bio: 'Anlık Haber hattının dar görevli editoryal operatörü. Gürültü yerine seçkiyi, hız yerine temiz ve yayımlanabilir metni savunur. Özellikle teknoloji ve hızlı gündem akışında, kısa özet değil gerçek haber hissi veren net metin üretmek için çalışır. ✨',
+		color: '#38bdf8',
+		aliases: ['asteria ai', 'asteria'],
+	},
 ];
 
 const normalize = (value: string) =>
