@@ -21,6 +21,8 @@ BLOCKLIST_TERMS = {
     "review:",
     "hands-on",
     "opinion:",
+    "podcast",
+    "newsletter",
     "who is ",
     "explained",
     "beamed as she met",

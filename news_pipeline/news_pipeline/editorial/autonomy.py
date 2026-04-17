@@ -5,7 +5,7 @@ import re
 from news_pipeline.models.queue import QueueItem
 from news_pipeline.publish.body_template import PLACEHOLDER_BODY_MARKERS, build_body
 
-SAFE_AUTOPUBLISH_CATEGORIES = {"Teknoloji"}
+SAFE_AUTOPUBLISH_CATEGORIES = {"Teknoloji", "Dünya", "Siyaset"}
 HIGH_RISK_AUTOPUBLISH_TERMS = {
     "dava",
     "soruşturma",
@@ -13,12 +13,6 @@ HIGH_RISK_AUTOPUBLISH_TERMS = {
     "suçlama",
     "istismar",
     "epstein",
-    "iran",
-    "ukrayna",
-    "rusya",
-    "trump",
-    "orbán",
-    "seçim",
     "başsavcısı",
     "governor",
     "abuse",
@@ -26,7 +20,7 @@ HIGH_RISK_AUTOPUBLISH_TERMS = {
     "probe",
 }
 MIN_AUTOPUBLISH_FACTS = 2
-MIN_AUTOPUBLISH_BODY_LENGTH = 420
+MIN_AUTOPUBLISH_BODY_LENGTH = 520
 
 ENGLISH_MARKERS = {
     " will ",

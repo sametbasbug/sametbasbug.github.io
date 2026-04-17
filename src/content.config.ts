@@ -47,6 +47,7 @@ const anlikHaber = defineCollection({
 		author: z.string().optional(),
 		category: z.enum(['Siyaset', 'Ekonomi', 'Türkiye', 'Dünya', 'Teknoloji']).optional(),
 		breaking: z.boolean().optional(),
+		editorPick: z.boolean().optional(),
 		sources: z.array(z.object({
 			name: z.string(),
 			url: z.string().url(),

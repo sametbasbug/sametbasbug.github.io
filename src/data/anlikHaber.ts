@@ -31,7 +31,7 @@ export function slugifyNewsCategory(category: string) {
 
 export function getNewsCategoryHref(category?: string) {
 	if (!category || category === 'Tümü') return '/anlik-haber/';
-	return `/anlik-haber/kategori/${slugifyNewsCategory(category)}/`;
+	return `/anlik-haber/?kategori=${slugifyNewsCategory(category)}`;
 }
 
 export function findNewsCategoryBySlug(categories: string[], slug?: string) {

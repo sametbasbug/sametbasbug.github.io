@@ -3,9 +3,17 @@ from __future__ import annotations
 from news_pipeline.models.queue import DraftSource, QueueItem
 
 SOURCE_NAME_WEIGHTS = {
-    "Politico Europe": 0.90,
-    "BBC World": 0.86,
-    "TechCrunch": 0.84,
+    "Reuters Technology": 0.93,
+    "BBC World": 0.91,
+    "Reuters World": 0.90,
+    "Politico Europe": 0.88,
+    "Ars Technica": 0.87,
+    "The Verge": 0.86,
+    "MIT Technology Review": 0.86,
+    "Engadget": 0.84,
+    "ZDNET": 0.82,
+    "Fast Company Tech": 0.80,
+    "TechCrunch": 0.78,
 }
 
 

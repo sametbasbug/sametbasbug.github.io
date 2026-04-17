@@ -1,16 +1,91 @@
 ---
 import NewsLayout from '../../layouts/NewsLayout.astro';
-import { ANLIK_HABER_PAGE_SIZE, formatNewsDate, getAnlikHaberCategories, getNewsCategoryToken, getPublishedAnlikHaber } from '../../data/anlikHaber';
+import {
+	ANLIK_HABER_PAGE_SIZE,
+	formatNewsDate,
+	getAnlikHaberCategories,
+	getNewsCategoryToken,
+	getPublishedAnlikHaber,
+	slugifyNewsCategory,
+} from '../../data/anlikHaber';
 
 const allEntries = await getPublishedAnlikHaber();
 const categories = getAnlikHaberCategories();
-const firstPageEntries = allEntries.slice(0, ANLIK_HABER_PAGE_SIZE);
-const featuredLeadEntries = firstPageEntries.slice(0, Math.min(3, firstPageEntries.length));
-const leadEntry = featuredLeadEntries[0];
-const sideEntries = firstPageEntries.slice(featuredLeadEntries.length, featuredLeadEntries.length + 3);
-
 const title = 'Anlık Haber';
 const description = 'Kısa, hızlı ve okunaklı haber akışı. Ağır blog kabuğundan bağımsız, rahat okuma için tasarlanmış anlık haber yüzeyi.';
+
+function buildPanel(entries) {
+	const firstPageEntries = entries.slice(0, ANLIK_HABER_PAGE_SIZE);
+	const featuredLeadEntries = firstPageEntries.slice(0, Math.min(10, firstPageEntries.length));
+	const leadEntry = featuredLeadEntries[0];
+	const nonFeaturedEntries = entries.filter((entry) => !featuredLeadEntries.some((featured) => featured.id === entry.id));
+	const editorPickEntries = nonFeaturedEntries.filter((entry) => entry.data.editorPick);
+	const sideEntries = (editorPickEntries.length > 0 ? editorPickEntries : nonFeaturedEntries).slice(0, 3);
+	return { firstPageEntries, featuredLeadEntries, leadEntry, sideEntries };
+}
+
+const allPanel = buildPanel(allEntries);
+
+const panels = {
+	'Tümü': {
+		featuredLeadEntries: allPanel.featuredLeadEntries.map((entry) => ({
+			id: entry.id,
+			href: `/anlik-haber/${entry.id}/`,
+			title: entry.data.title,
+			description: entry.data.description,
+			heroImage: entry.data.heroImage ?? '',
+			category: entry.data.category ?? '',
+			categoryToken: getNewsCategoryToken(entry.data.category),
+			breaking: Boolean(entry.data.breaking),
+			pubDateIso: entry.data.pubDate.toISOString(),
+			pubDateLabel: formatNewsDate(entry.data.pubDate),
+			author: entry.data.author ?? 'Nyx AI',
+		})),
+		sideEntries: allPanel.sideEntries.map((entry) => ({
+			id: entry.id,
+			href: `/anlik-haber/${entry.id}/`,
+			title: entry.data.title,
+			description: entry.data.description,
+			category: entry.data.category ?? '',
+			categoryToken: getNewsCategoryToken(entry.data.category),
+			pubDateIso: entry.data.pubDate.toISOString(),
+			pubDateLabel: formatNewsDate(entry.data.pubDate),
+		})),
+	},
+};
+
+for (const category of categories) {
+	const categoryEntries = allEntries.filter((entry) => entry.data.category === category);
+	const panel = buildPanel(categoryEntries);
+	panels[category] = {
+		featuredLeadEntries: panel.featuredLeadEntries.map((entry) => ({
+			id: entry.id,
+			href: `/anlik-haber/${entry.id}/`,
+			title: entry.data.title,
+			description: entry.data.description,
+			heroImage: entry.data.heroImage ?? '',
+			category: entry.data.category ?? '',
+			categoryToken: getNewsCategoryToken(entry.data.category),
+			breaking: Boolean(entry.data.breaking),
+			pubDateIso: entry.data.pubDate.toISOString(),
+			pubDateLabel: formatNewsDate(entry.data.pubDate),
+			author: entry.data.author ?? 'Nyx AI',
+		})),
+		sideEntries: panel.sideEntries.map((entry) => ({
+			id: entry.id,
+			href: `/anlik-haber/${entry.id}/`,
+			title: entry.data.title,
+			description: entry.data.description,
+			category: entry.data.category ?? '',
+			categoryToken: getNewsCategoryToken(entry.data.category),
+			pubDateIso: entry.data.pubDate.toISOString(),
+			pubDateLabel: formatNewsDate(entry.data.pubDate),
+		})),
+	};
+}
+
+const categorySlugMap = Object.fromEntries(categories.map((category) => [slugifyNewsCategory(category), category]));
+const SIDE_SLOT_COUNT = 3;
 ---
 
 <NewsLayout
@@ -22,11 +97,11 @@ const description = 'Kısa, hızlı ve okunaklı haber akışı. Ağır blog kab
 	categories={categories}
 	activeCategory="Tümü"
 >
-	{leadEntry ? (
-		<>
+	<div data-news-home-root>
+		{allPanel.leadEntry ? (
 			<section class="featured-news-grid">
 				<div class="featured-lead-card" data-featured-lead>
-					{featuredLeadEntries.map((entry, index) => {
+					{allPanel.featuredLeadEntries.map((entry, index) => {
 						const entryCategoryToken = getNewsCategoryToken(entry.data.category);
 						const isActive = index === 0;
 						return (
@@ -56,9 +131,9 @@ const description = 'Kısa, hızlı ve okunaklı haber akışı. Ağır blog kab
 						);
 					})}
 
-					{featuredLeadEntries.length > 1 && (
+					{allPanel.featuredLeadEntries.length > 1 && (
 						<div class="featured-lead-nav" aria-label="Öne çıkan haberler">
-							{featuredLeadEntries.map((entry, index) => (
+							{allPanel.featuredLeadEntries.map((entry, index) => (
 								<button
 									type="button"
 									class={`featured-lead-trigger ${index === 0 ? 'is-active' : ''}`}
@@ -73,68 +148,239 @@ const description = 'Kısa, hızlı ve okunaklı haber akışı. Ağır blog kab
 					)}
 				</div>
 
-				{sideEntries.length > 0 && (
-					<div class="featured-side-stack" role="list" aria-label="Öne çıkan yan haberler">
-						{sideEntries.map((entry) => (
-							<a href={`/anlik-haber/${entry.id}/`} class="featured-side-card" role="listitem">
-								<div class="featured-side-content text-only">
-									{entry.data.category && <span class="featured-badge side" data-category={getNewsCategoryToken(entry.data.category)}>{entry.data.category}</span>}
-									<h2>{entry.data.title}</h2>
-									<p>{entry.data.description}</p>
-									<time datetime={entry.data.pubDate.toISOString()}>{formatNewsDate(entry.data.pubDate)}</time>
-								</div>
-							</a>
-						))}
-					</div>
+				{allPanel.sideEntries.length > 0 && (
+					<section class="featured-side-stack" aria-label="Editörün seçtikleri">
+						<div class="featured-side-header">
+							<p>Öne çıkanlar</p>
+							<h2>Editörün seçtikleri</h2>
+						</div>
+						<div class="featured-side-list" role="list">
+							{allPanel.sideEntries.map((entry) => (
+								<a href={`/anlik-haber/${entry.id}/`} class="featured-side-card" role="listitem">
+									<div class="featured-side-content text-only">
+										{entry.data.category && <span class="featured-badge side" data-category={getNewsCategoryToken(entry.data.category)}>{entry.data.category}</span>}
+										<h2>{entry.data.title}</h2>
+										<p>{entry.data.description}</p>
+										<time datetime={entry.data.pubDate.toISOString()}>{formatNewsDate(entry.data.pubDate)}</time>
+									</div>
+								</a>
+							))}
+							{Array.from({ length: Math.max(0, SIDE_SLOT_COUNT - allPanel.sideEntries.length) }).map(() => (
+								<div class="featured-side-card featured-side-card-placeholder" aria-hidden="true"></div>
+							))}
+						</div>
+					</section>
 				)}
 			</section>
-
-		</>
-	) : (
-		<div class="news-empty-state">
-			<h2>Henüz yayınlanmış anlık haber yok.</h2>
-			<p>İskelet hazır. İlk haber girildiğinde bu akış canlı çalışmaya başlayacak.</p>
-		</div>
-	)}
+		) : (
+			<div class="news-empty-state">
+				<h2>Henüz yayınlanmış anlık haber yok.</h2>
+				<p>İskelet hazır. İlk haber girildiğinde bu akış canlı çalışmaya başlayacak.</p>
+			</div>
+		)}
+	</div>
 </NewsLayout>
 
-<script>
-	document.querySelectorAll('[data-featured-lead]').forEach((root) => {
-		if (!(root instanceof HTMLElement) || root.dataset.bound === '1') return;
-		root.dataset.bound = '1';
+<script define:vars={{ panels, categorySlugMap, SIDE_SLOT_COUNT }}>
+	function initFeaturedLeadCards(scope = document) {
+		scope.querySelectorAll('[data-featured-lead]').forEach((root) => {
+			if (!(root instanceof HTMLElement) || root.dataset.bound === '1') return;
+			root.dataset.bound = '1';
 
-		const slides = Array.from(root.querySelectorAll('[data-featured-slide]'));
-		const triggers = Array.from(root.querySelectorAll('[data-featured-trigger]'));
-		if (slides.length === 0 || triggers.length === 0) return;
+			const slides = Array.from(root.querySelectorAll('[data-featured-slide]'));
+			const triggers = Array.from(root.querySelectorAll('[data-featured-trigger]'));
+			if (slides.length === 0 || triggers.length === 0) return;
 
-		const setActive = (index) => {
-			slides.forEach((slide, slideIndex) => {
-				if (!(slide instanceof HTMLElement)) return;
-				const active = slideIndex === index;
-				slide.classList.toggle('is-active', active);
-				slide.setAttribute('aria-hidden', active ? 'false' : 'true');
-				if (active) {
-					slide.removeAttribute('tabindex');
-				} else {
-					slide.setAttribute('tabindex', '-1');
-				}
+			const setActive = (index) => {
+				slides.forEach((slide, slideIndex) => {
+					if (!(slide instanceof HTMLElement)) return;
+					const active = slideIndex === index;
+					slide.classList.toggle('is-active', active);
+					slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+					if (active) slide.removeAttribute('tabindex');
+					else slide.setAttribute('tabindex', '-1');
+				});
+				triggers.forEach((trigger, triggerIndex) => {
+					if (!(trigger instanceof HTMLElement)) return;
+					trigger.classList.toggle('is-active', triggerIndex === index);
+				});
+			};
+
+			triggers.forEach((trigger, index) => {
+				if (!(trigger instanceof HTMLButtonElement)) return;
+				trigger.addEventListener('mouseenter', () => setActive(index));
+				trigger.addEventListener('focus', () => setActive(index));
+				trigger.addEventListener('click', () => setActive(index));
 			});
-			triggers.forEach((trigger, triggerIndex) => {
-				if (!(trigger instanceof HTMLElement)) return;
-				trigger.classList.toggle('is-active', triggerIndex === index);
-			});
-		};
-
-		triggers.forEach((trigger, index) => {
-			if (!(trigger instanceof HTMLButtonElement)) return;
-			trigger.addEventListener('mouseenter', () => setActive(index));
-			trigger.addEventListener('focus', () => setActive(index));
-			trigger.addEventListener('click', () => setActive(index));
 		});
+	}
+
+	function escapeHtml(value = '') {
+		return String(value)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+
+	function renderLeadSlides(items) {
+		return items
+			.map((item, index) => {
+				const active = index === 0;
+				return `
+					<a href="${escapeHtml(item.href)}" class="featured-lead-slide ${active ? 'is-active' : ''}" data-featured-slide data-index="${index}" aria-hidden="${active ? 'false' : 'true'}" ${active ? '' : 'tabindex="-1"'}>
+						${item.heroImage ? `<img src="${escapeHtml(item.heroImage)}" alt="" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async">` : ''}
+						<div class="featured-overlay lead"></div>
+						<div class="featured-lead-content">
+							<div class="featured-lead-topline">
+								${item.category ? `<span class="featured-badge" data-category="${escapeHtml(item.categoryToken)}">${escapeHtml(item.category)}</span>` : ''}
+								${item.breaking ? '<span class="featured-badge breaking">Son Dakika</span>' : ''}
+							</div>
+							<h2>${escapeHtml(item.title)}</h2>
+							<p>${escapeHtml(item.description)}</p>
+							<div class="featured-meta-row">
+								<time datetime="${escapeHtml(item.pubDateIso)}">${escapeHtml(item.pubDateLabel)}</time>
+								<span>${escapeHtml(item.author)}</span>
+							</div>
+						</div>
+					</a>
+				`;
+			})
+			.join('');
+	}
+
+	function renderLeadNav(items) {
+		if (items.length <= 1) return '';
+		return `
+			<div class="featured-lead-nav" aria-label="Öne çıkan haberler">
+				${items
+					.map(
+						(item, index) => `
+							<button type="button" class="featured-lead-trigger ${index === 0 ? 'is-active' : ''}" data-featured-trigger data-index="${index}" aria-label="${index + 1}. haber: ${escapeHtml(item.title)}">${index + 1}</button>
+						`,
+					)
+					.join('')}
+			</div>
+		`;
+	}
+
+	function renderSideEntries(items) {
+		if (items.length === 0) return '';
+		const placeholders = Math.max(0, SIDE_SLOT_COUNT - items.length);
+		return `
+			<section class="featured-side-stack" aria-label="Editörün seçtikleri">
+				<div class="featured-side-header">
+					<p>Öne çıkanlar</p>
+					<h2>Editörün seçtikleri</h2>
+				</div>
+				<div class="featured-side-list" role="list">
+					${items
+						.map(
+							(item) => `
+								<a href="${escapeHtml(item.href)}" class="featured-side-card" role="listitem">
+									<div class="featured-side-content text-only">
+										${item.category ? `<span class="featured-badge side" data-category="${escapeHtml(item.categoryToken)}">${escapeHtml(item.category)}</span>` : ''}
+										<h2>${escapeHtml(item.title)}</h2>
+										<p>${escapeHtml(item.description)}</p>
+										<time datetime="${escapeHtml(item.pubDateIso)}">${escapeHtml(item.pubDateLabel)}</time>
+									</div>
+								</a>
+							`,
+						)
+						.join('')}
+					${Array.from({ length: placeholders }).map(() => `<div class="featured-side-card featured-side-card-placeholder" aria-hidden="true"></div>`).join('')}
+				</div>
+			</section>
+		`;
+	}
+
+	function renderPanel(name) {
+		const root = document.querySelector('[data-news-home-root]');
+		if (!(root instanceof HTMLElement)) return;
+		const panel = panels[name] ?? panels['Tümü'];
+		if (!panel || panel.featuredLeadEntries.length === 0) {
+			root.innerHTML = `
+				<div class="news-empty-state">
+					<h2>Bu kategoride henüz yayınlanmış haber yok.</h2>
+					<p>İlk kayıt geldiğinde akış burada görünecek.</p>
+				</div>
+			`;
+			return;
+		}
+
+		root.innerHTML = `
+			<section class="featured-news-grid">
+				<div class="featured-lead-card" data-featured-lead>
+					${renderLeadSlides(panel.featuredLeadEntries)}
+					${renderLeadNav(panel.featuredLeadEntries)}
+				</div>
+				${renderSideEntries(panel.sideEntries)}
+			</section>
+		`;
+
+		initFeaturedLeadCards(root);
+	}
+
+	function syncNav(activeCategory) {
+		document.querySelectorAll('[data-news-nav] a').forEach((link) => {
+			if (!(link instanceof HTMLAnchorElement)) return;
+			const label = link.textContent?.trim() || '';
+			if (label === activeCategory) link.setAttribute('aria-current', 'page');
+			else link.removeAttribute('aria-current');
+		});
+	}
+
+	function categoryFromUrl(url) {
+		const slug = url.searchParams.get('kategori');
+		if (!slug) return 'Tümü';
+		return categorySlugMap[slug] ?? 'Tümü';
+	}
+
+	function applyCategory(category, updateUrl = true) {
+		renderPanel(category);
+		syncNav(category);
+		if (updateUrl) {
+			const nextUrl = new URL(window.location.href);
+			if (category === 'Tümü') nextUrl.searchParams.delete('kategori');
+			else {
+				const slug = Object.entries(categorySlugMap).find(([, value]) => value === category)?.[0];
+				if (slug) nextUrl.searchParams.set('kategori', slug);
+			}
+			window.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
+		}
+	}
+
+	function initNewsCategoryFilters() {
+		if (document.body.dataset.newsCategoryBound === '1') return;
+		document.body.dataset.newsCategoryBound = '1';
+
+		initFeaturedLeadCards();
+		applyCategory(categoryFromUrl(new URL(window.location.href)), false);
+
+		document.querySelectorAll('[data-news-nav] a').forEach((link) => {
+			if (!(link instanceof HTMLAnchorElement)) return;
+			link.addEventListener('click', (event) => {
+				const url = new URL(link.href, window.location.origin);
+				if (url.pathname !== '/anlik-haber/') return;
+				event.preventDefault();
+				applyCategory(categoryFromUrl(url));
+			});
+		});
+
+		window.addEventListener('popstate', () => {
+			applyCategory(categoryFromUrl(new URL(window.location.href)), false);
+		});
+	}
+
+	initNewsCategoryFilters();
+	document.addEventListener('astro:page-load', () => {
+		document.body.dataset.newsCategoryBound = '0';
+		initNewsCategoryFilters();
 	});
 </script>
 
-<style>
+<style is:global>
 	.featured-news-grid {
 		display: grid;
 		grid-template-columns: minmax(0, 2fr) 280px;
@@ -142,9 +388,40 @@ const description = 'Kısa, hızlı ve okunaklı haber akışı. Ağır blog kab
 		padding-top: 0.24rem;
 	}
 	.featured-side-stack {
+		position: relative;
 		display: grid;
 		gap: 0.8rem;
 		align-content: start;
+	}
+	.featured-side-header {
+		position: absolute;
+		top: -3.2rem;
+		left: 0;
+		right: 0;
+		display: grid;
+		gap: 0.18rem;
+		padding: 0 0.1rem;
+	}
+	.featured-side-header p {
+		margin: 0;
+		font-size: 0.68rem;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--news-accent-soft);
+	}
+	.featured-side-header h2 {
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.2;
+		color: var(--news-text);
+	}
+	.featured-side-list {
+		display: grid;
+		grid-template-rows: repeat(3, minmax(0, 1fr));
+		auto-rows: minmax(0, 1fr);
+		gap: 0.8rem;
+		height: 100%;
 	}
 	.featured-side-card,
 	.featured-lead-card {
@@ -164,8 +441,13 @@ const description = 'Kısa, hızlı ve okunaklı haber akışı. Ağır blog kab
 	.featured-side-card {
 		overflow: visible;
 		min-height: 0;
+		height: 100%;
 		background: color-mix(in srgb, var(--news-panel) 96%, transparent);
 		box-shadow: none;
+	}
+	.featured-side-card-placeholder {
+		pointer-events: none;
+		opacity: 0;
 	}
 	.featured-side-card:hover,
 	.featured-lead-card:hover {
@@ -231,7 +513,9 @@ const description = 'Kısa, hızlı ve okunaklı haber akışı. Ağır blog kab
 		position: relative;
 		inset: auto;
 		display: grid;
+		align-content: start;
 		gap: 0.45rem;
+		height: 100%;
 		padding: 1rem 1rem 0.95rem;
 	}
 	.featured-lead-content {
@@ -319,15 +603,18 @@ const description = 'Kısa, hızlı ve okunaklı haber akışı. Ağır blog kab
 		-webkit-line-clamp: 3;
 		overflow: hidden;
 	}
+	.featured-side-content.text-only h2 {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 3;
+		overflow: hidden;
+	}
 	.featured-lead-content h2 {
 		font-size: clamp(1.48rem, 2.45vw, 2rem);
 		line-height: 1.06;
 		letter-spacing: -0.05em;
 		max-width: 22ch;
-		display: -webkit-box;
-		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 2;
-		overflow: hidden;
+		text-wrap: balance;
 	}
 	.featured-lead-topline {
 		display: flex;
@@ -351,7 +638,8 @@ const description = 'Kısa, hızlı ve okunaklı haber akışı. Ağır blog kab
 		font-size: 0.74rem;
 	}
 	.featured-side-content.text-only time {
-		margin-top: 0.15rem;
+		margin-top: auto;
+		padding-top: 0.35rem;
 		color: var(--news-muted);
 		font-size: 0.78rem;
 	}
@@ -441,6 +729,13 @@ const description = 'Kısa, hızlı ve okunaklı haber akışı. Ağır blog kab
 	@media (max-width: 1080px) {
 		.featured-news-grid {
 			grid-template-columns: 1fr;
+		}
+		.featured-side-stack {
+			margin-top: 0.75rem;
+		}
+		.featured-side-header {
+			position: static;
+			padding: 0;
 		}
 	}
 	@media (max-width: 700px) {

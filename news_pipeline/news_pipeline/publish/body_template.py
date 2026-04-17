@@ -14,25 +14,29 @@ def _clean_facts(item: QueueItem) -> list[str]:
     facts = [fact.strip() for fact in item.draft_facts if fact and fact.strip()]
     if not facts:
         return ["İlk çerçeve ve temel ayrıntılar mevcut kaynaklardan derlendi."]
-    return facts[:4]
+    return facts[:6]
 
 
 def _topic_context(item: QueueItem) -> str:
     text = f"{item.draft_title} {item.draft_description} {' '.join(item.draft_facts)}".lower()
-    if any(term in text for term in ["openai", "anthropic", "google", "adobe", "chrome", "ai", "yapay zeka", "veri merkezi"]):
+    if any(term in text for term in ["openai", "anthropic", "google", "adobe", "chrome", "yapay zeka", "llm", "model", "veri merkezi"]):
         return (
-            "Bu başlık, teknoloji ve yapay zeka şirketleri arasındaki rekabette yatırım, ürün yönü veya altyapı kapasitesi tarafında yeni bir eşik oluştuğuna işaret ediyor."
+            "Gelişme, yapay zeka ve yazılım pazarında ürün, dağıtım ya da altyapı tercihlerinin nereye kaydığını göstermesi bakımından izleniyor."
         )
-    if any(term in text for term in ["seçim", "trump", "iran", "ukrayna", "rusya", "britain", "hükümet"]):
+    if any(term in text for term in ["seçim", "trump", "iran", "ukrayna", "rusya", "britain", "hükümet", "ab", "europe", "avrupa"]):
         return (
-            "Bu gelişme, siyasi denge veya diplomatik temaslar açısından yeni bir pozisyon değişikliğine ya da yeni bir gerilim başlığına işaret edebilir."
+            "Dosyanın bundan sonraki yönü, taraflardan gelecek resmi açıklamalarla ve sahadaki siyasi takvimin nasıl şekilleneceğiyle netleşecek."
         )
-    if any(term in text for term in ["açık", "güvenlik", "hack", "zararlı", "backdoor", "siber"]):
+    if any(term in text for term in ["yatırım", "değerleme", "seed", "tohum", "funding", "finans", "tarife", "ticaret", "market", "economy"]):
         return (
-            "Haber, kullanıcılar ve kurumlar açısından doğrudan güvenlik etkisi doğurabilecek bir riskin ya da savunma adımının altını çiziyor."
+            "Şirketler ve yatırımcılar açısından haber, sermayenin hangi alanlarda yoğunlaştığına dair güncel bir işaret sunuyor."
+        )
+    if any(term in text for term in ["açık", "güvenlik", "hack", "zararlı", "backdoor", "siber", "vulnerability", "patch"]):
+        return (
+            "Konu, kullanıcılar ve kurumlar için doğrudan güvenlik etkisi doğurabileceğinden yeni güncellemeler ve resmi teknik açıklamalar önem taşıyor."
         )
     return (
-        "Gelişme, ilgili alanda şirketlerin, kurumların veya piyasanın hangi başlıklarda pozisyon aldığını göstermesi açısından dikkat çekiyor."
+        "Başlıktaki gelişmenin etkisi, ilgili kurumların atacağı sonraki adımlarla birlikte daha net görülecek."
     )
 
 
@@ -43,30 +47,36 @@ def build_body(item: QueueItem) -> str:
 
     facts = _clean_facts(item)
 
-    opening = f"{lead}"
+    opening = lead or "Gelişmeye ilişkin ilk çerçeve mevcut kaynaklardan derlendi."
 
-    nutgraf = (
-        f"{source_name} kaynaklı ilk çerçeveye göre bu gelişme, {facts[0][0].lower() + facts[0][1:] if facts and len(facts[0]) > 1 else facts[0]}"
-        if facts
-        else f"{source_name} kaynaklı ilk çerçeveye göre bu gelişme, ilgili başlıkta somut bir değişime işaret ediyor."
-    )
+    if facts:
+        first_fact = facts[0]
+        fact_text = first_fact[0].lower() + first_fact[1:] if len(first_fact) > 1 else first_fact.lower()
+        nutgraf = f"{source_name}'ın aktardığı ilk bilgilere göre gelişme, {fact_text}"
+    else:
+        nutgraf = f"{source_name} kaynaklı ilk çerçeveye göre bu gelişme, ilgili başlıkta somut bir değişime işaret ediyor"
+    if not nutgraf.endswith((".", "!", "?")):
+        nutgraf += "."
 
-    detail_paragraph = " ".join(
-        fact if fact.endswith((".", "!", "?")) else f"{fact}." for fact in facts[1:3]
-    ).strip()
-    if not detail_paragraph:
-        detail_paragraph = (
-            "Mevcut bilgiler, haberin erken çerçevesini kurmaya yetiyor; ancak yeni doğrulamalar geldikçe detay seviyesi de genişleyebilir."
+    detail_facts = facts[1:5]
+    detail_paragraphs: list[str] = []
+    if detail_facts:
+        chunk_size = 2
+        for index in range(0, len(detail_facts), chunk_size):
+            chunk = detail_facts[index:index + chunk_size]
+            sentences = []
+            for fact in chunk:
+                sentence = fact if fact.endswith((".", "!", "?")) else f"{fact}."
+                sentences.append(sentence)
+            detail_paragraphs.append(" ".join(sentences))
+    else:
+        detail_paragraphs.append(
+            "Mevcut bilgiler haberin temel çerçevesini kuruyor; yeni resmi açıklamalar geldikçe ayrıntılar netleşebilir."
         )
 
-    third_paragraph = ""
-    if len(facts) >= 4:
-        extra = facts[3]
-        if not extra.endswith((".", "!", "?")):
-            extra = f"{extra}."
-        third_paragraph = extra
-
-    importance = _topic_context(item)
+    context_paragraph = _topic_context(item)
+    if not context_paragraph.endswith((".", "!", "?")):
+        context_paragraph += "."
 
     review_note = ""
     public_notes = [
@@ -80,22 +90,10 @@ def build_body(item: QueueItem) -> str:
         supporting_lines = "\n".join([f"- [{source.name}]({source.url})" for source in item.supporting_sources[:5]])
         supporting_sources_block = f"\n## Ek kaynaklar\n\n{supporting_lines}\n"
 
-    body_parts = [
-        opening,
-        "",
-        nutgraf,
-        "",
-        detail_paragraph,
-    ]
-    if third_paragraph:
-        body_parts.extend(["", third_paragraph])
-
-    body_parts.extend([
-        "",
-        "## Bağlam",
-        "",
-        importance,
-    ])
+    body_parts = [opening, "", nutgraf]
+    for paragraph in detail_paragraphs:
+        body_parts.extend(["", paragraph])
+    body_parts.extend(["", context_paragraph])
 
     body = "\n".join(body_parts)
 
