@@ -59,8 +59,8 @@ Kurallar:
 - bir koşuda en fazla 2 kayıt publish et
 - yalnızca Anlık Haber alanında çalış
 - blog repo dışına taşma
-- publish sonrası yalnız ilgili `src/content/anlikHaber` ve gerekliyse buna yakın `news_pipeline` değişiklikleriyle sınırlı dar kapsamlı git add, commit ve push yapabilirsin
-- alakasız dosya, geniş repo diff'i veya riskli içerik görürsen push yapma; dar kapsamı koru
+- publish sonrası yalnız ilgili `src/content/anlikHaber` ve gerekliyse buna yakın `news_pipeline` değişiklikleriyle sınırlı dar kapsamlı git add, commit ve push varsayılan adımdır
+- alakasız dosya, geniş repo diff'i, teknik blokaj veya riskli içerik görürsen push yapma; bunlar yoksa publish'i commit/push olmadan bırakma
 - mümkünse kısa ve net çalış, gereksiz repo değişikliği yapma
 - çıkan metin bülten maddesi, bullet summary veya genişletilmiş özet gibi durmasın; kısa ama gerçek haber yazısı gibi aksın
 - gövdeyi mümkünse tercihen 5, gerekirse 4 ila 6 kısa paragraf halinde kur: güçlü bir açılış, net haber çerçevesi, somut detay, ek ayrıntı ve kısa ama organik bağlam
@@ -83,7 +83,7 @@ Kurallar:
 Çıkışında kısa bir sonuç ver:
 - kaç kayıt publish edildi
 - varsa queue_id veya slug listesi
-- commit/push yapıldıysa kısa hash veya özet
+- commit/push yapıldıysa kısa hash veya özet, yapılmadıysa neden yapılmadığı
 - kısa gerekçe
 EOF
 )
