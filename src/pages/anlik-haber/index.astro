@@ -352,6 +352,8 @@ const SIDE_SLOT_COUNT = 3;
 	}
 
 	function initNewsCategoryFilters() {
+		const homeRoot = document.querySelector('[data-news-home-root]');
+		if (!(homeRoot instanceof HTMLElement)) return;
 		if (document.body.dataset.newsCategoryBound === '1') return;
 		document.body.dataset.newsCategoryBound = '1';
 
@@ -361,6 +363,8 @@ const SIDE_SLOT_COUNT = 3;
 		document.querySelectorAll('[data-news-nav] a').forEach((link) => {
 			if (!(link instanceof HTMLAnchorElement)) return;
 			link.addEventListener('click', (event) => {
+				const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+				if (currentPath !== '/anlik-haber') return;
 				const url = new URL(link.href, window.location.origin);
 				if (url.pathname !== '/anlik-haber/') return;
 				event.preventDefault();
@@ -369,6 +373,7 @@ const SIDE_SLOT_COUNT = 3;
 		});
 
 		window.addEventListener('popstate', () => {
+			if (!document.querySelector('[data-news-home-root]')) return;
 			applyCategory(categoryFromUrl(new URL(window.location.href)), false);
 		});
 	}
