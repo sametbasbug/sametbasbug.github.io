@@ -51,7 +51,8 @@ export function getNewsCategoryToken(category?: string) {
 }
 
 export function formatNewsDate(date: Date) {
-	return date.toLocaleDateString('tr-TR', {
+	return date.toLocaleString('tr-TR', {
+		timeZone: 'Europe/Istanbul',
 		day: '2-digit',
 		month: 'long',
 		year: 'numeric',
