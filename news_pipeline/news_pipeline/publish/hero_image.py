@@ -10,7 +10,34 @@ import httpx
 from news_pipeline.models.queue import QueueItem
 from news_pipeline.utils.env import get_env
 
-DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&h=675&auto=format&fit=crop"
+DEFAULT_HERO_IMAGES = {
+    "Teknoloji": [
+        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&h=675&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1496171367470-9ed9a91ea931?q=80&w=1200&h=675&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&h=675&auto=format&fit=crop",
+    ],
+    "Ekonomi": [
+        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&h=675&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=1200&h=675&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=1200&h=675&auto=format&fit=crop",
+    ],
+    "Dünya": [
+        "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1200&h=675&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1200&h=675&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1200&h=675&auto=format&fit=crop",
+    ],
+    "Siyaset": [
+        "https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=1200&h=675&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1575320181282-9afab399332c?q=80&w=1200&h=675&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=1200&h=675&auto=format&fit=crop",
+    ],
+    "Türkiye": [
+        "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?q=80&w=1200&h=675&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1527838832700-5059252407fa?q=80&w=1200&h=675&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1200&h=675&auto=format&fit=crop",
+    ],
+}
+FALLBACK_CATEGORY = "Teknoloji"
 PEXELS_SEARCH_URL = "https://api.pexels.com/v1/search"
 NEWS_CONTENT_DIR = Path(__file__).resolve().parents[3] / "src" / "content" / "anlikHaber"
 STOPWORDS = {
@@ -236,6 +263,17 @@ def _recent_hero_images(limit: int = 30) -> set[str]:
     return images
 
 
+def _default_hero_image(item: QueueItem, recent_images: set[str] | None = None) -> str:
+    category = item.draft_category or FALLBACK_CATEGORY
+    choices = DEFAULT_HERO_IMAGES.get(category) or DEFAULT_HERO_IMAGES[FALLBACK_CATEGORY]
+    recent_images = recent_images or set()
+    for candidate in choices:
+        key = _image_key(candidate)
+        if key and key not in recent_images:
+            return candidate
+    return choices[0]
+
+
 def _photo_candidate(photo: dict[str, Any]) -> str | None:
     src = photo.get("src") or {}
     candidate = src.get("landscape") or src.get("large2x") or src.get("large")
@@ -272,15 +310,15 @@ def _score_photo(photo: dict[str, Any], query: str, item: QueueItem, recent_imag
 
     if item.draft_category == "Teknoloji":
         for term in ["screen", "computer", "laptop", "software", "interface", "desk", "workspace", "keyboard"]:
-            if term in text:
+            if term in photo_text:
                 score += 1.8
     if item.draft_category == "Ekonomi":
         for term in ["finance", "chart", "market", "business", "analytics", "trading"]:
-            if term in text:
+            if term in photo_text:
                 score += 1.8
     if item.draft_category in {"Siyaset", "Dünya", "Türkiye"}:
         for term in ["government", "parliament", "flag", "building", "diplomacy", "city"]:
-            if term in text:
+            if term in photo_text:
                 score += 1.6
 
     for term in EVENT_PENALTY_TERMS:
@@ -325,11 +363,11 @@ def _search_photos(client: httpx.Client, api_key: str, query: str) -> list[dict[
 
 
 def pick_hero_image(item: QueueItem) -> str:
+    recent_images = _recent_hero_images()
     api_key = get_env("PEXELS_API_KEY")
     if not api_key:
-        return DEFAULT_HERO_IMAGE
+        return _default_hero_image(item, recent_images)
 
-    recent_images = _recent_hero_images()
     queries = _build_queries(item)
 
     try:
@@ -357,6 +395,8 @@ def pick_hero_image(item: QueueItem) -> str:
                     break
         if best_image and best_score >= 4.0:
             return best_image
-        return fallback_image or DEFAULT_HERO_IMAGE
+        if fallback_image and fallback_score >= 4.0:
+            return fallback_image
+        return _default_hero_image(item, recent_images)
     except Exception:
-        return DEFAULT_HERO_IMAGE
+        return _default_hero_image(item, recent_images)

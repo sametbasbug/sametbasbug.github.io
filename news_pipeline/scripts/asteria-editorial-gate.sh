@@ -59,7 +59,8 @@ Kurallar:
 - bir koşuda en fazla 2 kayıt publish et
 - yalnızca Anlık Haber alanında çalış
 - blog repo dışına taşma
-- bu koşuda git push yapma
+- publish sonrası yalnız ilgili `src/content/anlikHaber` ve gerekliyse buna yakın `news_pipeline` değişiklikleriyle sınırlı dar kapsamlı git add, commit ve push yapabilirsin
+- alakasız dosya, geniş repo diff'i veya riskli içerik görürsen push yapma; dar kapsamı koru
 - mümkünse kısa ve net çalış, gereksiz repo değişikliği yapma
 - çıkan metin bülten maddesi, bullet summary veya genişletilmiş özet gibi durmasın; kısa ama gerçek haber yazısı gibi aksın
 - gövdeyi mümkünse tercihen 5, gerekirse 4 ila 6 kısa paragraf halinde kur: güçlü bir açılış, net haber çerçevesi, somut detay, ek ayrıntı ve kısa ama organik bağlam
@@ -67,6 +68,8 @@ Kurallar:
 - yorumcu, köşe yazarı veya analist tonuna kayma; haber tonu korunmalı
 - metni yasak cümlelerden kaçınmaya çalışırken robotikleştirme; doğal ve akıcı Türkçe önceliklidir
 - son paragraf kaynaklardan kopuk büyük çıkarım cümlesine dönüşmesin; mümkünse ek somut detay, resmi pozisyon, sonraki adım, zamanlama, etkilenen taraf ya da elde kalan açık soru ile bitsin
+- `bu da ... gösteriyor`, `konumunu daha da güçlendirebilir`, `yatırımcı ilgisinin sürdüğünü gösteriyor` gibi otomatik kapanış reflekslerinden kaçın; son cümle haberden çıksın, şablondan değil
+- opinion, review, hands-on veya birinci tekil deneyim ağırlıklı kaynakları düz haber gibi sertleştirme; gerekiyorsa tonu buna göre yumuşat ya da adayı ele
 - editör notu gibi duran meta bölümlerden kaçın ama haber akışını boğacak kadar negatif kurala saplanma
 - kullanıcı özellikle istemedikçe gövdede madde işaretli liste kullanma
 - kişisel suçlama, cinsel suç iddiası ve tek kaynaklı sert itham dosyalarında ekstra dikkat göster; ama siyaset başlığını sırf siyaset diye otomatik eleme
@@ -80,6 +83,7 @@ Kurallar:
 Çıkışında kısa bir sonuç ver:
 - kaç kayıt publish edildi
 - varsa queue_id veya slug listesi
+- commit/push yapıldıysa kısa hash veya özet
 - kısa gerekçe
 EOF
 )
