@@ -21,9 +21,12 @@ news-pipeline queue review | sed -n '1,5p' || true
 echo "--- STRONG NEW ---"
 news-pipeline queue list --status new | sed -n '1,8p' || true
 
-if [ "${RUN_ASTERIA_GATE:-1}" = "1" ]; then
+echo "--- ASTERIA EDITORIAL GATE ---"
+# Default is OFF: the heartbeat itself may already consume an Asteria turn.
+# Keeping this extra gate opt-in avoids double-triggering Asteria for one cycle
+# and wasting the limited daily message budget.
+if [ "${RUN_ASTERIA_GATE:-0}" = "1" ]; then
   bash news_pipeline/scripts/asteria-editorial-gate.sh || true
 else
-  echo "--- ASTERIA EDITORIAL GATE ---"
-  echo "skipped: RUN_ASTERIA_GATE=${RUN_ASTERIA_GATE:-0}"
+  echo "skipped by default to avoid duplicate Asteria turns; set RUN_ASTERIA_GATE=1 to force the extra gate run"
 fi

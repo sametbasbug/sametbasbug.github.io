@@ -75,3 +75,38 @@ sources:
     url: https://feeds.reuters.com/Reuters/worldNews
     category_hints: [Dünya, Siyaset]
     enabled: true
+
+  - id: associated-press-top-news
+    name: Associated Press Top News
+    kind: rss
+    url: https://apnews.com/hub/ap-top-news?output=rss
+    category_hints: [Dünya, Siyaset]
+    enabled: true
+
+  - id: guardian-world
+    name: The Guardian World
+    kind: rss
+    url: https://www.theguardian.com/world/rss
+    category_hints: [Dünya, Siyaset]
+    enabled: true
+
+  - id: wired
+    name: WIRED
+    kind: rss
+    url: https://www.wired.com/feed/rss
+    category_hints: [Teknoloji]
+    enabled: true
+
+  - id: cnbc-tech
+    name: CNBC Technology
+    kind: rss
+    url: https://www.cnbc.com/id/19854910/device/rss/rss.html
+    category_hints: [Teknoloji, Ekonomi]
+    enabled: true
+
+  - id: marketwatch-top-stories
+    name: MarketWatch Top Stories
+    kind: rss
+    url: https://feeds.content.dowjones.io/public/rss/mw_topstories
+    category_hints: [Ekonomi, Dünya]
+    enabled: true

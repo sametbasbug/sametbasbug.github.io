@@ -11,6 +11,7 @@ interface Props {
 	categories?: string[];
 	activeCategory?: string;
 	hidePageHero?: boolean;
+	categoryNavForceReload?: boolean;
 }
 
 const {
@@ -22,6 +23,7 @@ const {
 	categories = [],
 	activeCategory = 'Tümü',
 	hidePageHero = false,
+	categoryNavForceReload = false,
 } = Astro.props;
 
 const navCategories = ['Tümü', ...categories.filter(Boolean)];
@@ -56,6 +58,7 @@ const navCategories = ['Tümü', ...categories.filter(Boolean)];
 								<a
 									href={getNewsCategoryHref(category)}
 									aria-current={activeCategory === category ? 'page' : undefined}
+									data-astro-reload={categoryNavForceReload ? true : undefined}
 								>
 									{category}
 								</a>

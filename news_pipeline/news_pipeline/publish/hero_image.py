@@ -13,6 +13,13 @@ from news_pipeline.utils.env import get_env
 DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&h=675&auto=format&fit=crop"
 PEXELS_SEARCH_URL = "https://api.pexels.com/v1/search"
 NEWS_CONTENT_DIR = Path(__file__).resolve().parents[3] / "src" / "content" / "anlikHaber"
+STOPWORDS = {
+    "the", "and", "for", "with", "that", "this", "from", "into", "after", "over", "under", "near",
+    "can", "will", "now", "still", "more", "less", "amid", "says", "said", "new", "latest", "its",
+    "bir", "iki", "uc", "dort", "bes", "ve", "ile", "icin", "gibi", "kadar", "sonra", "yeni", "artık",
+    "daha", "gore", "gibi", "olan", "olanlar", "etti", "ettiği", "aciklandi", "yapti", "yapiyor",
+    "openai", "google", "amazon", "intel", "pentagon"  # handled by dedicated rules below when useful
+}
 CATEGORY_QUERIES = {
     "Teknoloji": [
         "software interface desktop workstation technology",
@@ -64,6 +71,18 @@ GENERIC_PENALTY_TERMS = {
     "celebration",
     "networking",
     "presentation",
+}
+STRICT_REJECT_TERMS = {
+    "wedding",
+    "fashion",
+    "restaurant",
+    "food",
+    "tourist",
+    "vacation",
+    "beach",
+    "party",
+    "concert",
+    "festival",
 }
 TECH_QUERY_RULES = [
     (["openai", "chatgpt", "codex", "anthropic", "claude", "gemini", "google ai", "ai"], [
@@ -121,6 +140,21 @@ def _build_text_blob(item: QueueItem) -> str:
     return _normalize_text(" ".join(part for part in parts if part))
 
 
+def _extract_keywords(text: str, limit: int = 6) -> list[str]:
+    words = re.findall(r"[a-z0-9]+", _normalize_text(text))
+    out: list[str] = []
+    seen: set[str] = set()
+    for word in words:
+        if len(word) < 4 or word in STOPWORDS or word.isdigit():
+            continue
+        if word not in seen:
+            seen.add(word)
+            out.append(word)
+        if len(out) >= limit:
+            break
+    return out
+
+
 def _queries_from_rules(text: str, rules: list[tuple[list[str], list[str]]]) -> list[str]:
     queries: list[str] = []
     for triggers, candidates in rules:
@@ -132,6 +166,8 @@ def _queries_from_rules(text: str, rules: list[tuple[list[str], list[str]]]) -> 
 def _build_queries(item: QueueItem) -> list[str]:
     category = item.draft_category or "Teknoloji"
     text = _build_text_blob(item)
+    title_keywords = _extract_keywords(item.draft_title, limit=5)
+    detail_keywords = _extract_keywords(f"{item.draft_description} {' '.join(item.draft_tags)}", limit=5)
     queries: list[str] = []
 
     if category == "Teknoloji":
@@ -141,15 +177,37 @@ def _build_queries(item: QueueItem) -> list[str]:
     elif category == "Ekonomi":
         queries.extend(_queries_from_rules(text, ECONOMY_QUERY_RULES))
 
+    if title_keywords:
+        queries.append(" ".join(title_keywords[:4]))
+        queries.append(" ".join(title_keywords[:3] + detail_keywords[:2]).strip())
+
+    if category == "Teknoloji" and title_keywords:
+        queries.append(" ".join(title_keywords[:3] + ["technology", "software"]))
+    elif category == "Ekonomi" and title_keywords:
+        queries.append(" ".join(title_keywords[:3] + ["business", "finance"]))
+    elif category in {"Siyaset", "Dünya", "Türkiye"} and title_keywords:
+        queries.append(" ".join(title_keywords[:3] + ["government", "diplomacy"]))
+
     queries.extend(CATEGORY_QUERIES.get(category, ["news editorial illustration abstract"]))
 
     seen: set[str] = set()
     deduped: list[str] = []
     for query in queries:
-        if query not in seen:
-            seen.add(query)
-            deduped.append(query)
-    return deduped[:3]
+        cleaned = re.sub(r"\s+", " ", query).strip()
+        if cleaned and cleaned not in seen:
+            seen.add(cleaned)
+            deduped.append(cleaned)
+    return deduped[:6]
+
+
+def _image_key(value: str | None) -> str | None:
+    if not value:
+        return None
+    text = str(value).strip()
+    pexels_match = re.search(r"/photos/(\d+)/", text)
+    if pexels_match:
+        return f"pexels:{pexels_match.group(1)}"
+    return text
 
 
 def _recent_hero_images(limit: int = 30) -> set[str]:
@@ -169,7 +227,9 @@ def _recent_hero_images(limit: int = 30) -> set[str]:
             for line in path.read_text(encoding="utf-8").splitlines():
                 match = pattern.match(line.strip())
                 if match and match.group(1):
-                    images.add(match.group(1).strip())
+                    key = _image_key(match.group(1).strip())
+                    if key:
+                        images.add(key)
                     break
         except Exception:
             continue
@@ -188,28 +248,27 @@ def _score_photo(photo: dict[str, Any], query: str, item: QueueItem, recent_imag
         return float("-inf"), None
 
     score = 0.0
-    text = _normalize_text(
+    photo_text = _normalize_text(
         " ".join(
             [
                 str(photo.get("alt") or ""),
                 str(photo.get("url") or ""),
-                str(query),
-                item.draft_title,
-                item.draft_description,
-                " ".join(item.draft_tags),
             ]
         )
     )
+    item_text = _build_text_blob(item)
 
-    query_terms = [term for term in _normalize_text(query).split() if len(term) >= 4]
-    for term in query_terms:
-        if term in text:
-            score += 2.0
+    query_terms = [term for term in _normalize_text(query).split() if len(term) >= 4 and term not in STOPWORDS]
+    item_terms = [term for term in item_text.split() if len(term) >= 5 and term not in STOPWORDS][:12]
 
-    item_terms = [term for term in _build_text_blob(item).split() if len(term) >= 5][:10]
-    for term in item_terms:
-        if term in text:
-            score += 1.2
+    query_hits = sum(1 for term in query_terms if term in photo_text)
+    item_hits = sum(1 for term in item_terms if term in photo_text)
+
+    if query_hits == 0 and item_hits == 0:
+        return float("-inf"), None
+
+    score += query_hits * 2.2
+    score += item_hits * 1.4
 
     if item.draft_category == "Teknoloji":
         for term in ["screen", "computer", "laptop", "software", "interface", "desk", "workspace", "keyboard"]:
@@ -225,14 +284,18 @@ def _score_photo(photo: dict[str, Any], query: str, item: QueueItem, recent_imag
                 score += 1.6
 
     for term in EVENT_PENALTY_TERMS:
-        if term in text:
+        if term in photo_text:
             score -= 4.5
     for term in GENERIC_PENALTY_TERMS:
-        if term in text:
+        if term in photo_text:
             score -= 2.5
+    for term in STRICT_REJECT_TERMS:
+        if term in photo_text:
+            return float("-inf"), None
 
-    if candidate in recent_images:
-        score -= 6.0
+    candidate_key = _image_key(candidate)
+    if candidate_key and candidate_key in recent_images:
+        score -= 100.0
 
     width = int(photo.get("width") or 0)
     height = int(photo.get("height") or 0)
@@ -242,6 +305,9 @@ def _score_photo(photo: dict[str, Any], query: str, item: QueueItem, recent_imag
         aspect_ratio = width / max(height, 1)
         if 1.55 <= aspect_ratio <= 1.95:
             score += 1.0
+
+    if query_hits < 1 and item_hits < 2:
+        score -= 3.5
 
     return score, candidate
 
@@ -269,16 +335,28 @@ def pick_hero_image(item: QueueItem) -> str:
     try:
         best_score = float("-inf")
         best_image: str | None = None
+        fallback_score = float("-inf")
+        fallback_image: str | None = None
         with httpx.Client(timeout=12.0, follow_redirects=True) as client:
             for query in queries:
                 photos = _search_photos(client, api_key, query)
                 for photo in photos:
                     score, candidate = _score_photo(photo, query, item, recent_images)
-                    if candidate and score > best_score:
+                    if not candidate:
+                        continue
+                    candidate_key = _image_key(candidate)
+                    if candidate_key and candidate_key in recent_images:
+                        if score > fallback_score:
+                            fallback_score = score
+                            fallback_image = candidate
+                        continue
+                    if score > best_score:
                         best_score = score
                         best_image = candidate
-                if best_image and best_score >= 3.5:
+                if best_image and best_score >= 6.0:
                     break
-        return best_image or DEFAULT_HERO_IMAGE
+        if best_image and best_score >= 4.0:
+            return best_image
+        return fallback_image or DEFAULT_HERO_IMAGE
     except Exception:
         return DEFAULT_HERO_IMAGE

@@ -77,8 +77,15 @@ news-pipeline process
 news-pipeline queue summary
 news-pipeline queue review
 news-pipeline queue list --status new
-bash news_pipeline/scripts/asteria-editorial-gate.sh
+# varsayılan: extra Asteria gate çağrısı kapalı
+# gerekirse RUN_ASTERIA_GATE=1 ile manuel açılır
+bash news_pipeline/scripts/heartbeat-cycle.sh
 ```
+
+Önemli not:
+- `heartbeat-cycle.sh` içinde ekstra `asteria-editorial-gate.sh` çağrısı artık varsayılan olarak kapalıdır.
+- Sebep, aynı heartbeat içinde Asteria'ya ikinci bir görev mesajı gidip günlük turn/message limitini gereksiz tüketebilmesidir.
+- İkinci gate koşusu gerçekten isteniyorsa açıkça `RUN_ASTERIA_GATE=1` verilmelidir.
 
 Detaylı çalışma notları için:
 

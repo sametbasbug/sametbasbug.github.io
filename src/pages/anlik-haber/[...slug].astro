@@ -99,6 +99,7 @@ const newsStructuredData = [newsArticleSchema, breadcrumbSchema];
 	categories={categories}
 	activeCategory={normalizeNewsCategory(entry.data.category) ?? 'Tümü'}
 	hidePageHero={true}
+	categoryNavForceReload={true}
 >
 	<article class="news-article">
 		<div class="article-main">

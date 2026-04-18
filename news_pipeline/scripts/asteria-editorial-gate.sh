@@ -12,18 +12,32 @@ fi
 RECENT_SOURCE_CONTEXT=$(news_pipeline/.venv/bin/python - <<'PY'
 from pathlib import Path
 import re
+from collections import Counter
+
 root = Path('/Volumes/KIOXIA/blog-project/src/content/anlikHaber')
-files = sorted(root.glob('*.md'), key=lambda p: p.stat().st_mtime, reverse=True)[:8]
+files = sorted(root.glob('*.md'), key=lambda p: p.stat().st_mtime, reverse=True)
 source_re = re.compile(r'^\s*- name: "?(.*?)"?\s*$')
-out = []
-for path in files:
+rows = []
+for path in files[:20]:
     source = '-'
     for line in path.read_text(encoding='utf-8').splitlines():
         m = source_re.match(line)
         if m:
             source = m.group(1)
             break
-    out.append(f"- {path.stem}: {source}")
+    rows.append((path.stem, source))
+
+last8 = rows[:8]
+counts = Counter(source for _, source in rows)
+
+out = []
+out.append('Son 8 yayın:')
+for slug, source in last8:
+    out.append(f"- {slug}: {source}")
+out.append('')
+out.append('Son 20 yayın kaynak sayımı:')
+for source, count in counts.most_common():
+    out.append(f"- {source}: {count}")
 print('\n'.join(out))
 PY
 )
@@ -51,16 +65,17 @@ Kurallar:
 - gövdeyi mümkünse tercihen 5, gerekirse 4 ila 6 kısa paragraf halinde kur: güçlü bir açılış, net haber çerçevesi, somut detay, ek ayrıntı ve kısa ama organik bağlam
 - gerektiğinde metni biraz daha uzun tut; aşırı kısalık yüzünden haber hissi kaybolmasın
 - yorumcu, köşe yazarı veya analist tonuna kayma; haber tonu korunmalı
-- "bu gelişme şunu gösteriyor", "haberin ana ağırlığı" veya "bağlam" başlıklı editör notu gibi görünen cümle ve bölümler yazma
-- "adım olarak okunuyor", "zeminini hazırlıyor", "arka planını güçlendiriyor" gibi yarı-yorum kapanışlardan kaçın
-- son paragraf kaynaklardan kopuk büyük çıkarım cümlesine dönüşmesin; mümkünse ek somut detay, resmi pozisyon, sonraki adım veya etkilenen taraf bilgisiyle bitsin
+- metni yasak cümlelerden kaçınmaya çalışırken robotikleştirme; doğal ve akıcı Türkçe önceliklidir
+- son paragraf kaynaklardan kopuk büyük çıkarım cümlesine dönüşmesin; mümkünse ek somut detay, resmi pozisyon, sonraki adım, zamanlama, etkilenen taraf ya da elde kalan açık soru ile bitsin
+- editör notu gibi duran meta bölümlerden kaçın ama haber akışını boğacak kadar negatif kurala saplanma
 - kullanıcı özellikle istemedikçe gövdede madde işaretli liste kullanma
 - kişisel suçlama, cinsel suç iddiası ve tek kaynaklı sert itham dosyalarında ekstra dikkat göster; ama siyaset başlığını sırf siyaset diye otomatik eleme
 - kurumsal karar, yasa, diplomasi, seçim süreci, parlamento, parti, mahkeme veya resmi açıklama eksenli temiz ve çok kaynaklı siyaset haberlerini publish edilebilir aday olarak aktif biçimde değerlendir
-- benzer güçte iki aday varsa, son 8 yayında daha az görünen kaynağı açıkça tercih et
-- ama TechCrunch dahil hiçbir güçlü kaynağı sırf son dönemde sık kullanıldı diye otomatik dışlama; gerçekten en temiz ve güçlü aday ondaysa kullan
+- benzer güçte iki aday varsa, son 20 yayında daha az görünen kaynağı açıkça tercih et
+- son 20 yayında açık biçimde baskınlaşmış bir kaynağa yeniden yaslanacaksan, bunun neden bariz biçimde daha güçlü aday olduğunu bilinçli olarak değerlendir; küçük kalite farkı için aynı kaynağa dönme
+- ama TechCrunch dahil hiçbir güçlü kaynağı sırf son dönemde sık kullanıldı diye otomatik dışlama; gerçekten açık ara en temiz ve güçlü aday ondaysa kullan
 - bir koşuda iki kayıt publish edeceksen mümkünse aynı kaynağa yaslanma; yeterli kalite varsa iki farklı kaynak seç
-- son 3 canlı yayının kaynağıyla aynı kaynağa yeniden yaslanacaksan bunun neden daha güçlü aday olduğunu bilinçli olarak değerlendir; otomatik tekrar yapma
+- son 3 canlı yayının kaynağıyla aynı kaynağa yeniden yaslanacaksan bunu istisna say ve ancak belirgin kalite farkı varsa yap
 
 Çıkışında kısa bir sonuç ver:
 - kaç kayıt publish edildi
