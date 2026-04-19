@@ -1,8 +1,8 @@
 ---
 title: "Perplexity, Mac için Personal Computer aracını kullanıma açtı"
 description: "Şirketin yeni aracı, dosyalar, uygulamalar ve web arasında çalışan yapay zekâ görevlerini tek bir akışta topluyor."
-pubDate: '2026-04-19T13:06:37+03:00'
-updatedDate: '2026-04-19T13:06:37+03:00'
+pubDate: '2026-04-19T15:15:06+03:00'
+updatedDate: '2026-04-19T15:15:06+03:00'
 heroImage: "https://images.pexels.com/photos/30530414/pexels-photo-30530414.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200"
 isDraft: false
 tags: ["pipeline", "haber", "perplexity", "ai"]
