@@ -101,6 +101,19 @@ news-pipeline queue list --manual-only
 news-pipeline queue list --status new
 ```
 
+### Queue temizliği
+
+```bash
+news-pipeline queue cleanup
+```
+
+Varsayılan politika:
+- `published` ve `rejected` kayıtlar 24 saat sonra arşive taşınır
+- `new/reviewing/approved` kayıtlar 48 saat sonra bayat sayılır
+- yüksek skorlu veya manual-review işaretli birkaç kayıt son kontrol için tutulabilir
+- arşivdeki `rejected` kayıtlar 24 saat sonra silinir
+- arşivdeki `published` kayıtlar 72 saat sonra silinir
+
 ### Hassas inceleme kuyruğu
 
 ```bash
@@ -189,6 +202,7 @@ Bu bilinçli. Önce güvenilir omurga, sonra şatafat.
 ```bash
 news-pipeline collect
 news-pipeline process
+news-pipeline queue cleanup
 news-pipeline queue review
 news-pipeline queue list --status new
 news-pipeline queue inspect <id>

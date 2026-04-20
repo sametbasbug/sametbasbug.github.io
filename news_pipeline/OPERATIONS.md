@@ -24,27 +24,36 @@ news-pipeline process
 news-pipeline queue review
 ```
 
-### 4. Sonra genel yeni kayıtları tara
+### 4. Önce queue temizliğini çalıştır
+```bash
+news-pipeline queue cleanup
+```
+
+Bu komut yalnız aktif queue'yi değil, arşiv retention'ını da uygular:
+- rejected archive: 24 saat
+- published archive: 72 saat
+
+### 5. Sonra genel yeni kayıtları tara
 ```bash
 news-pipeline queue list --status new
 ```
 
-### 5. Gerekli kaydı aç
+### 6. Gerekli kaydı aç
 ```bash
 news-pipeline queue inspect <QUEUE_ID>
 ```
 
-### 6. Onayla
+### 7. Onayla
 ```bash
 news-pipeline queue approve <QUEUE_ID>
 ```
 
-### 7. Canlı markdown üret
+### 8. Canlı markdown üret
 ```bash
 news-pipeline publish <QUEUE_ID>
 ```
 
-### 8. Son edit
+### 9. Son edit
 - `src/content/anlikHaber/` altındaki üretilen markdown dosyasını gözden geçir
 - başlığı keskinleştir
 - description'ı rafine et

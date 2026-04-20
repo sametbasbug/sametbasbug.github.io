@@ -48,6 +48,15 @@ class QueueService:
     def list_items(self) -> list[QueueItem]:
         return self.store.list_all()
 
+    def archive(self, queue_id: str, archive_root: Path) -> bool:
+        path = self.store.path_for(queue_id)
+        if not path.exists():
+            return False
+        archive_root.mkdir(parents=True, exist_ok=True)
+        target = archive_root / path.name
+        path.replace(target)
+        return True
+
     def find_cluster_mates(self, cluster_key: str, exclude_queue_id: str | None = None) -> list[QueueItem]:
         mates: list[QueueItem] = []
         for item in self.store.list_all():

@@ -8,6 +8,7 @@ source news_pipeline/.venv/bin/activate
 
 news-pipeline collect >/tmp/news-pipeline-collect.log 2>&1 || cat /tmp/news-pipeline-collect.log
 news-pipeline process >/tmp/news-pipeline-process.log 2>&1 || cat /tmp/news-pipeline-process.log
+news-pipeline queue cleanup >/tmp/news-pipeline-cleanup.log 2>&1 || cat /tmp/news-pipeline-cleanup.log
 
 echo "--- HEARTBEAT SUMMARY ---"
 news-pipeline queue summary || true
