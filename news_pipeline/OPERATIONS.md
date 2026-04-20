@@ -39,17 +39,16 @@ news-pipeline queue inspect <QUEUE_ID>
 news-pipeline queue approve <QUEUE_ID>
 ```
 
-### 7. Taslağa çevir
+### 7. Canlı markdown üret
 ```bash
 news-pipeline publish <QUEUE_ID>
 ```
 
 ### 8. Son edit
-- `src/content/anlikHaber/_drafts/` altındaki markdown dosyasını gözden geçir
+- `src/content/anlikHaber/` altındaki üretilen markdown dosyasını gözden geçir
 - başlığı keskinleştir
 - description'ı rafine et
 - gerekiyorsa ikinci/üçüncü kaynak ekle
-- ancak sonra canlı içerik klasörüne taşı
 
 ---
 

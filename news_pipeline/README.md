@@ -4,15 +4,14 @@ Ham haber akışını editoryal karara hazır, temiz taslaklara dönüştüren P
 
 ## Ne işe yarar?
 
-Bu katman doğrudan yayın yapmaz.
-Önce kaynaklardan haber toplar, normalize eder, tekrarları ayıklar, editoryal kuyruğa düşürür, sonra onaylanan kaydı `anlikHaber` taslağına çevirir.
+Bu katman kaynaklardan haber toplar, normalize eder, tekrarları ayıklar, editoryal kuyruğa düşürür. Onaylanan kayıt doğrudan `anlikHaber` canlı markdown çıktısına yazılır.
 
 Kısa akış:
 
 1. `collect` → ham kayıtları toplar
 2. `process` → normalize + filtre + dedupe + queue güncelleme yapar
 3. `queue` → editoryal sırayı yönetir
-4. `publish` → onaylanan kaydı Astro markdown taslağına dönüştürür
+4. `publish` → onaylanan kaydı Astro markdown yayınına dönüştürür
 
 ---
 
@@ -121,7 +120,7 @@ news-pipeline queue approve <QUEUE_ID>
 news-pipeline queue reject <QUEUE_ID> --note "neden reddedildi"
 ```
 
-### Taslak üret
+### Yayına yaz
 
 ```bash
 news-pipeline publish <QUEUE_ID>
@@ -130,7 +129,7 @@ news-pipeline publish <QUEUE_ID>
 Çıktı yolu:
 
 ```text
-src/content/anlikHaber/_drafts/
+src/content/anlikHaber/
 ```
 
 ---
@@ -164,7 +163,7 @@ Ek alanlar:
 - manual-review işaretleme
 - supporting source merge
 - primary/supporting source ayrımı
-- Astro `anlikHaber` taslak üretimi
+- Astro `anlikHaber` canlı markdown üretimi
 
 ---
 

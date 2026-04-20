@@ -10,4 +10,3 @@ editorial:
 
 publish:
   content_dir: src/content/anlikHaber
-  drafts_dir: src/content/anlikHaber/_drafts
