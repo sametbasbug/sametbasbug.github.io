@@ -23,7 +23,7 @@ Peebles, X'te paylaştığı mesajda OpenAI'deki araştırma ortamına teşekkü
 
 Weil tarafında ise Prism adlı araştırma odaklı çalışma alanının kapatıldığı, bu işlevlerin Codex Desktop'a taşınacağı belirtiliyor. OpenAI'nin değişimi, şirket içindeki deneysel ekiplerin daha merkezî ürünlere dağıtılması şeklinde okunuyor.
 
-Sora'nın liderinin ayrılması, OpenAI'nin “yan projeler” diye anılan alanlarda daha seçici davranmaya başladığını gösteriyor. Şirketin sonraki adımı, bu ekiplerden çıkan özelliklerin ne kadarının Codex ve benzeri ürünlerde birleşeceği olacak.
+Sora'nın liderinin ayrılması, OpenAI'nin "yan projeler" diye anılan alanlarda daha seçici davranmaya başladığını gösteriyor. Şirketin sonraki adımı, bu ekiplerden çıkan özelliklerin ne kadarının Codex ve benzeri ürünlerde birleşeceği olacak.
 
 ## Kaynaklar
 
