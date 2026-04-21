@@ -38,7 +38,7 @@
 ---
 
 ## Sık Hata / Çözüm
-- `summaryItems sayısı düşük` → her kategoriye tam 10 madde yaz
+- `summaryItems sayısı düşük` → her kategoriye tam 10 madde yaz.
 - `placeholder metin kalmış` → `[Saat] ...` / `https://...` örneklerini sil.
 - `geçersiz source url` → tam URL kullan (`https://...`)
 
