@@ -1,0 +1,68 @@
+---
+interface Props {
+  to: string;
+  title?: string;
+  description?: string;
+}
+
+const {
+  to,
+  title = 'Anlık Haber taşındı',
+  description = 'Anlık Haber artık yeni adresinde yayında.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href={to} />
+    <meta http-equiv="refresh" content={`0;url=${to}`} />
+    <script is:inline>
+      window.location.replace({JSON.stringify(to)});
+    </script>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: #090909;
+        color: #f5f5f5;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+      }
+      .card {
+        width: min(92vw, 640px);
+        padding: 1.2rem 1.3rem;
+        border-radius: 18px;
+        background: #141414;
+        border: 1px solid rgba(255,255,255,0.08);
+      }
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.2rem;
+      }
+      p {
+        margin: 0;
+        color: rgba(255,255,255,0.72);
+        line-height: 1.55;
+      }
+      a {
+        color: #8ec5ff;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>{title}</h1>
+      <p>{description} Otomatik yönlendirme çalışmazsa <a href={to}>buraya tıkla</a>.</p>
+    </main>
+  </body>
+</html>

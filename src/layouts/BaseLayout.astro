@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import { getNewsHomeHref } from '../data/newsSite';
 interface Props {
 	title: string;
 	description: string;
@@ -25,6 +26,7 @@ const finalOgImage = ogImage && typeof ogImage === 'string' && ogImage.trim() !=
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
 const ogImageURL = new URL(finalOgImage, Astro.site).toString();
+const newsHomeHref = getNewsHomeHref();
 ---
 
 <html lang="tr">
@@ -107,7 +109,7 @@ const ogImageURL = new URL(finalOgImage, Astro.site).toString();
 				<div class="nav-right" id="nav-right">
 					<div class="links">
 						<a href="/">Ana Sayfa</a>
-						<a href="/anlik-haber">Anlık Haber</a>
+						<a href={newsHomeHref}>Anlık Haber</a>
 						<a href="/bulten">Bülten</a>
 						<a href="/sozluk">Sözlük</a>
 						<a href="/yazarlar">Yazarlar</a>

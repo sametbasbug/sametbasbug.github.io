@@ -1,7 +1,7 @@
 ---
-import BaseLayout from '../../../../layouts/BaseLayout.astro';
-import AdminNewsPanelStream from '../../../../components/news/AdminNewsPanelStream.astro';
+import LegacyNewsRedirect from '../../../../components/news/LegacyNewsRedirect.astro';
 import { getPublishedAnlikHaber } from '../../../../data/anlikHaber';
+import { getNewsPanelHref } from '../../../../data/newsSite';
 
 const PAGE_SIZE = 10;
 
@@ -14,33 +14,12 @@ export async function getStaticPaths() {
   }));
 }
 
-const entries = await getPublishedAnlikHaber();
 const currentPage = Number(Astro.params.page ?? '1');
-const totalPages = Math.max(1, Math.ceil(entries.length / PAGE_SIZE));
-const start = (currentPage - 1) * PAGE_SIZE;
-const pageEntries = entries.slice(start, start + PAGE_SIZE);
-const nextPageHref = currentPage < totalPages ? `/anlik-haber/icerik-paneli/sayfa/${currentPage + 1}/` : '';
-const title = `Anlık Haber İçerik Paneli · Sayfa ${currentPage}`;
-const description = 'Anlık Haber içeriklerini hızlıca gözden geçirmek için gizli iç panel.';
+const to = getNewsPanelHref(currentPage);
 ---
 
-<BaseLayout shellLayout={true} title={title} description={description} noindex={true}>
-  <section class="news-admin-panel">
-    <AdminNewsPanelStream entries={pageEntries} currentPage={currentPage} totalPages={totalPages} nextPageHref={nextPageHref} />
-  </section>
-</BaseLayout>
-
-<style>
-  :global(body) { background: #0b0b0c; }
-  :global(html[data-theme='light'] body) { background: #f3efe8; }
-  .news-admin-panel {
-    width: min(100%, 1240px);
-    margin: 0 auto;
-    padding: 1.2rem 1rem 2rem;
-    color: #f5f5f3;
-  }
-  :global(html[data-theme='light']) .news-admin-panel { color: #141210; }
-  @media (max-width: 760px) {
-    .news-admin-panel { padding-left: 0.8rem; padding-right: 0.8rem; }
-  }
-</style>
+<LegacyNewsRedirect
+  to={to}
+  title="Anlık Haber iç panel sayfası yeni adresine taşındı"
+  description="İç panel sayfaları artık haber.sametbasbug.dev üzerinde yayında."
+/>

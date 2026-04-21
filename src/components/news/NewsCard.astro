@@ -1,6 +1,7 @@
 ---
 import { findAuthorByName } from '../../data/authors';
 import { formatNewsDate, getNewsCategoryToken, type AnlikHaberEntry } from '../../data/anlikHaber';
+import { getNewsArticleHref } from '../../data/newsSite';
 
 interface Props {
 	entry: AnlikHaberEntry;
@@ -9,7 +10,7 @@ interface Props {
 
 const { entry, compact = false } = Astro.props;
 const authorProfile = findAuthorByName(entry.data.author);
-const href = `/anlik-haber/${entry.id}/`;
+const href = getNewsArticleHref(entry.id);
 const categoryToken = getNewsCategoryToken(entry.data.category);
 ---
 

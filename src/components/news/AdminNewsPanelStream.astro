@@ -1,5 +1,6 @@
 ---
 import { formatNewsDate, type AnlikHaberEntry } from '../../data/anlikHaber';
+import { getNewsArticleHref } from '../../data/newsSite';
 
 interface Props {
   entries: AnlikHaberEntry[];
@@ -14,7 +15,7 @@ const { entries, currentPage, totalPages, nextPageHref = '' } = Astro.props;
 <section class="admin-news-stream" data-admin-news-stream data-current-page={currentPage} data-total-pages={totalPages} data-next-page={nextPageHref}>
   <div class="panel-list" data-admin-news-list>
     {entries.map((entry) => (
-      <a class="panel-card" href={`/anlik-haber/${entry.id}/`}>
+      <a class="panel-card" href={getNewsArticleHref(entry.id)}>
         {entry.data.heroImage && (
           <div class="panel-image-wrap">
             <img src={entry.data.heroImage} alt="" loading="lazy" decoding="async" />

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import { getNewsCategoryHref } from '../data/anlikHaber';
+import { getMainSiteUrl, getNewsHomePath, getNewsHomeHref, isNewsSubdomainEnabled } from '../data/newsSite';
 
 interface Props {
 	title: string;
@@ -27,15 +28,18 @@ const {
 } = Astro.props;
 
 const navCategories = ['Tümü', ...categories.filter(Boolean)];
+const newsHomeHref = getNewsHomeHref();
+const newsHomePath = getNewsHomePath();
+const blogHomeHref = isNewsSubdomainEnabled() ? getMainSiteUrl() : '/';
 ---
 
 <BaseLayout title={title} description={description}>
-	<section class="news-app-shell">
+	<section class="news-app-shell" data-news-home-path={newsHomePath}>
 		<header class="news-masthead">
 			<div class="news-masthead-wrap">
 				<div class="news-masthead-inner">
 					<div class="news-top-row">
-						<a href="/anlik-haber" class="news-brand">
+						<a href={newsHomeHref} class="news-brand">
 							<span class="news-brand-mark"></span>
 							<div class="news-brand-copy">
 								<span class="news-brand-kicker">Samet Başbuğ</span>
@@ -47,7 +51,7 @@ const navCategories = ['Tümü', ...categories.filter(Boolean)];
 							<button class="news-theme-pill" type="button" aria-label="Temayı Değiştir" data-news-theme-toggle>
 								<span data-news-theme-icon>🌙</span>
 							</button>
-							<a href="/" class="news-action-pill">Blog'a dön</a>
+							<a href={blogHomeHref} class="news-action-pill">Blog'a dön</a>
 						</div>
 					</div>
 
@@ -72,7 +76,7 @@ const navCategories = ['Tümü', ...categories.filter(Boolean)];
 					<button class="news-theme-pill" type="button" aria-label="Temayı Değiştir" data-news-theme-toggle>
 						<span data-news-theme-icon>🌙</span>
 					</button>
-					<a href="/" class="news-action-pill">Blog'a dön</a>
+					<a href={blogHomeHref} class="news-action-pill">Blog'a dön</a>
 				</div>
 			</div>
 		</header>

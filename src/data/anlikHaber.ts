@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { getNewsHomeHref, getNewsPageHref as getNewsSitePageHref } from './newsSite';
 
 export const ANLIK_HABER_PAGE_SIZE = 20;
 export const NEWS_CATEGORIES = ['Siyaset', 'Ekonomi', 'Türkiye', 'Dünya', 'Teknoloji'] as const;
@@ -30,8 +31,12 @@ export function slugifyNewsCategory(category: string) {
 }
 
 export function getNewsCategoryHref(category?: string) {
-	if (!category || category === 'Tümü') return '/anlik-haber/';
-	return `/anlik-haber/?kategori=${slugifyNewsCategory(category)}`;
+	const homeHref = getNewsHomeHref();
+	if (!category || category === 'Tümü') return homeHref;
+	const url = homeHref.startsWith('http') ? new URL(homeHref) : new URL(homeHref, 'https://sametbasbug.dev');
+	url.searchParams.set('kategori', slugifyNewsCategory(category));
+	if (!homeHref.startsWith('http')) return `${url.pathname}${url.search}`;
+	return url.toString();
 }
 
 export function findNewsCategoryBySlug(categories: string[], slug?: string) {
@@ -62,5 +67,5 @@ export function formatNewsDate(date: Date) {
 }
 
 export function getNewsPageHref(pageNumber: number) {
-	return pageNumber <= 1 ? '/anlik-haber/' : `/anlik-haber/sayfa/${pageNumber}/`;
+	return getNewsSitePageHref(pageNumber);
 }

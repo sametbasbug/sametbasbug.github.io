@@ -1,5 +1,6 @@
 ---
 import { formatNewsDate, getNewsCategoryToken, type AnlikHaberEntry } from '../../data/anlikHaber';
+import { getNewsArticleHref } from '../../data/newsSite';
 
 interface Props {
 	entries: AnlikHaberEntry[];
@@ -27,7 +28,7 @@ const leadEntry = featuredLeadEntries[0];
 				const isActive = index === 0;
 				return (
 					<a
-						href={`/anlik-haber/${entry.id}/`}
+						href={getNewsArticleHref(entry.id)}
 						class={`featured-lead-slide ${isActive ? 'is-active' : ''}`}
 						data-featured-slide
 						data-index={index}
@@ -77,7 +78,7 @@ const leadEntry = featuredLeadEntries[0];
 				</div>
 				<div class="featured-side-list" role="list">
 					{sideEntries.map((entry) => (
-						<a href={`/anlik-haber/${entry.id}/`} class="featured-side-card" role="listitem">
+						<a href={getNewsArticleHref(entry.id)} class="featured-side-card" role="listitem">
 							<div class="featured-side-content text-only">
 								{entry.data.category && <span class="featured-badge side" data-category={getNewsCategoryToken(entry.data.category)}>{entry.data.category}</span>}
 								<h2>{entry.data.title}</h2>
