@@ -1,18 +1,17 @@
 ---
-import LegacyNewsRedirect from '../../../components/news/LegacyNewsRedirect.astro';
-import { ANLIK_HABER_PAGE_SIZE, getPublishedAnlikHaber } from '../../../data/anlikHaber';
-import { getNewsPageHref } from '../../../data/newsSite';
+import ExternalRedirect from '../../../components/ExternalRedirect.astro';
+import { getHaberPageNumbers, getHaberPageUrl } from '../../../utils/haberRedirects';
 
-export async function getStaticPaths({ paginate }) {
-  const entries = await getPublishedAnlikHaber();
-  return paginate(entries, { pageSize: ANLIK_HABER_PAGE_SIZE }).filter((page) => page.params.page !== '1');
+export async function getStaticPaths() {
+  const pages = await getHaberPageNumbers();
+  return pages.map((page) => ({ params: { page: String(page) } }));
 }
 
 const currentPage = Number(Astro.params.page ?? '1');
-const to = getNewsPageHref(currentPage);
+const to = getHaberPageUrl(currentPage);
 ---
 
-<LegacyNewsRedirect
+<ExternalRedirect
   to={to}
   title="Anlık Haber arşivi yeni adresine taşındı"
   description="Anlık Haber sayfalama yüzeyi artık haber.sametbasbug.dev üzerinde yayında."

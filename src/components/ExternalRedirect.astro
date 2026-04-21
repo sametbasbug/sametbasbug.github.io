@@ -1,0 +1,32 @@
+---
+interface Props {
+  to: string;
+  title?: string;
+  description?: string;
+}
+
+const {
+  to,
+  title = 'İçerik taşındı',
+  description = 'Bu içerik yeni adresine taşındı.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href={to} />
+    <meta http-equiv="refresh" content={`0;url=${to}`} />
+    <script is:inline>
+      window.location.replace({JSON.stringify(to)});
+    </script>
+  </head>
+  <body>
+    <p>Yönlendiriliyorsun. Olmazsa <a href={to}>buraya tıkla</a>.</p>
+  </body>
+</html>

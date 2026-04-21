@@ -1,5 +1,3 @@
-import { getNewsHomeHref } from './newsSite';
-
 export interface AppShellNavItem {
   href: string;
   label: string;
@@ -8,7 +6,7 @@ export interface AppShellNavItem {
 
 const BASE_NAV_ITEMS: AppShellNavItem[] = [
   { href: '/', label: 'Ana Sayfa' },
-  { href: getNewsHomeHref(), label: 'Anlık Haber' },
+  { href: 'https://haber.sametbasbug.dev', label: 'Anlık Haber' },
   { href: '/bulten', label: 'Bülten' },
   { href: '/sozluk', label: 'Sözlük' },
   { href: '/etiketler', label: 'Etiketler' },

@@ -25,9 +25,6 @@ jobs:
         uses: withastro/action@v6
         env:
           PUBLIC_SITE_URL: https://sametbasbug.dev
-          PUBLIC_MAIN_SITE_URL: https://sametbasbug.dev
-          PUBLIC_NEWS_SITE_URL: https://haber.sametbasbug.dev
-          PUBLIC_NEWS_SUBDOMAIN_ENABLED: 'true'
           PUBLIC_CONTACT_FORM_URL: ${{ secrets.PUBLIC_CONTACT_FORM_URL }}
           PUBLIC_FIREBASE_API_KEY: ${{ secrets.PUBLIC_FIREBASE_API_KEY }}
           PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.PUBLIC_FIREBASE_AUTH_DOMAIN }}

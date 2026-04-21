@@ -1,11 +1,11 @@
 ---
-import LegacyNewsRedirect from '../../components/news/LegacyNewsRedirect.astro';
-import { getNewsHomeHref } from '../../data/newsSite';
+import ExternalRedirect from '../../components/ExternalRedirect.astro';
+import { getHaberHomeUrl } from '../../utils/haberRedirects';
 
-const to = getNewsHomeHref();
+const to = getHaberHomeUrl();
 ---
 
-<LegacyNewsRedirect
+<ExternalRedirect
   to={to}
   title="Anlık Haber yeni adresine taşındı"
   description="Anlık Haber artık haber.sametbasbug.dev üzerinde yayında."

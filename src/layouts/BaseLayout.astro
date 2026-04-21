@@ -1,6 +1,5 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-import { getNewsHomeHref } from '../data/newsSite';
 interface Props {
 	title: string;
 	description: string;
@@ -26,7 +25,7 @@ const finalOgImage = ogImage && typeof ogImage === 'string' && ogImage.trim() !=
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
 const ogImageURL = new URL(finalOgImage, Astro.site).toString();
-const newsHomeHref = getNewsHomeHref();
+const newsHomeHref = 'https://haber.sametbasbug.dev';
 ---
 
 <html lang="tr">

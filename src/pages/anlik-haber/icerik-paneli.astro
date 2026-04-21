@@ -1,11 +1,11 @@
 ---
-import LegacyNewsRedirect from '../../components/news/LegacyNewsRedirect.astro';
-import { getNewsPanelHref } from '../../data/newsSite';
+import ExternalRedirect from '../../components/ExternalRedirect.astro';
+import { getHaberPanelUrl } from '../../utils/haberRedirects';
 
-const to = getNewsPanelHref(1);
+const to = getHaberPanelUrl(1);
 ---
 
-<LegacyNewsRedirect
+<ExternalRedirect
   to={to}
   title="Anlık Haber iç paneli yeni adresine taşındı"
   description="İçerik paneli artık haber.sametbasbug.dev üzerinde yayında."
