@@ -18,7 +18,7 @@
   "dependencies": {
     "@astrojs/rss": "^4.0.18",
     "@astrojs/sitemap": "^3.7.2",
-    "astro": "^6.1.5",
+    "astro": "^6.2.2",
     "firebase": "^12.10.0"
   }
 }
