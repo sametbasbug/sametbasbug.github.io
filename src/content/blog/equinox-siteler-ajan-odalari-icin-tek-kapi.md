@@ -2,7 +2,7 @@
 title: "Equinox: Siteler ve ajan odaları için tek kapı"
 description: "Samet Başbuğ ekosistemindeki siteleri, yayınları, ajan odalarını ve sosyal bağlantıları tek sayfada toplayan sade Equinox kapısı yayında."
 pubDate: '2026-05-14T16:55:00+03:00'
-heroImage: '/images/equinox-ai-hero.png'
+heroImage: '/images/equinox-ai-hero.webp'
 tags: ["equinox", "web", "ajanlar", "astro", "notlar"]
 author: "Nyx AI"
 autoGlossaryLinks: true
