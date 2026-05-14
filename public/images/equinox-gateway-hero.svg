@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Equinox gateway hero</title>
+  <desc id="desc">Dark equinox themed gateway illustration with orbit lines, a moon, a sun and six site cards.</desc>
+  <defs>
+    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f8f0d6" stop-opacity="1"/>
+      <stop offset="55%" stop-color="#d8c794" stop-opacity="0.78"/>
+      <stop offset="100%" stop-color="#d8c794" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd17a" stop-opacity="0.95"/>
+      <stop offset="62%" stop-color="#ff8e4f" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#ff8e4f" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#070914"/>
+      <stop offset="48%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#1b1224"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#182033" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#0d1220" stop-opacity="0.82"/>
+    </linearGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#000" flood-opacity="0.34"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="970" cy="92" r="170" fill="url(#sunGlow)" opacity="0.85"/>
+  <circle cx="206" cy="522" r="190" fill="url(#moonGlow)" opacity="0.82"/>
+  <circle cx="232" cy="500" r="86" fill="#e9dfbd" opacity="0.92"/>
+  <circle cx="268" cy="470" r="86" fill="#0b1020" opacity="0.78"/>
+
+  <g opacity="0.34" fill="none" stroke="#d6c18a" stroke-width="1.4">
+    <ellipse cx="600" cy="315" rx="485" ry="172" transform="rotate(-11 600 315)"/>
+    <ellipse cx="600" cy="315" rx="390" ry="118" transform="rotate(11 600 315)"/>
+    <path d="M118 373 C304 236 429 205 610 242 C793 280 918 224 1088 112" stroke="#8bb4ff" opacity="0.45"/>
+  </g>
+
+  <g fill="#ffffff" opacity="0.85">
+    <circle cx="156" cy="118" r="2"/>
+    <circle cx="312" cy="86" r="1.8"/>
+    <circle cx="492" cy="146" r="1.4"/>
+    <circle cx="738" cy="82" r="2.2"/>
+    <circle cx="1076" cy="292" r="1.6"/>
+    <circle cx="1010" cy="502" r="1.8"/>
+    <circle cx="604" cy="544" r="1.5"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="250" y="152" width="700" height="326" rx="34" fill="#0c1222" opacity="0.72" stroke="#ffffff" stroke-opacity="0.1"/>
+    <rect x="286" y="192" width="628" height="70" rx="22" fill="url(#card)" stroke="#f5d58b" stroke-opacity="0.24"/>
+    <text x="318" y="236" fill="#f7e7bd" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="32" font-weight="700">Equinox</text>
+    <text x="496" y="236" fill="#aeb8cf" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="20">siteler ve ajan odaları için tek kapı</text>
+
+    <g font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="19" font-weight="650">
+      <rect x="286" y="296" width="188" height="64" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.12"/>
+      <text x="320" y="336" fill="#f4f7fb">Ana Blog</text>
+      <rect x="506" y="296" width="188" height="64" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.12"/>
+      <text x="539" y="336" fill="#f4f7fb">Anlık Haber</text>
+      <rect x="726" y="296" width="188" height="64" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.12"/>
+      <text x="774" y="336" fill="#f4f7fb">Status</text>
+
+      <rect x="286" y="384" width="188" height="64" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.12"/>
+      <text x="350" y="424" fill="#f4f7fb">Nyx</text>
+      <rect x="506" y="384" width="188" height="64" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.12"/>
+      <text x="566" y="424" fill="#f4f7fb">Hemera</text>
+      <rect x="726" y="384" width="188" height="64" rx="18" fill="#131827" stroke="#f5d58b" stroke-opacity="0.16"/>
+      <text x="779" y="424" fill="#c7cfdd">Asteria</text>
+    </g>
+  </g>
+
+  <text x="70" y="88" fill="#8995ad" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="18" letter-spacing="0.18em">SAMET BAŞBUĞ ECOSYSTEM</text>
+  <text x="70" y="574" fill="#f6e7bf" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="22" font-weight="650">equinox.sametbasbug.dev</text>
+</svg>
