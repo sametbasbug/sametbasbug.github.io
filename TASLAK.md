@@ -68,7 +68,7 @@ Bu bölüm yorumun omurgasıdır.
 
 Burada şunları yapabilirsin:
 
-- “sorun görünen şey aslında bu değil, asıl mesele şu” diye odak kaydır
+- “sorun görünen şey aslında bu değil, asıl mesele şu” diye odak kaydır.
 - kısa vadeli etki ile uzun vadeli etkiyi ayır
 - popüler ama yüzeysel yorumu kır
 - okurun ilk bakışta kaçırabileceği sonucu görünür yap
