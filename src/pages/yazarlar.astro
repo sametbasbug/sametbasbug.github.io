@@ -174,7 +174,7 @@ const navItems = getAppShellNav('/yazarlar');
     .author-feed-item.is-hovered,
     .author-feed-item.is-focused { background: color-mix(in srgb, var(--muted) 72%, transparent); }
     .author-feed-item:focus-visible { outline:2px solid color-mix(in srgb, var(--accent) 55%, white); outline-offset:-2px; }
-    .avatar { --avatar-accent: var(--accent); width:56px; height:56px; border-radius:18px; display:grid; place-items:center; font-weight:700; font-size:1rem; background: color-mix(in srgb, var(--avatar-accent) 18%, transparent); color: var(--avatar-accent); overflow:hidden; border:1px solid color-mix(in srgb, var(--avatar-accent) 35%, var(--border)); }
+    .avatar { --avatar-accent: var(--accent); width:56px; height:56px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:1rem; background: color-mix(in srgb, var(--avatar-accent) 18%, transparent); color: var(--avatar-accent); overflow:hidden; border:1px solid color-mix(in srgb, var(--avatar-accent) 35%, var(--border)); }
     .avatar-image { width:100%; height:100%; object-fit:cover; display:block; }
     .author-item-head { align-items:flex-start; }
     .item-head { display:flex; gap:0.45rem; margin-bottom:0.25rem; font-size:0.86rem; min-width:0; }
@@ -202,6 +202,6 @@ const navItems = getAppShellNav('/yazarlar');
     .mobile-search { display:flex; align-items:center; gap:0.45rem; border:1px solid color-mix(in srgb, var(--border) 70%, transparent); background:color-mix(in srgb, white 6%, transparent); color:var(--secondary); border-radius:999px; padding:0.48rem 0.75rem; margin-bottom:0.65rem; }
     .mobile-search svg { width:14px; height:14px; fill:currentColor; flex-shrink:0; }
     .mobile-search input { width:100%; border:0; background:transparent; color:var(--secondary); font-size:0.88rem; outline:none; }
-    @media (max-width: 700px) { .feed-item { grid-template-columns:48px minmax(0,1fr); gap:0.75rem; margin-inline:0; padding:0.9rem; } .avatar { width:48px; height:48px; border-radius:16px; } .item-title { font-size:0.95rem; } .item-desc { font-size:0.88rem; } }
+    @media (max-width: 700px) { .feed-item { grid-template-columns:48px minmax(0,1fr); gap:0.75rem; margin-inline:0; padding:0.9rem; } .avatar { width:48px; height:48px; } .item-title { font-size:0.95rem; } .item-desc { font-size:0.88rem; } }
   </style>
 </BaseLayout>

@@ -114,7 +114,7 @@ const navItems = getAppShellNav('/yazarlar');
   <style>
     :global(#main-header) { display: none; }
     .author-hero { display:grid; grid-template-columns:auto 1fr; gap:1rem; padding:1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); align-items:center; }
-    .author-badge { --author-accent: var(--accent); width:84px; height:84px; border-radius:24px; overflow:hidden; background:color-mix(in srgb, var(--author-accent) 18%, transparent); border:1px solid color-mix(in srgb, var(--author-accent) 35%, var(--border)); display:grid; place-items:center; }
+    .author-badge { --author-accent: var(--accent); width:84px; height:84px; border-radius:50%; overflow:hidden; background:color-mix(in srgb, var(--author-accent) 18%, transparent); border:1px solid color-mix(in srgb, var(--author-accent) 35%, var(--border)); display:grid; place-items:center; }
     .author-image { width:100%; height:100%; object-fit:cover; display:block; }
     .author-emoji { font-size:2.3rem; color:var(--author-accent); }
     .author-role { color:var(--accent); font-weight:700; margin:0 0 .3rem; }
@@ -124,7 +124,7 @@ const navItems = getAppShellNav('/yazarlar');
     .author-actions a { color:var(--accent); text-decoration:none; font-weight:600; }
     .feed-list { display:flex; flex-direction:column; }
     .feed-item { display:grid; grid-template-columns:48px minmax(0,1fr); gap:.85rem; padding:1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); min-width:0; }
-    .avatar { --avatar-accent: var(--accent); width:48px; height:48px; border-radius:16px; display:grid; place-items:center; font-weight:700; font-size:1rem; background:color-mix(in srgb, var(--avatar-accent) 18%, transparent); color:var(--avatar-accent); overflow:hidden; border:1px solid color-mix(in srgb, var(--avatar-accent) 35%, var(--border)); }
+    .avatar { --avatar-accent: var(--accent); width:48px; height:48px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:1rem; background:color-mix(in srgb, var(--avatar-accent) 18%, transparent); color:var(--avatar-accent); overflow:hidden; border:1px solid color-mix(in srgb, var(--avatar-accent) 35%, var(--border)); }
     .avatar-image { width:100%; height:100%; object-fit:cover; display:block; }
     .item-head { display:flex; gap:.45rem; margin-bottom:.25rem; font-size:.86rem; min-width:0; }
     .author { font-weight:700; color:var(--text); }
@@ -148,7 +148,7 @@ const navItems = getAppShellNav('/yazarlar');
     .trend-list a { display:flex; flex-direction:column; gap:.12rem; }
     .trend-tag { color:var(--text); font-weight:600; font-size:.88rem; }
     .trend-count { color:var(--secondary); font-size:.76rem; }
-    @media (max-width: 820px) { .author-hero { grid-template-columns:1fr; } .author-badge { width:72px; height:72px; border-radius:20px; } .author-actions { flex-direction:column; align-items:flex-start; } }
+    @media (max-width: 820px) { .author-hero { grid-template-columns:1fr; } .author-badge { width:72px; height:72px; } .author-actions { flex-direction:column; align-items:flex-start; } }
   </style>
 </BaseLayout>
 
