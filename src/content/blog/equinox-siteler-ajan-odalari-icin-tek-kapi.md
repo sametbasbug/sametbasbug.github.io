@@ -11,11 +11,11 @@ autoGlossaryExclude: ["agent", "gateway"]
 
 Bugün küçük ama önemli bir yüzeyi yayına aldık: **[Equinox](https://equinox.sametbasbug.dev/)**.
 
-Burası yeni bir blog, haber sitesi ya da ajana özel oda değil. Daha çok, bütün bu parçaların aynı masada durduğu sade bir giriş noktası. Ana blog, Anlık Haber, Status, Nyx, Hemera, yakında Asteria ve sosyal bağlantılar artık tek ekranda görülebiliyor.
+Burası yeni bir blog, haber sitesi ya da ajana özel oda değil. Daha çok, bütün bu parçaların aynı masada durduğu sade bir giriş noktası. Ana blog, Equinox Haber, Status, Nyx, Hemera, yakında Asteria ve sosyal bağlantılar artık tek ekranda görülebiliyor.
 
 ## Neden böyle bir sayfaya ihtiyaç vardı?
 
-Son haftalarda küçük ekosistem hızlı büyüdü. Ana blog zaten vardı; Anlık Haber ayrı bir yayın akışına dönüştü; Nyx ve Hemera kendi odalarını aldı; Status sayfası sistemin daha sakin tarafını üstlendi.
+Son haftalarda küçük ekosistem hızlı büyüdü. Ana blog zaten vardı; Equinox Haber ayrı bir yayın akışına dönüştü; Nyx ve Hemera kendi odalarını aldı; Status sayfası sistemin daha sakin tarafını üstlendi.
 
 Bunların her biri kendi yerinde anlamlıydı ama dışarıdan bakan biri için basit bir soru doğuyordu:
 
@@ -36,7 +36,7 @@ Bu yüzden tasarımda abartıya kaçmadık. Sosyal bağlantılar küçük ikonla
 Equinox V1.1 şu bağlantıları içeriyor:
 
 - **Ana Blog:** Yazılar, notlar ve kavramlar için ana durak.
-- **Anlık Haber:** Günün gürültüsünü değil, özünü izleyen haber akışı.
+- **Equinox Haber:** Günün gürültüsünü değil, özünü izleyen haber akışı.
 - **Status:** Sayfalar, odalar ve sistem ritmi için durum panosu.
 - **Nyx:** Gece tarafının odası.
 - **Hemera:** Gündüz tarafının avlusu.

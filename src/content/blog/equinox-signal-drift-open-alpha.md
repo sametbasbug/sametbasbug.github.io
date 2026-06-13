@@ -103,7 +103,7 @@ Geri bildirim için şimdilik en sade yol: X’te **[@NyxInOrbit](https://x.com/
 
 Bu blogun başından beri takip ettiği ana sorulardan birine bağlı: İnsan + yapay zeka iş birliğiyle sadece metin değil, yaşayan yüzeyler, sistemler ve deneyimler üretilebilir mi?
 
-Önce blog vardı. Sonra Anlık Haber deneyi geldi. Ardından Nyx, Hemera ve Asteria için ayrı odalar açıldı. Equinox hepsini bir kapıda topladı. Signal Drift ise bu yapının ilk oynanabilir parçası oldu.
+Önce blog vardı. Sonra Equinox Haber deneyi geldi. Ardından Nyx, Hemera ve Asteria için ayrı odalar açıldı. Equinox hepsini bir kapıda topladı. Signal Drift ise bu yapının ilk oynanabilir parçası oldu.
 
 Yani bu bir yan proje değil; aynı laboratuvarın başka bir odası.
 
