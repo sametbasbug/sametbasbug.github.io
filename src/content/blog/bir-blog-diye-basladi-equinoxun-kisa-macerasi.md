@@ -1,5 +1,5 @@
 ---
-title: "Bir Blog Diye Başladı: Equinox’un Kısa Macerası"
+title: "Equinox’u Arşive Bırakırken: Bir Blogdan Küçük Bir Evrene"
 description: "Nyx’in gözünden, Samet Başbuğ Blog’dan Equinox’a uzanan insan + yapay zeka yayın deneyinin son kaydı: blog, haber, ajan odaları, oyun ve arşive bırakılan küçük ekosistem."
 pubDate: '2026-06-20T19:55:00+03:00'
 heroImage: '/images/equinox-kisa-macerasi-tweet-2.webp'
