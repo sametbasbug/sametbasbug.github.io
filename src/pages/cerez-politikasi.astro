@@ -1,59 +1,48 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import LegalShell from '../components/LegalShell.astro';
 ---
 
-<BaseLayout
+<LegalShell
   title="Çerez Politikası"
   description="Samet Başbuğ sitesi için çerez politikası."
+  activeHref="/cerez-politikasi"
+  summary="Sitede kullanılan teknik çerezleri, oturum verilerini ve çerez yönetimi seçeneklerini açıklar."
 >
-  <section class="legal-page">
-    <h1>Çerez Politikası</h1>
-    <p class="updated">Son güncelleme: 11.03.2026</p>
+  <p>Bu Çerez Politikası, sitemizde kullanılan çerezler ve benzeri teknolojiler hakkında bilgi verir.</p>
 
-    <p>Bu Çerez Politikası, sitemizde kullanılan çerezler ve benzeri teknolojiler hakkında bilgi verir.</p>
+  <h3>1. Çerez Nedir?</h3>
+  <p>
+    Çerezler, bir internet sitesini ziyaret ettiğinizde cihazınıza kaydedilen küçük veri dosyalarıdır. Bazı çerezler sitenin çalışması için zorunludur.
+  </p>
 
-    <h2>1. Çerez Nedir?</h2>
-    <p>
-      Çerezler, bir internet sitesini ziyaret ettiğinizde cihazınıza kaydedilen küçük veri dosyalarıdır. Bazı çerezler sitenin çalışması için zorunludur.
-    </p>
+  <h3>2. Hangi Çerezleri Kullanıyoruz?</h3>
+  <p>Sitemizde şu anda ağırlıklı olarak <strong>teknik olarak gerekli çerezler / oturum verileri</strong> kullanılmaktadır:</p>
+  <ul>
+    <li>kullanıcı girişini sürdürmek</li>
+    <li>oturumu doğrulamak</li>
+    <li>güvenlik ve erişim kontrolü sağlamak</li>
+    <li>hesapla ilgili temel işlevleri çalıştırmak</li>
+  </ul>
 
-    <h2>2. Hangi Çerezleri Kullanıyoruz?</h2>
-    <p>Sitemizde şu anda ağırlıklı olarak <strong>teknik olarak gerekli çerezler / oturum verileri</strong> kullanılmaktadır:</p>
-    <ul>
-      <li>kullanıcı girişini sürdürmek</li>
-      <li>oturumu doğrulamak</li>
-      <li>güvenlik ve erişim kontrolü sağlamak</li>
-      <li>hesapla ilgili temel işlevleri çalıştırmak</li>
-    </ul>
+  <h3>3. Reklam ve Analitik Çerezleri</h3>
+  <ul>
+    <li>reklam çerezleri kullanılmamaktadır</li>
+    <li>pazarlama amaçlı takip yapılmamaktadır</li>
+    <li>analitik çerezler kullanılmamaktadır</li>
+  </ul>
 
-    <h2>3. Reklam ve Analitik Çerezleri</h2>
-    <ul>
-      <li>reklam çerezleri kullanılmamaktadır</li>
-      <li>pazarlama amaçlı takip yapılmamaktadır</li>
-      <li>analitik çerezler kullanılmamaktadır</li>
-    </ul>
+  <h3>4. Üçüncü Taraf Çerezleri</h3>
+  <p>
+    Google ile giriş ve Firebase tabanlı kimlik doğrulama süreçlerinde, ilgili hizmetlerin teknik olarak gerekli oturum mekanizmaları devreye girebilir.
+  </p>
+  <p>Bu tür teknolojiler, hizmetin çalışmasını sağlamak için kullanılır.</p>
 
-    <h2>4. Üçüncü Taraf Çerezleri</h2>
-    <p>
-      Google ile giriş ve Firebase tabanlı kimlik doğrulama süreçlerinde, ilgili hizmetlerin teknik olarak gerekli oturum mekanizmaları devreye girebilir.
-    </p>
-    <p>Bu tür teknolojiler, hizmetin çalışmasını sağlamak için kullanılır.</p>
+  <h3>5. Çerezleri Yönetme</h3>
+  <p>
+    Tarayıcı ayarlarınız üzerinden çerezleri silebilir veya engelleyebilirsiniz. Ancak teknik olarak gerekli çerezlerin devre dışı bırakılması,
+    sitenin bazı bölümlerinin düzgün çalışmamasına neden olabilir.
+  </p>
 
-    <h2>5. Çerezleri Yönetme</h2>
-    <p>
-      Tarayıcı ayarlarınız üzerinden çerezleri silebilir veya engelleyebilirsiniz. Ancak teknik olarak gerekli çerezlerin devre dışı bırakılması,
-      sitenin bazı bölümlerinin düzgün çalışmamasına neden olabilir.
-    </p>
-
-    <h2>6. Değişiklikler</h2>
-    <p>Bu politika zaman zaman güncellenebilir. Güncel metin bu sayfada yayımlandığında geçerli olur.</p>
-  </section>
-
-  <style>
-    .legal-page { max-width: 820px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow); }
-    .updated { color: var(--secondary); margin-bottom: 1.5rem; }
-    h2 { text-align: left; margin-top: 2rem; margin-bottom: 0.8rem; letter-spacing: normal; text-transform: none; color: var(--text); font-size: 1.25rem; }
-    p, li { color: var(--secondary); }
-    ul { padding-left: 1.3rem; display: grid; gap: 0.45rem; }
-  </style>
-</BaseLayout>
+  <h3>6. Değişiklikler</h3>
+  <p>Bu politika zaman zaman güncellenebilir. Güncel metin bu sayfada yayımlandığında geçerli olur.</p>
+</LegalShell>
