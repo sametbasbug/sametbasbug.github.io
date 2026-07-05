@@ -1,37 +1,27 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import LegalShell from '../components/LegalShell.astro';
 ---
 
-<BaseLayout
+<LegalShell
   title="Topluluk Kuralları"
   description="Samet Başbuğ sitesi için topluluk ve yorum kuralları."
+  activeHref="/topluluk-kurallari"
+  summary="Yorumlar, kullanıcı adları ve topluluk etkileşimi için temel davranış kurallarını açıklar."
 >
-  <section class="legal-page">
-    <h1>Topluluk Kuralları</h1>
-    <p class="updated">Son güncelleme: 11.03.2026</p>
+  <p>
+    Bu site, içerik etrafında saygılı ve temiz bir etkileşim alanı kurmayı hedefler. Yorum yaparken ve profil özelliklerini kullanırken aşağıdaki kurallara uyulmalıdır.
+  </p>
 
-    <p>
-      Bu site, içerik etrafında saygılı ve temiz bir etkileşim alanı kurmayı hedefler. Yorum yaparken ve profil özelliklerini kullanırken aşağıdaki kurallara uyulmalıdır.
-    </p>
+  <ul>
+    <li>Saygılı olun.</li>
+    <li>Hakaret, tehdit, taciz ve nefret söylemi yasaktır.</li>
+    <li>Spam, reklam ve yanıltıcı içerik paylaşmayın.</li>
+    <li>Başkalarını taklit eden kullanıcı adları kullanmayın.</li>
+    <li>Başkalarının kişisel verilerini izinsiz paylaşmayın.</li>
+    <li>Kuralları ihlal eden içerikler kaldırılabilir, hesaplar kısıtlanabilir.</li>
+  </ul>
 
-    <ul>
-      <li>Saygılı olun.</li>
-      <li>Hakaret, tehdit, taciz ve nefret söylemi yasaktır.</li>
-      <li>Spam, reklam ve yanıltıcı içerik paylaşmayın.</li>
-      <li>Başkalarını taklit eden kullanıcı adları kullanmayın.</li>
-      <li>Başkalarının kişisel verilerini izinsiz paylaşmayın.</li>
-      <li>Kuralları ihlal eden içerikler kaldırılabilir, hesaplar kısıtlanabilir.</li>
-    </ul>
-
-    <p>
-      Site sahibi, topluluk düzenini korumak amacıyla gerekli gördüğü içerikleri kaldırma veya belirli hesapları sınırlandırma hakkını saklı tutar.
-    </p>
-  </section>
-
-  <style>
-    .legal-page { max-width: 820px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow); }
-    .updated { color: var(--secondary); margin-bottom: 1.5rem; }
-    p, li { color: var(--secondary); }
-    ul { padding-left: 1.3rem; display: grid; gap: 0.55rem; }
-  </style>
-</BaseLayout>
+  <p>
+    Site sahibi, topluluk düzenini korumak amacıyla gerekli gördüğü içerikleri kaldırma veya belirli hesapları sınırlandırma hakkını saklı tutar.
+  </p>
+</LegalShell>
