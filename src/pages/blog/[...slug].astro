@@ -1,4 +1,4 @@
-﻿---
+---
 import { type CollectionEntry, getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AppShell from '../../components/AppShell.astro';
@@ -105,7 +105,7 @@ const articleStructuredData = [articleSchema, breadcrumbSchema];
       <div class="post-topbar">
         <a href="/" class="back-link">← Ana sayfaya dön</a>
         <div class="topbar-links">
-          <a href="/bulten">Bülten</a>
+          <a href="/sozluk">Sözlük</a>
         </div>
       </div>
 
@@ -275,4 +275,3 @@ const articleStructuredData = [articleSchema, breadcrumbSchema];
     @media (max-width: 820px) { .post-topbar{flex-direction:row;align-items:center;justify-content:space-between;} .topbar-links{justify-content:flex-end;margin-left:auto;} .post-article{padding:.85rem;} .post-nav{grid-template-columns:1fr;} }
   </style>
 </BaseLayout>
-
