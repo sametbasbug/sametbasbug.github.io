@@ -18,22 +18,6 @@ const blog = defineCollection({
 	}),
 });
 
-const gunlukOzet = defineCollection({
-	// type: 'content' kaldırıldı, yerine loader eklendi
-	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/gunlukOzet" }),
-	schema: z.object({
-		title: z.string(),
-		category: z.enum(['ekonomi', 'siyaset', 'teknoloji']),
-		date: z.coerce.date(),
-		isDraft: z.boolean().optional(),
-		summaryItems: z.array(z.string()).min(1),
-		sources: z.array(z.object({
-			name: z.string(),
-			url: z.string().url(),
-		})).optional(),
-	}),
-});
-
 const sozluk = defineCollection({
 	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/sozluk" }),
 	schema: z.object({
@@ -56,4 +40,4 @@ const sozluk = defineCollection({
 	}),
 });
 
-export const collections = { blog, gunlukOzet, sozluk };
+export const collections = { blog, sozluk };
