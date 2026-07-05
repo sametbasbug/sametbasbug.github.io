@@ -1,116 +1,105 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import LegalShell from '../components/LegalShell.astro';
 ---
 
-<BaseLayout
+<LegalShell
   title="Gizlilik Politikası"
   description="Samet Başbuğ sitesi için gizlilik politikası ve veri işleme bilgilendirmesi."
+  activeHref="/gizlilik-politikasi"
+  summary="Kullanıcı verilerinin nasıl işlendiğini, hangi amaçlarla saklandığını ve hangi üçüncü taraf altyapıların kullanıldığını açıklar."
 >
-  <section class="legal-page">
-    <h1>Gizlilik Politikası</h1>
-    <p class="updated">Son güncelleme: 11.03.2026</p>
+  <p>
+    Bu Gizlilik Politikası, <strong>Samet Başbuğ</strong> tarafından işletilen bu internet sitesini kullanırken
+    kullanıcı verilerinin nasıl toplandığını, işlendiğini ve korunduğunu açıklar.
+  </p>
 
-    <p>
-      Bu Gizlilik Politikası, <strong>Samet Başbuğ</strong> tarafından işletilen bu internet sitesini kullanırken
-      kullanıcı verilerinin nasıl toplandığını, işlendiğini ve korunduğunu açıklar.
-    </p>
+  <p>
+    Siteyi kullanarak, bu politikada açıklanan uygulamaları okuduğunuzu ve anladığınızı kabul etmiş olursunuz.
+  </p>
 
-    <p>
-      Siteyi kullanarak, bu politikada açıklanan uygulamaları okuduğunuzu ve anladığınızı kabul etmiş olursunuz.
-    </p>
+  <h3>1. Toplanan Veriler</h3>
+  <p>Sitemizde kullanıcı hesabı oluşturma ve giriş işlemleri için <strong>Firebase Auth</strong> ve <strong>Google ile giriş</strong> altyapısı kullanılmaktadır.</p>
+  <p>Bu kapsamda aşağıdaki veriler işlenebilir:</p>
+  <ul>
+    <li>ad ve soyad</li>
+    <li>e-posta adresi</li>
+    <li>profil fotoğrafı</li>
+    <li>kullanıcı adı</li>
+    <li>kullanıcı tarafından yapılan yorumlar</li>
+    <li>kullanıcı tarafından bırakılan beğeniler</li>
+    <li>profil sayfasında görüntülenen hesap bilgileri</li>
+    <li>teknik olarak gerekli oturum / kimlik doğrulama verileri</li>
+  </ul>
 
-    <h2>1. Toplanan Veriler</h2>
-    <p>Sitemizde kullanıcı hesabı oluşturma ve giriş işlemleri için <strong>Firebase Auth</strong> ve <strong>Google ile giriş</strong> altyapısı kullanılmaktadır.</p>
-    <p>Bu kapsamda aşağıdaki veriler işlenebilir:</p>
-    <ul>
-      <li>ad ve soyad</li>
-      <li>e-posta adresi</li>
-      <li>profil fotoğrafı</li>
-      <li>kullanıcı adı</li>
-      <li>kullanıcı tarafından yapılan yorumlar</li>
-      <li>kullanıcı tarafından bırakılan beğeniler</li>
-      <li>profil sayfasında görüntülenen hesap bilgileri</li>
-      <li>teknik olarak gerekli oturum / kimlik doğrulama verileri</li>
-    </ul>
+  <h3>2. Verileri Hangi Amaçlarla İşliyoruz?</h3>
+  <ul>
+    <li>kullanıcı hesabı oluşturmak ve oturum açma işlemlerini sağlamak</li>
+    <li>kullanıcı profilini göstermek</li>
+    <li>yorum ve beğeni gibi etkileşim özelliklerini çalıştırmak</li>
+    <li>hesap güvenliğini sağlamak</li>
+    <li>hizmetin teknik olarak sürdürülebilmesini sağlamak</li>
+    <li>kötüye kullanım, spam veya güvenlik ihlallerini önlemek</li>
+  </ul>
 
-    <h2>2. Verileri Hangi Amaçlarla İşliyoruz?</h2>
-    <ul>
-      <li>kullanıcı hesabı oluşturmak ve oturum açma işlemlerini sağlamak</li>
-      <li>kullanıcı profilini göstermek</li>
-      <li>yorum ve beğeni gibi etkileşim özelliklerini çalıştırmak</li>
-      <li>hesap güvenliğini sağlamak</li>
-      <li>hizmetin teknik olarak sürdürülebilmesini sağlamak</li>
-      <li>kötüye kullanım, spam veya güvenlik ihlallerini önlemek</li>
-    </ul>
+  <h3>3. Yorumlar ve Beğeniler</h3>
+  <p>
+    Kullanıcıların site üzerindeki bazı içeriklere yorum yapması ve beğeni bırakması mümkündür. Bu etkileşimler,
+    hizmetin sunulabilmesi için saklanabilir ve ilgili içeriklerle ilişkilendirilebilir.
+  </p>
+  <p>
+    Kullanıcıların paylaştığı yorumların hukuki sorumluluğu, yürürlükteki mevzuat çerçevesinde ilgili kullanıcıya aittir.
+  </p>
 
-    <h2>3. Yorumlar ve Beğeniler</h2>
-    <p>
-      Kullanıcıların site üzerindeki bazı içeriklere yorum yapması ve beğeni bırakması mümkündür. Bu etkileşimler,
-      hizmetin sunulabilmesi için saklanabilir ve ilgili içeriklerle ilişkilendirilebilir.
-    </p>
-    <p>
-      Kullanıcıların paylaştığı yorumların hukuki sorumluluğu, yürürlükteki mevzuat çerçevesinde ilgili kullanıcıya aittir.
-    </p>
+  <h3>4. Üçüncü Taraf Hizmetler</h3>
+  <p>Sitemizde aşağıdaki üçüncü taraf hizmetler kullanılmaktadır:</p>
+  <ul>
+    <li><strong>Firebase Authentication</strong>: kullanıcı girişi ve kimlik doğrulama işlemleri için</li>
+    <li><strong>Google ile giriş</strong>: kullanıcıdan ad-soyad, e-posta ve profil fotoğrafı bilgisinin alınması için</li>
+    <li><strong>Firestore</strong>: kullanıcı ve etkileşim verilerinin saklanması için</li>
+  </ul>
+  <p>
+    Bu hizmetler aracılığıyla işlenen veriler, ilgili hizmet sağlayıcıların kendi politika ve altyapılarına tabi olabilir.
+  </p>
 
-    <h2>4. Üçüncü Taraf Hizmetler</h2>
-    <p>Sitemizde aşağıdaki üçüncü taraf hizmetler kullanılmaktadır:</p>
-    <ul>
-      <li><strong>Firebase Authentication</strong>: kullanıcı girişi ve kimlik doğrulama işlemleri için</li>
-      <li><strong>Google ile giriş</strong>: kullanıcıdan ad-soyad, e-posta ve profil fotoğrafı bilgisinin alınması için</li>
-      <li><strong>Firestore</strong>: kullanıcı ve etkileşim verilerinin saklanması için</li>
-    </ul>
-    <p>
-      Bu hizmetler aracılığıyla işlenen veriler, ilgili hizmet sağlayıcıların kendi politika ve altyapılarına tabi olabilir.
-    </p>
+  <h3>5. Çerezler ve Oturum Verileri</h3>
+  <p>
+    Sitemizde, kullanıcı girişini sürdürebilmek ve kimlik doğrulama işlemlerini gerçekleştirebilmek için teknik olarak gerekli
+    çerezler veya benzeri oturum teknolojileri kullanılabilir.
+  </p>
+  <p>
+    Bu çerezler reklam veya pazarlama amacıyla değil, yalnızca sitenin temel işlevlerinin çalışması için kullanılmaktadır.
+  </p>
 
-    <h2>5. Çerezler ve Oturum Verileri</h2>
-    <p>
-      Sitemizde, kullanıcı girişini sürdürebilmek ve kimlik doğrulama işlemlerini gerçekleştirebilmek için teknik olarak gerekli
-      çerezler veya benzeri oturum teknolojileri kullanılabilir.
-    </p>
-    <p>
-      Bu çerezler reklam veya pazarlama amacıyla değil, yalnızca sitenin temel işlevlerinin çalışması için kullanılmaktadır.
-    </p>
+  <h3>6. Analytics ve Reklam</h3>
+  <ul>
+    <li>reklam amaçlı izleme yapılmamaktadır</li>
+    <li>üçüncü taraf pazarlama çerezleri kullanılmamaktadır</li>
+    <li>analitik / ziyaretçi takip aracı kullanılmamaktadır</li>
+  </ul>
+  <p>İleride bu uygulamalar değişirse, ilgili politika güncellenecektir.</p>
 
-    <h2>6. Analytics ve Reklam</h2>
-    <ul>
-      <li>reklam amaçlı izleme yapılmamaktadır</li>
-      <li>üçüncü taraf pazarlama çerezleri kullanılmamaktadır</li>
-      <li>analitik / ziyaretçi takip aracı kullanılmamaktadır</li>
-    </ul>
-    <p>İleride bu uygulamalar değişirse, ilgili politika güncellenecektir.</p>
+  <h3>7. Veri Saklama</h3>
+  <p>
+    Veriler, hizmetin sunulması için gerekli olduğu sürece veya yasal yükümlülükler doğrultusunda saklanabilir.
+  </p>
+  <p>
+    Kullanıcı hesabı silme özelliği şu anda aktif değildir. Bu özellik ileride sunulursa, ilgili süreç ayrıca açıklanacaktır.
+  </p>
 
-    <h2>7. Veri Saklama</h2>
-    <p>
-      Veriler, hizmetin sunulması için gerekli olduğu sürece veya yasal yükümlülükler doğrultusunda saklanabilir.
-    </p>
-    <p>
-      Kullanıcı hesabı silme özelliği şu anda aktif değildir. Bu özellik ileride sunulursa, ilgili süreç ayrıca açıklanacaktır.
-    </p>
+  <h3>8. Veri Güvenliği</h3>
+  <p>
+    Kullanıcı verilerinin korunması için makul teknik ve idari önlemler alınmaya çalışılmaktadır. Ancak internet üzerinden yapılan
+    hiçbir veri aktarımının veya dijital saklama yönteminin tamamen risksiz olduğu garanti edilemez.
+  </p>
 
-    <h2>8. Veri Güvenliği</h2>
-    <p>
-      Kullanıcı verilerinin korunması için makul teknik ve idari önlemler alınmaya çalışılmaktadır. Ancak internet üzerinden yapılan
-      hiçbir veri aktarımının veya dijital saklama yönteminin tamamen risksiz olduğu garanti edilemez.
-    </p>
+  <h3>9. Kullanıcı Hakları</h3>
+  <p>
+    Kullanıcılar, kendileriyle ilgili kişisel veriler hakkında bilgi talep etmek veya taleplerini iletmek isterse,
+    sitede yer alan <a href="/iletisim">iletişim formu</a> üzerinden başvurabilir.
+  </p>
 
-    <h2>9. Kullanıcı Hakları</h2>
-    <p>
-      Kullanıcılar, kendileriyle ilgili kişisel veriler hakkında bilgi talep etmek veya taleplerini iletmek isterse,
-      sitede yer alan <a href="/iletisim">iletişim formu</a> üzerinden başvurabilir.
-    </p>
-
-    <h2>10. Değişiklikler</h2>
-    <p>
-      Bu Gizlilik Politikası zaman zaman güncellenebilir. Güncel metin bu sayfada yayımlandığı anda yürürlüğe girer.
-    </p>
-  </section>
-
-  <style>
-    .legal-page { max-width: 820px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--shadow); }
-    .updated { color: var(--secondary); margin-bottom: 1.5rem; }
-    h2 { text-align: left; margin-top: 2rem; margin-bottom: 0.8rem; letter-spacing: normal; text-transform: none; color: var(--text); font-size: 1.25rem; }
-    p, li { color: var(--secondary); }
-    ul { padding-left: 1.3rem; display: grid; gap: 0.45rem; }
-  </style>
-</BaseLayout>
+  <h3>10. Değişiklikler</h3>
+  <p>
+    Bu Gizlilik Politikası zaman zaman güncellenebilir. Güncel metin bu sayfada yayımlandığı anda yürürlüğe girer.
+  </p>
+</LegalShell>
