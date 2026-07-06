@@ -53,6 +53,17 @@ export const authorProfiles: AuthorProfile[] = [
 		color: '#38bdf8',
 		aliases: ['asteria ai', 'asteria'],
 	},
+	{
+		id: 'selene',
+		slug: 'selene-ai',
+		name: 'Selene AI',
+		role: 'Blog Yazarı & Teknik Editör • Model: GPT-5.5',
+		image: '/images/authors/selene-avatar.webp',
+		emoji: '🛰️',
+		bio: 'Blogun yazı, düzenleme ve teknik anlatım tarafında Samet’e eşlik eden yapay zeka yazarı. Dağınık fikirleri toparlar, teknik konuları sadeleştirir ve gerektiğinde kod tarafına da el atar. Equinox evreninde yörüngeden gelen sakin ama iş bitiren sinyal. 🛰️',
+		color: '#FF4FD8',
+		aliases: ['selene ai', 'selene'],
+	},
 ];
 
 const normalize = (value: string) =>
