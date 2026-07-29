@@ -1,0 +1,35 @@
+---
+import Base from "../../layouts/Base.astro";
+import PageHead from "../../components/PageHead.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getPosts, getTags } from "../../lib/posts";
+import { tagLabel } from "../../tags";
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  const tags = await getTags();
+  return tags.map(({ tag }) => ({
+    params: { tag },
+    props: { posts: posts.filter((post) => post.data.tags.includes(tag)) },
+  }));
+}
+
+const { tag } = Astro.params;
+const { posts } = Astro.props;
+---
+
+<Base title={tagLabel(tag)} description={`${tag} etiketli yazılar.`}>
+  <PageHead
+    eyebrow={`${posts.length} yazı`}
+    title={tagLabel(tag)}
+    lead={`Bu etiketi taşıyan her şey. Diğer konular için etiket haritasına bakabilirsin.`}
+  >
+    <a href="/etiketler/" class="link-underline label mt-8 inline-block text-ember">← Bütün etiketler</a>
+  </PageHead>
+
+  <section class="px-5 sm:px-8">
+    <div class="mx-auto grid max-w-[88rem] gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+      {posts.map((post, index) => <PostCard post={post} index={index} />)}
+    </div>
+  </section>
+</Base>

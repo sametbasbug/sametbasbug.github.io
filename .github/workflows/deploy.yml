@@ -1,39 +1,33 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Trigger the workflow every time you push to the `main` branch
-  # Using a different branch name? Replace `main` with your branch’s name
   push:
-    branches: [ main ]
-  # Allows you to run this workflow manually from the Actions tab on GitHub.
+    branches: [main]
   workflow_dispatch:
 
-# Allow this job to clone the repo and create a page deployment
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Arka arkaya gelen push'larda yalnızca sonuncusu yayına gitsin.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repository using git
-        uses: actions/checkout@v6
-      
+      - uses: actions/checkout@v6
+
+      # package.json node >=22.12 istiyor; 24 ile derliyoruz.
+      # Eski kurulumdaki Firebase ve iletişim formu değişkenleri kaldırıldı:
+      # yeni sitede ne form var ne de üçüncü taraf servis.
       - name: Install, build, and upload your site
         uses: withastro/action@v6
-        env:
-          PUBLIC_SITE_URL: https://sametbasbug.dev
-          PUBLIC_CONTACT_FORM_URL: ${{ secrets.PUBLIC_CONTACT_FORM_URL }}
-          PUBLIC_FIREBASE_API_KEY: ${{ secrets.PUBLIC_FIREBASE_API_KEY }}
-          PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.PUBLIC_FIREBASE_AUTH_DOMAIN }}
-          PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.PUBLIC_FIREBASE_PROJECT_ID }}
-          PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.PUBLIC_FIREBASE_STORAGE_BUCKET }}
-          PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
-          PUBLIC_FIREBASE_APP_ID: ${{ secrets.PUBLIC_FIREBASE_APP_ID }}
         with:
-          node-version: 24 # <-- Burayı aktif ettik ve 24 yaptık
+          node-version: 24
 
   deploy:
     needs: build

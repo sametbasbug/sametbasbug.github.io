@@ -1,0 +1,343 @@
+---
+import { site, type NavItem } from "../site";
+import ThemeToggle from "./ThemeToggle.astro";
+
+const path = Astro.url.pathname;
+const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
+---
+
+<header id="site-nav" class="fixed inset-x-0 top-0 z-50" transition:name="nav" transition:animate="none">
+  <div class="nav-shell mx-auto flex max-w-[88rem] items-center gap-4 px-5 py-4 sm:px-8">
+    <a href="/" class="group flex shrink-0 items-baseline gap-2.5" aria-label="Ana sayfa">
+      <span class="text-display text-lg leading-none tracking-tight sm:text-xl">Samet&nbsp;Başbuğ</span>
+      {/* Marka adı her ekranda görünür: mobilde gizliyken site adsız kalıyordu. */}
+      <span class="label text-[0.55rem] transition-colors group-hover:text-ember sm:text-[0.6rem]">
+        {site.tagline}
+      </span>
+    </a>
+
+    {/* Altı sekme + arama düğmesi 1024'ün altında sığmıyordu (820'de arama
+        ekranın dışına taşıyordu); o aralıkta hamburger menü devrede. */}
+    <nav class="ml-auto hidden items-center gap-1 lg:flex" aria-label="Ana menü">
+      {
+        site.nav.map((item) => (
+          <a
+            href={item.href}
+            target={item.external ? "_blank" : undefined}
+            rel={item.external ? "noreferrer" : undefined}
+            class:list={[
+              // Altıncı sekmeden sonra menü daralıyor; etiketler bölünmesin.
+              "nav-link relative whitespace-nowrap px-3 py-1.5 text-sm transition-colors duration-300",
+              !item.external && isActive(item.href) ? "text-ink" : "text-ink-soft hover:text-ink",
+            ]}
+            aria-current={!item.external && isActive(item.href) ? "page" : undefined}
+          >
+            {item.label}
+            {/* Dış bağlantı olduğu tıklamadan önce belli olsun. */}
+            {item.external && (
+              <span class="ml-1 text-[0.7em] align-super text-ink-faint" aria-hidden="true">
+                ↗
+              </span>
+            )}
+            {!item.external && isActive(item.href) && <span class="nav-dot" />}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="ml-auto flex items-center gap-2 lg:ml-2">
+      <button
+        id="palette-open"
+        data-palette-open
+        type="button"
+        class="group hidden items-center gap-2.5 rounded-full border border-line/70 py-1.5 pl-3.5 pr-2 text-sm text-ink-faint transition-colors duration-300 hover:border-ember hover:text-ink lg:flex"
+        aria-label="Arama ve komutları aç"
+      >
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="11" cy="11" r="6.5"></circle>
+          <path stroke-linecap="round" d="m16 16 4.5 4.5"></path>
+        </svg>
+        Ara
+        <kbd
+          class="rounded-full border border-line/70 px-2 py-0.5 font-mono text-[0.65rem] leading-none transition-colors group-hover:border-ember/50"
+          >⌘K</kbd
+        >
+      </button>
+
+      <ThemeToggle />
+      <button
+        id="menu-open"
+        type="button"
+        class="grid h-9 w-9 place-items-center rounded-full border border-line/70 text-ink-soft transition-colors hover:border-ember hover:text-ember lg:hidden"
+        aria-label="Menüyü aç"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <svg viewBox="0 0 24 24" class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" d="M4 8h16M4 16h16"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobil menü -->
+<div id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menü" class="fixed inset-0 z-[60]">
+  <div class="absolute inset-0 bg-surface/95 backdrop-blur-xl"></div>
+  {/* Menü de sitenin gökyüzünü taşısın: gündüz ve gece köşeden karşılıklı. */}
+  <div class="menu-glow" aria-hidden="true"></div>
+
+  {/* Küçük telefonlarda liste ekrandan taşabilir; menü kendi içinde kayar. */}
+  <div class="relative flex h-full flex-col overflow-y-auto px-6 py-4">
+    <div class="flex items-center justify-between gap-4">
+      <a href="/" class="group flex shrink-0 items-baseline gap-2.5" aria-label="Ana sayfa">
+        <span class="text-display text-lg leading-none tracking-tight">Samet&nbsp;Başbuğ</span>
+        <span class="label text-[0.55rem] transition-colors group-hover:text-ember">{site.tagline}</span>
+      </a>
+      <button
+        id="menu-close"
+        type="button"
+        class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line/70 text-ink-soft transition-colors hover:border-ember hover:text-ember"
+        aria-label="Menüyü kapat"
+      >
+        <svg viewBox="0 0 24 24" class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"></path>
+        </svg>
+      </button>
+    </div>
+
+    {/* Arama düğmesi menü çubuğunda yalnızca lg'den itibaren duruyor ve
+        ⌘K dokunmatik cihazda yok — palete tek giriş bu. */}
+    <button
+      data-palette-open
+      type="button"
+      class="menu-rise mt-7 flex w-full items-center gap-3 rounded-full border border-line/70 bg-surface-raised/40 px-5 py-3.5 text-left text-sm text-ink-faint transition-colors hover:border-ember hover:text-ink"
+      style="--rise-delay:40ms"
+    >
+      <svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="11" cy="11" r="6.5"></circle>
+        <path stroke-linecap="round" d="m16 16 4.5 4.5"></path>
+      </svg>
+      Yazılarda, sözlükte ve sayfalarda ara
+    </button>
+
+    <nav class="mt-7 flex flex-col" aria-label="Mobil menü">
+      {
+        ([{ href: "/", label: "Ana Sayfa" }, ...site.nav] as NavItem[]).map((item, i) => {
+          const active = !item.external && isActive(item.href);
+          return (
+            <a
+              href={item.href}
+              target={item.external ? "_blank" : undefined}
+              rel={item.external ? "noreferrer" : undefined}
+              aria-current={active ? "page" : undefined}
+              class:list={[
+                "menu-item menu-rise group grid grid-cols-[1.9rem_1fr_1.25rem] items-center gap-3 border-b border-line/50 py-3.5",
+                active ? "text-ember" : "text-ink",
+              ]}
+              style={`--rise-delay:${90 + i * 45}ms`}
+            >
+              <span
+                class:list={[
+                  "font-mono text-[0.7rem] tabular-nums transition-colors",
+                  active ? "text-ember" : "text-ink-faint group-hover:text-ember",
+                ]}
+                aria-hidden="true"
+              >
+                {String(i + 1).padStart(2, "0")}
+              </span>
+
+              <span class="text-display text-3xl leading-none transition-colors group-hover:text-ember">
+                {item.label}
+              </span>
+
+              <span
+                class:list={[
+                  "menu-item__arrow justify-self-end text-sm transition-transform group-hover:text-ember",
+                  active ? "text-ember" : "text-ink-faint",
+                ]}
+                aria-hidden="true"
+              >
+                {item.external ? "↗" : active ? "•" : "→"}
+              </span>
+            </a>
+          );
+        })
+      }
+    </nav>
+
+    <div class="menu-rise mt-auto pt-6" style="--rise-delay:440ms">
+      <div class="flex flex-wrap items-center gap-2.5">
+        {/* Menü açıkken çubuktaki anahtar erişilemiyor; buradan onu tetikliyoruz. */}
+        <button
+          id="menu-theme"
+          type="button"
+          class="flex items-center gap-2 rounded-full border border-line/70 px-4 py-2 text-xs text-ink-soft transition-colors hover:border-ember hover:text-ember"
+        >
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="4.2"></circle>
+            <path
+              stroke-linecap="round"
+              d="M12 2.6v2.2M12 19.2v2.2M21.4 12h-2.2M4.8 12H2.6M18.6 5.4l-1.6 1.6M7 17l-1.6 1.6M18.6 18.6L17 17M7 7L5.4 5.4"
+            ></path>
+          </svg>
+          Temayı değiştir
+        </button>
+
+        <a
+          href="/rss.xml"
+          class="flex items-center gap-2 rounded-full border border-line/70 px-4 py-2 text-xs text-ink-soft transition-colors hover:border-ember hover:text-ember"
+        >
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path stroke-linecap="round" d="M5 18.5h.01M5 12a7 7 0 0 1 7 7M5 5.5a13 13 0 0 1 13 13"></path>
+          </svg>
+          RSS
+        </a>
+      </div>
+
+      <p class="mt-5 max-w-xs text-sm leading-relaxed text-ink-faint">{site.description}</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .nav-shell {
+    transition:
+      backdrop-filter 0.4s ease,
+      background-color 0.4s ease,
+      border-color 0.4s ease,
+      padding 0.4s var(--ease-out-expo);
+    border-bottom: 1px solid transparent;
+  }
+
+  :global(html[data-scrolled]) .nav-shell {
+    background: color-mix(in oklab, var(--c-surface) 72%, transparent);
+    backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom-color: color-mix(in oklab, var(--c-line) 70%, transparent);
+    padding-block: 0.6rem;
+  }
+
+  /* Dar ekranda gövde metni kenardan kenara akıyor ve %72'lik cam çubuğun
+     altından okunuyordu — logo ile altındaki satır iç içe geçiyordu.
+     Masaüstünde metin sütunu dar kaldığı için orada sorun yok, o yüzden
+     opaklığı yalnızca menü çubuğunun daraldığı yerde artırıyoruz. */
+  @media (max-width: 63.99rem) {
+    :global(html[data-scrolled]) .nav-shell {
+      background: color-mix(in oklab, var(--c-surface) 94%, transparent);
+    }
+  }
+
+  .nav-dot {
+    position: absolute;
+    left: 50%;
+    bottom: 0.1rem;
+    width: 3px;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--c-ember);
+    transform: translateX(-50%);
+  }
+
+  /* Menünün görünürlüğünü id seçicisiyle yönetiyoruz; utility sınıflarıyla
+     çakışıp sırasına bağlı kalmasın. */
+  #mobile-menu {
+    display: none;
+  }
+
+  #mobile-menu.is-open {
+    display: block;
+  }
+
+  /* Masaüstü menünün devreye girdiği eşikle aynı (lg). */
+  @media (min-width: 64rem) {
+    #mobile-menu,
+    #mobile-menu.is-open {
+      display: none;
+    }
+  }
+
+  /* Menü açılırken satırlar sırayla yükseliyor; arama ve alt şerit de
+     aynı ritme katılsın diye ortak sınıf. */
+  #mobile-menu.is-open .menu-rise {
+    animation: rise 0.7s var(--ease-out-expo) both;
+    animation-delay: var(--rise-delay);
+  }
+
+  .menu-item:hover .menu-item__arrow,
+  .menu-item:focus-visible .menu-item__arrow {
+    transform: translateX(3px);
+  }
+
+  /* Hero'daki ışıma menüye de taşınıyor: köşelerden ember ve veil. */
+  .menu-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        58% 42% at 12% 6%,
+        color-mix(in oklab, var(--c-ember) 20%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        55% 40% at 94% 82%,
+        color-mix(in oklab, var(--c-veil) 24%, transparent),
+        transparent 72%
+      );
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #mobile-menu.is-open .menu-rise {
+      animation: none;
+    }
+
+    .menu-item__arrow {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const setup = () => {
+    const openBtn = document.getElementById("menu-open");
+    const closeBtn = document.getElementById("menu-close");
+    const menu = document.getElementById("mobile-menu");
+    if (!openBtn || !closeBtn || !menu) return;
+
+    const setOpen = (open: boolean) => {
+      menu.classList.toggle("is-open", open);
+      openBtn.setAttribute("aria-expanded", String(open));
+      document.body.style.overflow = open ? "hidden" : "";
+    };
+
+    openBtn.addEventListener("click", () => setOpen(true));
+    closeBtn.addEventListener("click", () => setOpen(false));
+
+    // Tema anahtarı tek yerde duruyor; menüdeki düğme onu tetikliyor.
+    // Menü açık kalıyor: kullanıcı sonucu hemen burada görsün.
+    document.getElementById("menu-theme")?.addEventListener("click", () => {
+      document.getElementById("theme-toggle")?.click();
+    });
+
+    menu.addEventListener("click", (event) => {
+      // Arama düğmesi paleti açıyor; menü onun altında kalmasın.
+      if ((event.target as HTMLElement).closest("a, [data-palette-open]")) setOpen(false);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setOpen(false);
+    });
+  };
+
+  const trackScroll = () => {
+    const onScroll = () => {
+      if (window.scrollY > 24) document.documentElement.setAttribute("data-scrolled", "");
+      else document.documentElement.removeAttribute("data-scrolled");
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+  };
+
+  setup();
+  trackScroll();
+  document.addEventListener("astro:page-load", setup);
+</script>

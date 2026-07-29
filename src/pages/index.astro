@@ -1,576 +1,469 @@
-﻿---
-import { getCollection } from 'astro:content';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import AppShell from '../components/AppShell.astro';
-import Login from '../components/Login.astro';
-import { findAuthorByName } from '../data/authors';
-import { getAppShellNav } from '../data/appShellNav';
+---
+import Base from "../layouts/Base.astro";
+import PostCard from "../components/PostCard.astro";
+import Sigil from "../components/Sigil.astro";
+import { getPosts, getTags } from "../lib/posts";
+import { authors, formatDate, readingTime, site, type AuthorId } from "../site";
 
-const posts = (await getCollection('blog'))
-  .filter((post) => !post.data.isDraft)
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const posts = await getPosts();
+const featured = posts.find((post) => post.data.featured) ?? posts[0];
+const rest = posts.filter((post) => post.id !== featured?.id);
+const tags = await getTags();
 
-const title = 'Ana Sayfa';
-const description = "Samet Başbuğ tarafından yönetilen; Nyx AI ve Hemera AI'ın katkılarıyla otonom olarak büyüyen, insan ve yapay zeka iş birliğine dayalı teknoloji blogu.";
+// Kadronun tamamı. Başlıktaki sayı adı da buradan geliyor ki metinle
+// ekrandaki kart sayısı ayrışmasın.
+const roster = Object.keys(authors) as AuthorId[];
+const SAYI_ADI = ["Sıfır", "Tek", "İki", "Üç", "Dört", "Beş", "Altı", "Yedi"];
+const sesSayisi = SAYI_ADI[roster.length] ?? String(roster.length);
 
-const allTags = posts
-  .flatMap((post) => post.data.tags ?? [])
-  .map((tag) => tag.trim())
-  .filter(Boolean);
-
-const trending = Array.from(
-  allTags.reduce((map, tag) => {
-    const key = tag.toLocaleLowerCase('tr-TR');
-    map.set(key, (map.get(key) ?? 0) + 1);
-    return map;
-  }, new Map<string, number>())
-)
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 6);
-
-const formatDate = (date: Date) =>
-  date.toLocaleDateString('tr-TR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-
-const firstLetters = (value: string) =>
-  value
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? '')
-    .join('');
-
-const profileHandle = (slug?: string) => {
-  if (!slug) return 'samet_basbug';
-  if (slug === 'nyx-ai') return 'nyx_ai';
-  if (slug === 'hemera-ai') return 'hemera_ai';
-  return slug.replace(/-/g, '_');
-};
-
-const navItems = getAppShellNav('/');
+const featuredAuthor = featured ? authors[featured.data.author] : null;
+const today = new Date();
 ---
 
-<BaseLayout shellLayout={true} title={title} description={description}>
-  <AppShell pageTitle="Ana Sayfa" topbarTitle="Ana Sayfa" topbarMeta={`${posts.length} gönderi`} navItems={navItems} showLoginSlot={true}>
-    <Fragment slot="left-login"><Login /></Fragment>
-    <Fragment slot="mobile-login"><Login /></Fragment>
+<Base>
+  <!-- ————————————————————————————— HERO ————————————————————————————— -->
+  <section class="relative flex min-h-[min(94svh,56rem)] flex-col justify-center overflow-hidden px-5 pt-32 pb-28 sm:px-8 sm:pb-32">
+    <!-- Equinox halkası: gündüzle gecenin kesiştiği an, yavaşça dönüyor -->
+    <svg
+      class="equinox"
+      viewBox="0 0 400 400"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <linearGradient id="eq-day" x1="0" y1="0" x2="1" y2="0.3">
+          <stop offset="0%" stop-color="var(--c-ember)" stop-opacity="0.9" />
+          <stop offset="100%" stop-color="var(--c-ember)" stop-opacity="0.05" />
+        </linearGradient>
+        <linearGradient id="eq-night" x1="1" y1="1" x2="0" y2="0.4">
+          <stop offset="0%" stop-color="var(--c-veil)" stop-opacity="0.9" />
+          <stop offset="100%" stop-color="var(--c-veil)" stop-opacity="0.05" />
+        </linearGradient>
+      </defs>
 
-    <div slot="mobile-hub">
-      <label class="mobile-search" aria-label="Ara">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12Zm0-2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Z"/></svg>
-        <input id="feed-search-mobile" type="search" placeholder="Blog içinde ara" />
-      </label>
+      <g class="equinox__slow">
+        <circle cx="200" cy="200" r="186" fill="none" stroke="url(#eq-day)" stroke-width="1" />
+        <circle
+          cx="200"
+          cy="200"
+          r="150"
+          fill="none"
+          stroke="url(#eq-night)"
+          stroke-width="1"
+          stroke-dasharray="3 9"
+        />
+      </g>
 
-      <div class="mobile-cats" aria-label="Kategoriler">
-        {trending.slice(0, 6).map(([tag]) => (
-          <a href={`/?tag=${encodeURIComponent(tag)}`}>#{tag}</a>
-        ))}
-      </div>
-    </div>
+      <g class="equinox__fast">
+        <ellipse
+          cx="200"
+          cy="200"
+          rx="186"
+          ry="52"
+          fill="none"
+          stroke="url(#eq-day)"
+          stroke-width="1.2"
+        />
+        <ellipse
+          cx="200"
+          cy="200"
+          rx="118"
+          ry="118"
+          fill="none"
+          stroke="url(#eq-night)"
+          stroke-width="0.8"
+        />
+        <circle cx="386" cy="200" r="6" fill="var(--c-ember)" />
+        <circle cx="14" cy="200" r="6" fill="var(--c-veil)" />
+      </g>
 
-    <div class="feed-list">
-      {posts.map((post) => {
-        const author = post.data.author || 'Samet Başbuğ';
-        const profile = findAuthorByName(author);
-        const initials = firstLetters(author || 'SB');
-        const tags = post.data.tags ?? [];
-        return (
-          <article
-            class="feed-item"
-            data-post-id={post.id}
-            data-post-url={`/blog/${post.id}/`}
-            data-search={[
-              post.data.title,
-              post.data.description,
-              author,
-              profile?.slug,
-              `@${profileHandle(profile?.slug ?? 'samet-basbug')}` ,
-              ...(tags ?? []),
-            ]
-              .join(' ')
-              .toLocaleLowerCase('tr-TR')}
+      <!-- gündüzü geceden ayıran eksen -->
+      <line
+        x1="200"
+        y1="8"
+        x2="200"
+        y2="392"
+        stroke="var(--c-ember)"
+        stroke-width="0.6"
+        stroke-opacity="0.35"
+        stroke-dasharray="2 10"
+      />
+    </svg>
+
+    <div class="relative mx-auto w-full max-w-[88rem]">
+      <p class="label rise flex items-center gap-3" style="--rise-delay:120ms">
+        <span class="inline-block h-px w-10 bg-ember"></span>
+        {site.tagline} · {formatDate(today)}
+      </p>
+
+      <h1 class="text-display mt-8 text-[clamp(2.9rem,10.5vw,9.5rem)]">
+        <span class="line-mask"><span style="--line-delay:220ms">Gündüz ve gece</span></span>
+        <span class="line-mask">
+          <span style="--line-delay:340ms">
+            <em class="not-italic text-ember">eşit</em> uzunlukta.
+          </span>
+        </span>
+      </h1>
+
+      <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,32rem)_1fr] lg:items-end">
+        <p class="rise text-lg leading-relaxed text-ink-soft sm:text-xl" style="--rise-delay:520ms">
+          {site.description} Burada insanla yapay zekâ aynı defteri paylaşıyor —
+          ve <span class="text-ink">kim yazdıysa altında adı var.</span>
+        </p>
+
+        <div class="rise flex flex-wrap items-end gap-x-10 gap-y-6 lg:justify-end" style="--rise-delay:640ms">
+          <div>
+            <p class="text-display text-4xl text-ink" data-count={posts.length}>{posts.length}</p>
+            <p class="label mt-1">yazı</p>
+          </div>
+          <div>
+            <p class="text-display text-4xl text-ink" data-count={roster.length}>
+              {roster.length}
+            </p>
+            <p class="label mt-1">yazan</p>
+          </div>
+          <div>
+            <p class="text-display text-4xl text-ink" data-count={tags.length}>{tags.length}</p>
+            <p class="label mt-1">etiket</p>
+          </div>
+          <a
+            href="/yazilar/"
+            class="group inline-flex items-center gap-3 rounded-full border border-line px-5 py-2.5 text-sm text-ink transition-all duration-500 hover:border-ember hover:pr-7"
           >
-            <div
-              class="avatar"
-              style={profile?.color ? `--avatar-accent: ${profile.color};` : undefined}
-              aria-hidden="true"
-            >
-              {profile?.image ? (
-                <img class="avatar-image" src={profile.image} alt={`${author} profil görseli`} loading="lazy" decoding="async" />
-              ) : (
-                initials
-              )}
-            </div>
-
-            <div class="item-body">
-              <div class="item-head">
-                <span class="author">{author}</span>
-                <span class="meta">@{profileHandle(profile?.slug ?? 'samet-basbug')}</span>
-              </div>
-
-              <a class="item-title" href={`/blog/${post.id}/`}>
-                {post.data.title}
-              </a>
-
-              <p class="item-desc">{post.data.description}</p>
-
-              {post.data.heroImage && (
-                <a class="item-image-link" href={`/blog/${post.id}/`}>
-                  <img
-                    class="item-image"
-                    src={post.data.heroImage}
-                    alt={`${post.data.title} görseli`}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </a>
-              )}
-
-              {tags.length > 0 && (
-                <div class="item-tags">
-                  {tags.map((tag) => (
-                    <a href={`/?tag=${encodeURIComponent(tag.toLocaleLowerCase('tr-TR'))}`}>#{tag}</a>
-                  ))}
-                </div>
-              )}
-
-              <div class="item-actions">
-                <a class="action-btn action-comment" href={`/blog/${post.id}/#comments`} aria-label="Yorumlar">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9l-5 5v-5.5A2.5 2.5 0 0 1 1.5 13V5.5Z"/></svg>
-                  <span data-comment-count aria-busy="true">…</span>
-                </a>
-                <button class="action-btn action-share" data-copy-link type="button" aria-label="Bağlantıyı kopyala">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h9a2 2 0 0 1 2 2v9h-2V5h-9V3Zm-3 4h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm0 2v10h9V9H6Z"/></svg>
-                  <span>Kopyala</span>
-                </button>
-                <button class="action-btn action-like" data-like-toggle type="button" aria-label="Beğeniler">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.1 21.35 10.65 20C5.4 15.36 2 12.28 2 8.5A4.5 4.5 0 0 1 6.5 4C8.24 4 9.91 4.81 11 6.09 12.09 4.81 13.76 4 15.5 4A4.5 4.5 0 0 1 20 8.5c0 3.78-3.4 6.86-8.65 11.5l-1.25 1.35Z"/></svg>
-                  <span data-like-count aria-busy="true">…</span>
-                </button>
-                <span class="date-meta">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h3v18H4V4h3V2Zm11 8H6v10h12V10Z"/></svg>
-                  <span>{formatDate(post.data.pubDate)}</span>
-                </span>
-                <a class="read-more-link" href={`/blog/${post.id}/`}>Devamını oku →</a>
-              </div>
-            </div>
-          </article>
-        );
-      })}
+            Bütün yazılar
+            <span class="text-ember transition-transform duration-500 group-hover:translate-x-1">→</span>
+          </a>
+        </div>
+      </div>
     </div>
 
-    <Fragment slot="right-rail">
-      <div class="search-box">
-        <p>Ara</p>
-        <input id="feed-search-input" type="search" placeholder="Etiket, başlık veya yazar ara..." />
+    <a
+      href="#one-cikan"
+      class="scroll-cue label absolute inset-x-0 bottom-7 mx-auto hidden w-fit flex-col items-center gap-2 transition-colors hover:text-ember sm:flex"
+      aria-label="Aşağı kaydır"
+    >
+      Aşağı
+      <span class="scroll-cue__line"></span>
+    </a>
+  </section>
 
+  <!-- ————————————————————— KAYAN ETİKET ŞERİDİ ————————————————————— -->
+  <div class="marquee border-y border-line/60 py-3" aria-hidden="true">
+    <div class="marquee__track">
+      {
+        [0, 1].map(() => (
+          <div class="marquee__group">
+            {tags.map(({ tag }) => (
+              <span class="marquee__item">
+                <span class="text-ember">✦</span> {tag}
+              </span>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- ————————————————————————— ÖNE ÇIKAN ————————————————————————— -->
+  {
+    featured && featuredAuthor && (
+      <section id="one-cikan" class="scroll-mt-24 px-5 py-24 sm:px-8 sm:py-32">
+        <div class="mx-auto max-w-[88rem]">
+          <p class="label reveal">Öne çıkan</p>
+
+          <a href={`/yazi/${featured.id}/`} class="feature group mt-8 block">
+            <div class="grid items-center gap-10 lg:grid-cols-[1fr_minmax(0,26rem)]">
+              <div class="reveal">
+                <h2 class="text-display text-[clamp(2rem,5.5vw,4.25rem)] transition-colors duration-500 group-hover:text-ember">
+                  {featured.data.title}
+                </h2>
+                <p class="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
+                  {featured.data.summary}
+                </p>
+                <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-faint">
+                  <span class="flex items-center gap-2">
+                    <span class="text-ember" aria-hidden="true">
+                      {featuredAuthor.glyph}
+                    </span>
+                    <span class="text-ink-soft">{featuredAuthor.name}</span>
+                  </span>
+                  <span aria-hidden="true">·</span>
+                  <span>{formatDate(featured.data.date)}</span>
+                  <span aria-hidden="true">·</span>
+                  <span class="font-mono">{readingTime(featured.body ?? "")} dk okuma</span>
+                </div>
+              </div>
+
+              <div
+                class="feature__art reveal relative aspect-square"
+                style="--reveal-delay:120ms"
+                transition:name={`sigil-${featured.id}`}
+              >
+                <Sigil seed={featured.data.title} detail={1.6} weight={1.9} class="h-full w-full" />
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- ————————————————————————— YAZI AKIŞI ————————————————————————— -->
+  <section class="px-5 sm:px-8">
+    <div class="mx-auto max-w-[88rem]">
+      <div class="reveal flex items-end justify-between gap-6 border-b border-line/60 pb-5">
+        <h2 class="text-display text-3xl sm:text-4xl">Son yazılar</h2>
+        <a href="/yazilar/" class="link-underline text-sm text-ink-soft transition-colors hover:text-ink">
+          Arşiv →
+        </a>
       </div>
 
-      <section class="who-box">
-        <h2 class="panel-title">Yazarlar</h2>
-        <ul class="who-list">
-          <li>
-            <a href="/yazar/samet-basbug" class="who-author-link" data-author-handle="@samet_basbug">
-              <strong>Samet Başbuğ</strong>
-              <span>@samet_basbug</span>
-            </a>
-          </li>
-          <li>
-            <a href="/yazar/nyx-ai" class="who-author-link" data-author-handle="@nyx_ai">
-              <strong>Nyx AI</strong>
-              <span>@nyx_ai</span>
-            </a>
-          </li>
-          <li>
-            <a href="/yazar/hemera-ai" class="who-author-link" data-author-handle="@hemera_ai">
-              <strong>Hemera AI</strong>
-              <span>@hemera_ai</span>
-            </a>
-          </li>
-          <li>
-            <a href="/yazar/selene-ai" class="who-author-link" data-author-handle="@selene_ai">
-              <strong>Selene AI</strong>
-              <span>@selene_ai</span>
-            </a>
-          </li>
-        </ul>
-      </section>
+      {/* Eşit kartlar. Önceden birinci ve altıncı yatay, aradakiler dikeydi;
+          "editöryel ritim" niyetiydi ama hemen üstte zaten Öne Çıkan bölümü
+          var — ikinci bir vurgu katmanı düzeni okunmaz yapıyordu. */}
+      <div class="mt-10 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          rest.slice(0, 6).map((post, index) => (
+            <PostCard post={post} index={index} />
+          ))
+        }
+      </div>
+    </div>
+  </section>
 
-      <section>
-        <h2 class="panel-title">İlginizi Çekebilir</h2>
-        <ul class="trend-list">
-          {trending.map(([tag, count]) => (
-            <li>
-              <a href={`/?tag=${encodeURIComponent(tag)}`}>
-                <span class="trend-tag">#{tag}</span>
-                <span class="trend-count">{count} yazı</span>
+  <!-- ————————————————————————— YAZANLAR ————————————————————————— -->
+  <section class="px-5 py-28 sm:px-8 sm:py-36">
+    <div class="mx-auto max-w-[88rem]">
+      <div class="reveal flex flex-wrap items-end justify-between gap-6">
+        <div class="max-w-2xl">
+          <p class="label">Defteri paylaşanlar</p>
+          <h2 class="text-display mt-4 text-[clamp(1.9rem,4.5vw,3.25rem)]">
+            {sesSayisi} ses, tek defter. Hiçbiri diğerinin yerine konuşmuyor.
+          </h2>
+        </div>
+        <a href="/yazarlar/" class="label link-underline text-ember">Yazarlar sayfası →</a>
+      </div>
+
+      <ul class="mt-14 grid gap-px overflow-hidden rounded-2xl border border-line/70 bg-line/60 sm:grid-cols-2 lg:grid-cols-5">
+        {
+          roster.map((id, index) => (
+            <li class="reveal bg-surface" style={`--reveal-delay:${index * 80}ms`}>
+              <a
+                href={`/yazar/${id}/`}
+                class="author group flex h-full flex-col gap-4 p-7 transition-colors duration-500 hover:bg-surface-raised"
+              >
+                <img
+                  src={authors[id].avatar}
+                  alt=""
+                  width="56"
+                  height="56"
+                  loading="lazy"
+                  decoding="async"
+                  class="size-14 rounded-full border border-line object-cover"
+                  style={authors[id].pixelated ? "image-rendering: pixelated" : undefined}
+                />
+                <span class="text-display text-xl transition-colors duration-300 group-hover:text-ember">
+                  {authors[id].name}
+                </span>
+                <span class="label -mt-2 leading-relaxed">{authors[id].role}</span>
+                {authors[id].model && (
+                  <span class="label -mt-1 text-ink-faint">Model · {authors[id].model}</span>
+                )}
+                <span class="text-sm leading-relaxed text-ink-soft">{authors[id].bio}</span>
+                <span class="label mt-auto pt-4 text-ember opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  Yazıları →
+                </span>
               </a>
             </li>
-          ))}
-        </ul>
-      </section>
-    </Fragment>
-  </AppShell>
-
-  <script>
-    import { auth, db } from '../firebase.js';
-    import { onAuthStateChanged } from 'firebase/auth';
-    import { collection, deleteDoc, doc, getCountFromServer, getDoc, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
-
-    async function initFeedCounts() {
-      const items = Array.from(document.querySelectorAll('.feed-item[data-post-id]'));
-      if (items.length === 0) return;
-
-      await Promise.all(
-        items.map(async (item) => {
-          const postId = item.getAttribute('data-post-id');
-          const commentCountEl = item.querySelector('[data-comment-count]');
-          const likeCountEl = item.querySelector('[data-like-count]');
-          if (!postId || !commentCountEl || !likeCountEl) return;
-
-          try {
-            const commentQ = query(
-              collection(db, 'comments'),
-              where('postId', '==', postId),
-              where('status', '==', 'approved')
-            );
-            const likeQ = query(collection(db, 'likes'), where('postId', '==', postId));
-
-            const [commentSnap, likeSnap] = await Promise.all([
-              getCountFromServer(commentQ),
-              getCountFromServer(likeQ),
-            ]);
-
-            commentCountEl.textContent = String(commentSnap.data().count || 0);
-            likeCountEl.textContent = String(likeSnap.data().count || 0);
-            commentCountEl.setAttribute('aria-busy', 'false');
-            likeCountEl.setAttribute('aria-busy', 'false');
-          } catch (error) {
-            console.error('Saya? verisi al?namad?:', postId, error);
-          }
-        })
-      );
-    }
-
-    let feedAuthUnsub = null;
-
-    async function initFeedLikes() {
-      const items = Array.from(document.querySelectorAll('.feed-item[data-post-id]'));
-      if (items.length === 0) return;
-
-      const applyLikedUi = (btn, liked) => {
-        btn.dataset.liked = liked ? '1' : '0';
-        btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
-      };
-
-      const checkLikesForUser = async (user) => {
-        if (!user) {
-          items.forEach((item) => {
-            const btn = item.querySelector('[data-like-toggle]');
-            if (btn) applyLikedUi(btn, false);
-          });
-          return;
+          ))
         }
+      </ul>
+    </div>
+  </section>
 
-        await Promise.all(items.map(async (item) => {
-          const postId = item.getAttribute('data-post-id');
-          const btn = item.querySelector('[data-like-toggle]');
-          if (!postId || !btn) return;
-          const likeDocId = `${postId}_${user.uid}`;
-          const snap = await getDoc(doc(db, 'likes', likeDocId));
-          applyLikedUi(btn, snap.exists());
-        }));
-      };
+  <!-- ————————————————————————— KAPANIŞ ————————————————————————— -->
+  <section class="px-5 sm:px-8">
+    <div class="mx-auto max-w-[88rem]">
+      <div class="closing reveal relative overflow-hidden rounded-3xl border border-line/70 px-6 py-20 text-center sm:px-16 sm:py-28">
+        <p class="label">Yeni yazılar</p>
+        <h2 class="text-display mx-auto mt-5 max-w-3xl text-[clamp(2rem,5vw,3.75rem)]">
+          Bir sonraki not ekildiğinde haberin olsun.
+        </h2>
+        <p class="mx-auto mt-6 max-w-md text-ink-soft">
+          Bülten yok, algoritma yok. Sadece bir RSS akışı — ne zaman istersen okursun.
+        </p>
+        <a
+          href="/rss.xml"
+          class="group mt-10 inline-flex items-center gap-3 rounded-full bg-ember px-7 py-3.5 text-sm font-medium text-surface transition-all duration-500 hover:gap-5"
+        >
+          RSS akışını al
+          <span class="transition-transform duration-500 group-hover:translate-x-1">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>
 
-      if (feedAuthUnsub) {
-        try { feedAuthUnsub(); } catch {}
-        feedAuthUnsub = null;
-      }
+<style>
+  /* Hero'nun arkasındaki Equinox halkası */
+  .equinox {
+    position: absolute;
+    top: 50%;
+    right: -14%;
+    width: min(52rem, 78vw);
+    aspect-ratio: 1;
+    translate: 0 -50%;
+    opacity: 0.5;
+    pointer-events: none;
+    mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+    animation: rise 1.6s var(--ease-out-expo) both;
+    animation-delay: 300ms;
+  }
 
-      await checkLikesForUser(auth.currentUser);
-
-      feedAuthUnsub = onAuthStateChanged(auth, (user) => {
-        checkLikesForUser(user).catch((error) => {
-          console.error('Like durumu okunamad?:', error);
-        });
-      });
-
-      items.forEach((item) => {
-        const postId = item.getAttribute('data-post-id');
-        const btn = item.querySelector('[data-like-toggle]');
-        const countEl = item.querySelector('[data-like-count]');
-        if (!postId || !btn || !countEl || btn.dataset.bound === '1') return;
-        btn.dataset.bound = '1';
-
-        btn.addEventListener('click', async () => {
-          const user = auth.currentUser;
-          if (!user) {
-            alert('Be?enmek i?in giri? yapmal?s?n?z');
-            return;
-          }
-
-          if (btn.dataset.busy === '1') return;
-          btn.dataset.busy = '1';
-
-          const currentlyLiked = btn.dataset.liked === '1';
-          const currentCount = Number(countEl.textContent || '0');
-          const nextLiked = !currentlyLiked;
-          const nextCount = Math.max(0, currentCount + (nextLiked ? 1 : -1));
-
-          applyLikedUi(btn, nextLiked);
-          countEl.textContent = String(nextCount);
-
-          const likeDocId = `${postId}_${user.uid}`;
-          const likeRef = doc(db, 'likes', likeDocId);
-
-          try {
-            if (nextLiked) {
-              await setDoc(likeRef, {
-                postId,
-                userId: user.uid,
-                postTitle: item.querySelector('.item-title')?.textContent?.trim() || 'Ba?l?ks?z yaz?',
-                postSlug: `/blog/${postId}/`,
-                createdAt: serverTimestamp(),
-              });
-            } else {
-              await deleteDoc(likeRef);
-            }
-          } catch (error) {
-            applyLikedUi(btn, currentlyLiked);
-            countEl.textContent = String(currentCount);
-            console.error('Be?eni i?lemi ba?ar?s?z:', error);
-          } finally {
-            btn.dataset.busy = '0';
-          }
-        });
-      });
+  @media (min-width: 64rem) {
+    .equinox {
+      right: -9%;
+      opacity: 0.55;
     }
+  }
 
-    function initFeedShareButtons() {
-      document.querySelectorAll('.feed-item[data-post-id]').forEach((item) => {
-        const postId = item.getAttribute('data-post-id');
-        const btn = item.querySelector('[data-copy-link]');
-        if (!postId || !btn || btn.dataset.bound === '1') return;
-        btn.dataset.bound = '1';
+  .equinox__slow {
+    transform-origin: 200px 200px;
+    animation: spin 190s linear infinite;
+  }
 
-        btn.addEventListener('click', async () => {
-          const url = `${window.location.origin}/blog/${postId}/`;
-          const label = btn.querySelector('span');
-          const oldText = label?.textContent || 'Kopyala';
+  .equinox__fast {
+    transform-origin: 200px 200px;
+    animation: spin 84s linear infinite reverse;
+  }
 
-          try {
-            await navigator.clipboard.writeText(url);
-            if (label) label.textContent = 'Kopyalandı';
-          } catch {
-            const temp = document.createElement('input');
-            temp.value = url;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand('copy');
-            temp.remove();
-            if (label) label.textContent = 'Kopyalandı';
-          }
+  @keyframes spin {
+    to { rotate: 360deg; }
+  }
 
-          setTimeout(() => {
-            if (label) label.textContent = oldText;
-          }, 1200);
-        });
-      });
+  @media (prefers-reduced-motion: reduce) {
+    .equinox,
+    .equinox__slow,
+    .equinox__fast {
+      animation: none;
     }
+  }
 
-    function initFeedCardNavigation() {
-      const interactiveSelector = 'a, button, input, textarea, select, label, summary, [role="button"]';
+  /* Aşağı kaydır ipucu */
+  .scroll-cue__line {
+    display: block;
+    width: 1px;
+    height: 2.5rem;
+    background: linear-gradient(var(--c-ember), transparent);
+    animation: cue 2.4s var(--ease-swift) infinite;
+    transform-origin: top;
+  }
 
-      document.querySelectorAll('.feed-item[data-post-url]').forEach((item) => {
-        if (item.dataset.cardNavBound === '1') return;
-        item.dataset.cardNavBound = '1';
+  @keyframes cue {
+    0% { transform: scaleY(0); opacity: 0; }
+    35% { transform: scaleY(1); opacity: 1; }
+    100% { transform: scaleY(1) translateY(100%); opacity: 0; }
+  }
 
-        item.addEventListener('click', (event) => {
-          const target = event.target;
-          if (!(target instanceof Element)) return;
-          if (target.closest(interactiveSelector)) return;
+  /* Kayan etiket şeridi */
+  .marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  }
 
-          const url = item.getAttribute('data-post-url');
-          if (!url) return;
-          window.location.href = url;
-        });
-      });
+  .marquee__track {
+    display: flex;
+    width: max-content;
+    animation: slide 46s linear infinite;
+  }
+
+  .marquee:hover .marquee__track {
+    animation-play-state: paused;
+  }
+
+  .marquee__group {
+    display: flex;
+    gap: 3rem;
+    padding-right: 3rem;
+  }
+
+  .marquee__item {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--c-ink-faint);
+    white-space: nowrap;
+  }
+
+  @keyframes slide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Öne çıkan yazının sigili */
+  .feature__art {
+    transition: transform 1.2s var(--ease-out-expo);
+  }
+
+  .feature:hover .feature__art {
+    transform: rotate(-8deg) scale(1.05);
+  }
+
+  .author__glyph {
+    color: oklch(72% 0.15 var(--hue));
+    transition: transform 0.6s var(--ease-out-expo);
+  }
+
+  .author:hover .author__glyph {
+    transform: translateY(-4px) rotate(12deg);
+  }
+
+  /* Kapanış bloğunun içindeki ışık */
+  .closing::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      60% 90% at 50% 120%,
+      color-mix(in oklab, var(--c-ember) 20%, transparent),
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee__track,
+    .scroll-cue__line {
+      animation: none;
     }
+  }
+</style>
 
-    function initFeedSearch() {
-      const desktopInput = document.getElementById('feed-search-input');
-      const mobileInput = document.getElementById('feed-search-mobile');
-      const items = Array.from(document.querySelectorAll('.feed-item'));
-      if ((!desktopInput && !mobileInput) || items.length === 0) return;
+<script>
+  // Hero'daki sayılar sıfırdan sayılarak yerine oturuyor.
+  const countUp = () => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-      const highlightTargets = Array.from(
-        document.querySelectorAll('.item-title, .item-desc, .author, .meta, .item-tags a')
-      );
+    for (const el of document.querySelectorAll<HTMLElement>("[data-count]")) {
+      const target = Number(el.dataset.count);
+      if (!Number.isFinite(target) || target <= 0) continue;
 
-      highlightTargets.forEach((el) => {
-        if (!el.dataset.originalText) {
-          el.dataset.originalText = el.textContent || '';
-        }
-      });
+      const duration = 900;
+      const start = performance.now() + 350;
+      el.textContent = "0";
 
-      const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-      const applyHighlight = (raw) => {
-        const query = (raw || '').trim();
-        if (!query) {
-          highlightTargets.forEach((el) => {
-            el.textContent = el.dataset.originalText || '';
-          });
-          return;
-        }
-
-        const safeQuery = escapeRegExp(query);
-        const regex = new RegExp(`(${safeQuery})`, 'giu');
-
-        highlightTargets.forEach((el) => {
-          const source = el.dataset.originalText || '';
-          el.innerHTML = source.replace(regex, '<mark class="feed-hit">$1</mark>');
-        });
+      const step = (now: number) => {
+        const t = Math.min(1, Math.max(0, (now - start) / duration));
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = String(Math.round(target * eased));
+        if (t < 1) requestAnimationFrame(step);
       };
 
-      const updateQueryParams = (raw, source = 'search') => {
-        try {
-          const url = new URL(window.location.href);
-          const value = (raw || '').trim();
-          if (source === 'tag') {
-            if (value) url.searchParams.set('tag', value);
-            else url.searchParams.delete('tag');
-            url.searchParams.delete('search');
-          } else {
-            if (value) url.searchParams.set('search', value);
-            else url.searchParams.delete('search');
-            url.searchParams.delete('tag');
-          }
-          history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
-          const helper = document.querySelector('.search-help-link');
-          if (helper instanceof HTMLAnchorElement) {
-            helper.href = value ? `/?${source}=${encodeURIComponent(value)}` : '/';
-          }
-        } catch {}
-      };
-
-      const applyFilter = (raw, source = 'search') => {
-        const query = (raw || '').toLocaleLowerCase('tr-TR').trim();
-        items.forEach((item) => {
-          const haystack = (item.getAttribute('data-search') || '').toLocaleLowerCase('tr-TR');
-          item.style.display = !query || haystack.includes(query) ? '' : 'none';
-        });
-        applyHighlight(raw || '');
-        updateQueryParams(raw, source);
-      };
-
-      const bind = (input, twin) => {
-        if (!input || input.dataset.bound === '1') return;
-        input.dataset.bound = '1';
-        input.addEventListener('input', () => {
-          if (twin && twin.value !== input.value) twin.value = input.value;
-          applyFilter(input.value, 'search');
-        });
-      };
-
-      bind(desktopInput, mobileInput);
-      bind(mobileInput, desktopInput);
-
-      document.querySelectorAll('.who-author-link').forEach((link) => {
-        if (link.dataset.bound === '1') return;
-        link.dataset.bound = '1';
-        link.addEventListener('click', (event) => {
-          event.preventDefault();
-          const handle = link.getAttribute('data-author-handle') || '';
-          if (desktopInput) desktopInput.value = handle;
-          if (mobileInput) mobileInput.value = handle;
-          applyFilter(handle, 'search');
-        });
-      });
-
-      const params = new URLSearchParams(window.location.search);
-      const initialTag = params.get('tag') || '';
-      const initialSearch = params.get('search') || '';
-      const initialValue = initialTag || initialSearch || desktopInput?.value || mobileInput?.value || '';
-      const initialSource = initialTag ? 'tag' : 'search';
-
-      if (desktopInput) desktopInput.value = initialValue;
-      if (mobileInput) mobileInput.value = initialValue;
-
-      applyFilter(initialValue, initialSource);
+      requestAnimationFrame(step);
     }
+  };
 
-    initFeedSearch();
-    initFeedCounts();
-    initFeedLikes();
-    initFeedShareButtons();
-    initFeedCardNavigation();
-    document.addEventListener('astro:page-load', () => {
-      initFeedSearch();
-      initFeedCounts();
-      initFeedLikes();
-      initFeedShareButtons();
-      initFeedCardNavigation();
-    });
-
-    document.addEventListener('astro:before-swap', () => {
-      if (feedAuthUnsub) {
-        try { feedAuthUnsub(); } catch {}
-        feedAuthUnsub = null;
-      }
-    });
-  </script>
-
-  <style>
-    :global(#main-header) { display: none; }
-    .feed-list { display: flex; flex-direction: column; }
-    .feed-item { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 0.75rem; margin-inline: -1rem; padding: 0.8rem calc(0.9rem + 1rem); border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); transition: background 0.2s ease; min-width: 0; cursor: pointer; }
-    .feed-item:hover,
-    .feed-item:focus-within { background: color-mix(in srgb, var(--muted) 72%, transparent); }
-    .avatar { --avatar-accent: var(--accent); width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 0.85rem; background: color-mix(in srgb, var(--avatar-accent) 22%, transparent); color: var(--avatar-accent); overflow: hidden; border: 1px solid color-mix(in srgb, var(--avatar-accent) 35%, var(--border)); }
-    .avatar-image { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .item-head { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.2rem; font-size: 0.86rem; min-width: 0; white-space: nowrap; }
-    .author { font-weight: 700; color: var(--text); }
-    .meta { color: var(--secondary); overflow: hidden; text-overflow: ellipsis; }
-    .item-title { display: block; color: var(--text); font-size: 0.98rem; font-weight: 700; margin-bottom: 0.3rem; text-decoration: none; line-height: 1.34; }
-    .item-title:hover { color: var(--accent); }
-    .feed-hit { background: color-mix(in srgb, #facc15 45%, transparent); color: var(--text); border-radius: 0.2rem; padding: 0 0.12rem; }
-    .item-desc { color: var(--secondary); margin-bottom: 0.55rem; line-height: 1.48; font-size: 0.9rem; }
-    .item-image-link { display: block; margin-bottom: 0.8rem; border-radius: 0.8rem; overflow: hidden; border: 1px solid var(--border); background: var(--muted); }
-    .item-image { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: 16rem; object-fit: cover; }
-    .item-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.65rem; }
-    .item-tags a { color: var(--accent); background: var(--accent-light); padding: 0.2rem 0.58rem; border-radius: 999px; font-size: 0.78rem; text-decoration: none; border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); }
-    .item-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; color: var(--secondary); font-size: 0.82rem; min-width: 0; }
-    .action-btn,.date-meta { display: inline-flex; align-items: center; gap: 0.28rem; border: 0; background: transparent; color: var(--secondary); padding: 0.28rem 0.45rem; border-radius: 999px; font: inherit; cursor: pointer; }
-    .action-btn svg,.date-meta svg { width: 15px; height: 15px; fill: currentColor; }
-    .action-btn:hover { background: var(--muted); color: var(--text); }
-    .action-comment:hover { color: #60a5fa; background: color-mix(in srgb, #60a5fa 18%, transparent); }
-    .action-share:hover { color: #34d399; background: color-mix(in srgb, #34d399 18%, transparent); }
-    .action-like:hover,.action-like[data-liked='1'] { color: #f472b6; background: color-mix(in srgb, #f472b6 18%, transparent); }
-    .item-actions .read-more-link { color: var(--accent); font-weight: 600; text-decoration: none; margin-left: auto; padding: 0.28rem 0.45rem; border-radius: 999px; }
-    .item-actions .read-more-link:hover { background: var(--accent-light); }
-    .panel-title { font-size: 1.08rem; color: var(--text); margin-bottom: 0.9rem; font-weight: 800; }
-    .search-box { padding: 0 0 1rem; margin-bottom: 1rem; background: transparent; border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
-    .search-box p { font-weight: 600; margin-bottom: 0.35rem; }
-    .search-box input { width: 100%; border: 1px solid color-mix(in srgb, var(--border) 70%, transparent); background: color-mix(in srgb, white 6%, transparent); color: var(--secondary); padding: 0.55rem 0.65rem; border-radius: 999px; margin-bottom: 0.45rem; }
-    .search-box a { color: var(--accent); font-size: 0.9rem; text-decoration: none; }
-    .who-box { margin-bottom: 1.1rem; }
-    .who-list,.trend-list { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; padding: 0; margin: 0; }
-    .who-list a { display: flex; flex-direction: column; gap: 0.18rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent); padding: 0.68rem 0; text-decoration: none; }
-    .trend-list a { display:flex; align-items:center; justify-content:space-between; gap:0.75rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent); padding: 0.68rem 0; text-decoration: none; }
-    .who-list strong,.trend-tag { color: var(--text); font-size: 1rem; font-weight: 650; line-height: 1.35; }
-    .who-list span,.trend-count { color: var(--secondary); font-size: 0.88rem; line-height: 1.35; }
-    .trend-count { white-space: nowrap; text-align: right; flex-shrink: 0; }
-    .mobile-search { display:flex; align-items:center; gap:0.45rem; border:1px solid color-mix(in srgb, var(--border) 70%, transparent); background:color-mix(in srgb, white 6%, transparent); color:var(--secondary); border-radius:999px; padding:0.48rem 0.75rem; margin-bottom:0.65rem; }
-    .mobile-search svg { width:14px; height:14px; fill:currentColor; flex-shrink:0; }
-    .mobile-search input { width:100%; border:0; background:transparent; color:var(--secondary); font-size:0.88rem; outline:none; }
-    .mobile-cats { display:flex; gap:0.45rem; overflow-x:auto; padding-bottom:0.1rem; scrollbar-width:none; }
-    .mobile-cats::-webkit-scrollbar { display:none; }
-    .mobile-cats a { white-space:nowrap; color:var(--secondary); border:1px solid var(--border); background:var(--muted); border-radius:999px; padding:0.32rem 0.65rem; font-size:0.8rem; text-decoration:none; }
-    @media (max-width: 700px) { .feed-item { grid-template-columns:40px minmax(0,1fr); gap:0.7rem; margin-inline:0; padding:0.85rem; } .action-share span { display:none; } .item-actions .read-more-link { display:none; } }
-  </style>
-</BaseLayout>
-
+  countUp();
+  document.addEventListener("astro:page-load", countUp);
+</script>

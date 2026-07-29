@@ -1,0 +1,314 @@
+---
+/**
+ * Sayfanın arkasındaki atmosfer. İki hâli var ve ikisi de dolu:
+ * gecede yıldızlar ve derin gradyanlar, gündüzde havada süzülen toz
+ * zerreleri ve üstten düşen ışık huzmeleri.
+ */
+interface Props {
+  particles?: boolean;
+}
+const { particles = true } = Astro.props;
+---
+
+<div class="sky" aria-hidden="true">
+  <div class="sky__wash"></div>
+  <div class="sky__orb sky__orb--a"></div>
+  <div class="sky__orb sky__orb--b"></div>
+  <div class="sky__rays"></div>
+  {particles && <canvas class="sky__particles" id="sky-particles"></canvas>}
+  <div class="sky__pointer"></div>
+  <div class="sky__grain"></div>
+</div>
+
+<style>
+  .sky {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--c-surface);
+  }
+
+  .sky__wash {
+    position: absolute;
+    inset: -20%;
+    background:
+      radial-gradient(60% 50% at 18% 8%, var(--sky-1) 0%, transparent 60%),
+      radial-gradient(70% 60% at 85% 22%, var(--sky-3) 0%, transparent 62%),
+      radial-gradient(90% 70% at 50% 100%, var(--sky-2) 0%, transparent 70%);
+    opacity: 0.9;
+    transition: opacity 0.6s ease;
+  }
+
+  .sky__orb {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(90px);
+    opacity: calc(var(--glow) * 0.55);
+    will-change: transform;
+  }
+
+  .sky__orb--a {
+    width: 46vmax;
+    height: 46vmax;
+    top: -14vmax;
+    left: -10vmax;
+    background: radial-gradient(circle, var(--c-ember) 0%, transparent 68%);
+    animation: drift 26s var(--ease-swift) infinite alternate;
+  }
+
+  .sky__orb--b {
+    width: 38vmax;
+    height: 38vmax;
+    top: 24vh;
+    right: -12vmax;
+    background: radial-gradient(circle, var(--c-veil) 0%, transparent 66%);
+    animation: drift 34s var(--ease-swift) infinite alternate-reverse;
+  }
+
+  /* Gündüz: üstten düşen ışık huzmeleri. Gecede kapalı. */
+  .sky__rays {
+    position: absolute;
+    top: -30%;
+    left: -20%;
+    right: -20%;
+    height: 120%;
+    opacity: 0;
+    transform: rotate(14deg);
+    transform-origin: top center;
+    transition: opacity 1s ease;
+    background: repeating-linear-gradient(
+      101deg,
+      transparent 0 3.5rem,
+      color-mix(in oklab, var(--c-ember) 12%, transparent) 3.5rem 4.4rem,
+      transparent 4.4rem 9rem,
+      color-mix(in oklab, var(--c-ember) 7%, transparent) 9rem 10.2rem
+    );
+    mask-image: radial-gradient(80% 60% at 30% 0%, #000 0%, transparent 72%);
+    animation: rays-breathe 18s ease-in-out infinite alternate;
+  }
+
+  :root[data-theme="light"] .sky__rays {
+    opacity: 0.85;
+  }
+
+  @keyframes rays-breathe {
+    from { transform: rotate(14deg) translateX(0); }
+    to { transform: rotate(11deg) translateX(2.5rem); }
+  }
+
+  .sky__particles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: calc(var(--glow) * 1.1);
+    transition: opacity 0.7s ease;
+  }
+
+  :root[data-theme="light"] .sky__particles {
+    opacity: 0.75;
+  }
+
+  /* İmleci takip eden sıcak ışık — yalnızca fare olan cihazlarda */
+  .sky__pointer {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    background: radial-gradient(
+      26rem 26rem at var(--px, 50%) var(--py, 50%),
+      color-mix(in oklab, var(--c-ember) 16%, transparent) 0%,
+      transparent 65%
+    );
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .sky__pointer {
+      opacity: 1;
+    }
+  }
+
+  /* Film grenli doku — dijital düzlüğü kıran ince gürültü */
+  .sky__grain {
+    position: absolute;
+    inset: -50%;
+    opacity: var(--grain);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain-shift 6s steps(6) infinite;
+  }
+
+  @keyframes grain-shift {
+    0% { transform: translate(0, 0); }
+    20% { transform: translate(-3%, 2%); }
+    40% { transform: translate(2%, -4%); }
+    60% { transform: translate(-2%, -2%); }
+    80% { transform: translate(3%, 3%); }
+    100% { transform: translate(0, 0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sky__orb,
+    .sky__grain,
+    .sky__rays {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const startSky = () => {
+    const root = document.querySelector(".sky") as HTMLElement | null;
+    // Sky sayfa geçişlerinde korunuyor; bir kez bağlanması yeterli.
+    if (!root || root.dataset.started) return;
+    root.dataset.started = "1";
+
+    const canvas = document.getElementById("sky-particles") as HTMLCanvasElement | null;
+    const pointer = root.querySelector(".sky__pointer") as HTMLElement | null;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // İmleç ışığı
+    if (pointer && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      let tx = 50;
+      let ty = 50;
+      let cx = 50;
+      let cy = 50;
+      let raf = 0;
+
+      const loop = () => {
+        cx += (tx - cx) * 0.06;
+        cy += (ty - cy) * 0.06;
+        pointer.style.setProperty("--px", `${cx}%`);
+        pointer.style.setProperty("--py", `${cy}%`);
+        raf = Math.abs(tx - cx) + Math.abs(ty - cy) > 0.05 ? requestAnimationFrame(loop) : 0;
+      };
+
+      window.addEventListener(
+        "pointermove",
+        (event) => {
+          tx = (event.clientX / window.innerWidth) * 100;
+          ty = (event.clientY / window.innerHeight) * 100;
+          if (!raf) raf = requestAnimationFrame(loop);
+        },
+        { passive: true },
+      );
+    }
+
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    type Particle = {
+      x: number;
+      y: number;
+      r: number;
+      a: number;
+      speed: number;
+      phase: number;
+      drift: number;
+    };
+
+    let items: Particle[] = [];
+    let width = 0;
+    let height = 0;
+
+    const isDay = () => document.documentElement.dataset.theme === "light";
+
+    const size = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Gündüz zerreleri daha seyrek: hava, gökyüzü değil.
+      const density = isDay() ? 16000 : 9000;
+      const count = Math.round((width * height) / density);
+
+      items = Array.from({ length: count }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 1.15 + 0.25,
+        a: Math.random() * 0.55 + 0.18,
+        speed: Math.random() * 0.6 + 0.25,
+        phase: Math.random() * Math.PI * 2,
+        drift: Math.random() * 0.22 + 0.06,
+      }));
+    };
+
+    let t = 0;
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+      const day = isDay();
+
+      for (const p of items) {
+        if (day) {
+          // Toz: yavaşça yükselir, hafifçe salınır
+          p.y -= p.drift;
+          if (p.y < -4) {
+            p.y = height + 4;
+            p.x = Math.random() * width;
+          }
+          const sway = Math.sin(t * 0.5 + p.phase) * 6;
+          ctx.globalAlpha = p.a * 0.85;
+          ctx.beginPath();
+          ctx.arc(p.x + sway, p.y, p.r * 1.35, 0, Math.PI * 2);
+          ctx.fillStyle = "#f2a35c";
+          ctx.fill();
+        } else {
+          const twinkle = reduced ? 1 : 0.65 + Math.sin(t * p.speed + p.phase) * 0.35;
+          ctx.globalAlpha = p.a * twinkle;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = "#fff";
+          ctx.fill();
+        }
+      }
+
+      ctx.globalAlpha = 1;
+    };
+
+    let running = true;
+    const tick = () => {
+      if (!running) return;
+      t += 0.016;
+      draw();
+      // Gündüz zerreleri sürekli hareket ettiği için durağan kare yok.
+      if (!reduced || isDay()) requestAnimationFrame(tick);
+    };
+
+    size();
+    tick();
+
+    // Tema değişince yoğunluğu yeniden hesapla
+    new MutationObserver(() => {
+      size();
+      draw();
+      if (reduced && isDay()) tick();
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+    let resizeTimer: number;
+    window.addEventListener(
+      "resize",
+      () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => {
+          size();
+          draw();
+        }, 180);
+      },
+      { passive: true },
+    );
+
+    document.addEventListener("visibilitychange", () => {
+      running = !document.hidden;
+      if (running) tick();
+    });
+  };
+
+  startSky();
+  document.addEventListener("astro:page-load", startSky);
+</script>

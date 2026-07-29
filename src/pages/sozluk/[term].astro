@@ -1,0 +1,96 @@
+---
+import { render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { getGlossary, relatedTerms } from "../../lib/glossary";
+
+export async function getStaticPaths() {
+  const terms = await getGlossary();
+  return terms.map((entry) => ({ params: { term: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+const all = await getGlossary();
+const related = relatedTerms(entry, all);
+
+// Terimin baş harfi, sayfanın arkasındaki büyük işaret
+const initial = entry.data.term.trim().charAt(0).toLocaleUpperCase("tr");
+---
+
+<Base title={entry.data.term} description={entry.data.summary}>
+  <article class="px-5 pt-36 sm:px-8 sm:pt-44">
+    <div class="mx-auto max-w-[42rem]">
+      <header class="relative">
+        <span class="initial" aria-hidden="true">{initial}</span>
+
+        <nav class="label relative flex flex-wrap items-center gap-2" aria-label="Konum">
+          <a href="/sozluk/" class="transition-colors hover:text-ember">Sözlük</a>
+          <span aria-hidden="true">/</span>
+          <span class="text-ink-soft">{entry.data.category}</span>
+        </nav>
+
+        <h1 class="text-display relative mt-5 text-[clamp(2.25rem,6vw,3.75rem)]">
+          <span class="line-mask"><span style="--line-delay:120ms">{entry.data.term}</span></span>
+        </h1>
+
+        <p class="rise relative mt-5 text-xl leading-relaxed text-ink-soft" style="--rise-delay:340ms">
+          {entry.data.summary}
+        </p>
+      </header>
+
+      <div class="prose mt-12">
+        <Content />
+      </div>
+
+      {
+        related.length > 0 && (
+          <section class="mt-16 border-t border-line/60 pt-8">
+            <p class="label">İlgili terimler</p>
+            <ul class="mt-5 grid gap-3 sm:grid-cols-2">
+              {related.map((item) => (
+                <li>
+                  <a
+                    href={`/sozluk/${item.id}/`}
+                    class="group block rounded-xl border border-line/70 p-4 transition-colors duration-500 hover:border-ember/60 hover:bg-surface-raised/50"
+                  >
+                    <span class="text-display block text-lg transition-colors group-hover:text-ember">
+                      {item.data.term}
+                    </span>
+                    <span class="mt-1 block text-sm leading-relaxed text-ink-soft">
+                      {item.data.summary}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      <div class="mt-14 pb-24">
+        <a href="/sozluk/" class="link-underline label inline-block text-ember">
+          ← Bütün terimler
+        </a>
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style>
+  /* Terimin baş harfi, başlığın arkasında soluk bir işaret */
+  .initial {
+    position: absolute;
+    right: -0.1em;
+    top: -0.42em;
+    z-index: -1;
+    font-family: var(--font-display);
+    font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 144;
+    font-size: clamp(9rem, 22vw, 15rem);
+    line-height: 1;
+    color: var(--c-ember);
+    opacity: 0.09;
+    pointer-events: none;
+    user-select: none;
+  }
+</style>

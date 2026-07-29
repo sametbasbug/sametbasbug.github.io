@@ -1,0 +1,334 @@
+---
+/**
+ * Komut paleti — ⌘K / Ctrl+K ya da "/" ile açılır. Yazı arama, sayfa
+ * gezinme ve tema değiştirme tek yerde. Veri build sırasında gömülüyor;
+ * ağ isteği yok.
+ */
+import { getPosts } from "../lib/posts";
+import { authors, formatDate, site, type NavItem } from "../site";
+
+const posts = await getPosts();
+
+type PaletteItem = {
+  kind: string;
+  label: string;
+  hint: string;
+  href: string;
+  glyph: string;
+  terms: string;
+  /** Site dışına çıkan bağlantı: yeni sekmede açılır. */
+  external?: boolean;
+};
+
+const items: PaletteItem[] = [
+  ...posts.map((post) => ({
+    kind: "yazı",
+    label: post.data.title,
+    hint: `${authors[post.data.author].name} · ${formatDate(post.data.date)}`,
+    href: `/yazi/${post.id}/`,
+    glyph: authors[post.data.author].glyph,
+    terms: `${post.data.title} ${post.data.summary} ${post.data.tags.join(" ")}`.toLocaleLowerCase("tr"),
+  })),
+  ...([{ href: "/", label: "Ana Sayfa" }, ...site.nav] as NavItem[]).map((page) => ({
+    kind: "sayfa",
+    label: page.label,
+    hint: page.external ? new URL(page.href).host : page.href,
+    href: page.href,
+    glyph: page.external ? "↗" : "→",
+    terms: `${page.label} ${page.href}`.toLocaleLowerCase("tr"),
+    external: page.external,
+  })),
+  ...Object.entries(authors).map(([id, author]) => ({
+    kind: "yazar",
+    label: author.name,
+    hint: author.role,
+    href: `/yazar/${id}/`,
+    glyph: author.glyph,
+    terms: `${author.name} ${author.role} yazar`.toLocaleLowerCase("tr"),
+  })),
+  {
+    kind: "eylem",
+    label: "Temayı değiştir",
+    hint: "gündüz ↔ gece",
+    href: "#theme",
+    glyph: "◐",
+    terms: "tema gece gündüz karanlık aydınlık theme",
+  },
+  {
+    kind: "eylem",
+    label: "RSS akışı",
+    hint: "/rss.xml",
+    href: "/rss.xml",
+    glyph: "✦",
+    terms: "rss besleme akış feed abone",
+  },
+];
+---
+
+<div id="palette" class="palette" role="dialog" aria-modal="true" aria-label="Komut paleti">
+  <div class="palette__scrim" data-close></div>
+
+  <div class="palette__panel">
+    <div class="flex items-center gap-3 border-b border-line/70 px-5 py-4">
+      <span class="text-ember" aria-hidden="true">✦</span>
+      <input
+        id="palette-input"
+        type="text"
+        role="combobox"
+        aria-expanded="true"
+        aria-controls="palette-list"
+        aria-autocomplete="list"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Ara: yazı, sayfa, tema"
+        class="w-full bg-transparent text-base text-ink outline-none placeholder:text-ink-faint"
+      />
+      <kbd class="rounded border border-line px-1.5 py-0.5 font-mono text-[0.6rem] text-ink-faint">ESC</kbd>
+    </div>
+
+    <ul id="palette-list" role="listbox" class="max-h-[min(26rem,60svh)] overflow-y-auto py-2">
+      {
+        items.map((item, index) => (
+          <li>
+            <a
+              href={item.href}
+              target={item.external ? "_blank" : undefined}
+              rel={item.external ? "noreferrer" : undefined}
+              role="option"
+              aria-selected={index === 0 ? "true" : "false"}
+              class="palette__item"
+              data-terms={item.terms}
+              data-kind={item.kind}
+            >
+              <span class="palette__glyph" aria-hidden="true">
+                {item.glyph}
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-sm text-ink">{item.label}</span>
+                <span class="block truncate text-xs text-ink-faint">{item.hint}</span>
+              </span>
+              <span class="label shrink-0 text-[0.55rem]">{item.kind}</span>
+            </a>
+          </li>
+        ))
+      }
+      <li id="palette-empty" class="hidden px-5 py-10 text-center text-sm text-ink-faint">
+        Eşleşme yok.
+      </li>
+    </ul>
+
+    {/* Klavye ipuçları: palet artık dokunmatikte de açılıyor, orada bu satır
+        yanıltıcı olurdu — fiziksel işaretçisi olan cihazlara saklıyoruz. */}
+    <div class="palette__hints flex items-center gap-4 border-t border-line/70 px-5 py-2.5 text-[0.65rem] text-ink-faint">
+      <span><kbd class="font-mono">↑↓</kbd> gez</span>
+      <span><kbd class="font-mono">↵</kbd> aç</span>
+      <span class="ml-auto"><kbd class="font-mono">T</kbd> tema</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media (hover: none) and (pointer: coarse) {
+    .palette__hints {
+      display: none;
+    }
+  }
+
+  .palette {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: none;
+    padding: max(6vh, 3rem) 1rem 2rem;
+  }
+
+  .palette.is-open {
+    display: block;
+  }
+
+  .palette__scrim {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in oklab, var(--c-surface) 62%, transparent);
+    backdrop-filter: blur(6px);
+    animation: fade-in 0.25s ease both;
+  }
+
+  .palette__panel {
+    position: relative;
+    margin: 0 auto;
+    max-width: 40rem;
+    overflow: hidden;
+    border: 1px solid var(--c-line);
+    border-radius: 1rem;
+    background: color-mix(in oklab, var(--c-surface-raised) 92%, transparent);
+    backdrop-filter: blur(20px) saturate(1.5);
+    box-shadow:
+      0 40px 90px -30px rgb(0 0 0 / 0.6),
+      0 0 0 1px color-mix(in oklab, var(--c-ember) 10%, transparent);
+    animation: palette-in 0.42s var(--ease-out-expo) both;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes palette-in {
+    from { opacity: 0; transform: translateY(-1.25rem) scale(0.97); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .palette__item {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.6rem 1.25rem;
+    transition: background-color 0.15s ease;
+  }
+
+  .palette__item[aria-selected="true"] {
+    background: color-mix(in oklab, var(--c-ember) 12%, transparent);
+    box-shadow: inset 2px 0 0 var(--c-ember);
+  }
+
+  .palette__glyph {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 1px solid var(--c-line);
+    color: var(--c-ember);
+    font-size: 0.8rem;
+  }
+
+  .palette__item.is-hidden {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .palette__panel,
+    .palette__scrim {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const setupPalette = () => {
+    const palette = document.getElementById("palette");
+    const input = document.getElementById("palette-input") as HTMLInputElement | null;
+    const list = document.getElementById("palette-list");
+    const empty = document.getElementById("palette-empty");
+    if (!palette || !input || !list) return;
+
+    const items = () =>
+      [...list.querySelectorAll<HTMLAnchorElement>(".palette__item:not(.is-hidden)")];
+
+    const select = (next: HTMLAnchorElement | undefined) => {
+      if (!next) return;
+      for (const item of items()) item.setAttribute("aria-selected", String(item === next));
+      next.scrollIntoView({ block: "nearest" });
+    };
+
+    const isOpen = () => palette.classList.contains("is-open");
+
+    const open = () => {
+      palette.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+      input.value = "";
+      filter();
+      input.focus();
+    };
+
+    const close = () => {
+      palette.classList.remove("is-open");
+      document.body.style.overflow = "";
+    };
+
+    const toggleTheme = () => {
+      document.getElementById("theme-toggle")?.click();
+    };
+
+    function filter() {
+      const query = input!.value.trim().toLocaleLowerCase("tr");
+      let visible = 0;
+
+      for (const item of list!.querySelectorAll<HTMLAnchorElement>(".palette__item")) {
+        const match = !query || (item.dataset.terms ?? "").includes(query);
+        item.classList.toggle("is-hidden", !match);
+        item.setAttribute("aria-selected", "false");
+        if (match) visible++;
+      }
+
+      empty?.classList.toggle("hidden", visible > 0);
+      select(items()[0]);
+    }
+
+    input.addEventListener("input", filter);
+
+    // Tetik düğmesi gezinme çubuğunda ve sayfa geçişlerinde yeniden
+    // basılıyor; olayı belgeye bağlıyoruz.
+    document.addEventListener("click", (event) => {
+      if ((event.target as HTMLElement).closest("[data-palette-open]")) open();
+    });
+    palette.querySelector("[data-close]")?.addEventListener("click", close);
+
+    palette.addEventListener("click", (event) => {
+      const link = (event.target as HTMLElement).closest<HTMLAnchorElement>(".palette__item");
+      if (!link) return;
+      if (link.getAttribute("href") === "#theme") {
+        event.preventDefault();
+        toggleTheme();
+        close();
+        return;
+      }
+      close();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      const typing =
+        event.target instanceof HTMLElement &&
+        (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA");
+
+      if ((event.key === "k" || event.key === "K") && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        isOpen() ? close() : open();
+        return;
+      }
+
+      if (!isOpen()) {
+        if (event.key === "/" && !typing) {
+          event.preventDefault();
+          open();
+        }
+        if ((event.key === "t" || event.key === "T") && !typing && !event.metaKey && !event.ctrlKey) {
+          toggleTheme();
+        }
+        return;
+      }
+
+      const current = items().find((item) => item.getAttribute("aria-selected") === "true");
+      const list_ = items();
+      const index = current ? list_.indexOf(current) : -1;
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+      } else if (event.key === "ArrowDown") {
+        event.preventDefault();
+        select(list_[(index + 1) % list_.length]);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        select(list_[(index - 1 + list_.length) % list_.length]);
+      } else if (event.key === "Enter" && current) {
+        event.preventDefault();
+        current.click();
+      }
+    });
+  };
+
+  setupPalette();
+</script>

@@ -1,23 +1,23 @@
-﻿import rss from '@astrojs/rss';
-import { getCollection } from 'astro:content';
+import rss from "@astrojs/rss";
+import type { APIContext } from "astro";
+import { getPosts } from "../lib/posts";
+import { site, authors } from "../site";
 
-export async function GET(context: any) {
-	const blog = await getCollection('blog');
-	const posts = blog
-		.filter((post) => !post.data.isDraft)
-		.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+export async function GET(context: APIContext) {
+  const posts = await getPosts();
 
-	return rss({
-		title: "Samet Başbuğ",
-		description: 'Teknoloji, yazılım ve kişisel notlar',
-		site: context.site,
-		items: posts.map((post) => ({
-			title: post.data.title,
-			pubDate: post.data.pubDate,
-			description: post.data.description,
-			link: `/blog/${post.id}/`,
-		})),
-	});
+  return rss({
+    title: site.title,
+    description: site.description,
+    site: context.site ?? site.url,
+    customData: `<language>tr</language>`,
+    items: posts.map((post) => ({
+      title: post.data.title,
+      description: post.data.summary,
+      pubDate: post.data.date,
+      link: `/yazi/${post.id}/`,
+      categories: [...post.data.tags],
+      author: authors[post.data.author].name,
+    })),
+  });
 }
-
-

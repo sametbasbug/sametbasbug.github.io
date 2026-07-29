@@ -1,0 +1,341 @@
+---
+import { render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Sigil from "../../components/Sigil.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getPosts, relatedTo } from "../../lib/posts";
+import { authors, formatDate, readingTime } from "../../site";
+import { tagLabel } from "../../tags";
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+
+const all = await getPosts();
+const related = relatedTo(post, all);
+
+// Sıradaki: bir sonraki (daha eski) yazı; sondaysak başa dönüyoruz.
+const position = all.findIndex((entry) => entry.id === post.id);
+const next = all.length > 1 ? all[(position + 1) % all.length] : null;
+const author = authors[post.data.author];
+const minutes = readingTime(post.body ?? "");
+const toc = headings.filter((heading) => heading.depth === 2);
+---
+
+<Base
+  title={post.data.title}
+  description={post.data.summary}
+  ogType="article"
+  image={`/og/${post.id}.png`}
+>
+  <!-- Okuma ilerlemesi -->
+  <div class="reading-bar" aria-hidden="true"><span id="reading-fill"></span></div>
+
+  <article>
+    <!-- ————————————————————————— BAŞLIK ————————————————————————— -->
+    <header class="relative overflow-hidden px-5 pt-36 pb-16 sm:px-8 sm:pt-44 sm:pb-20">
+      <div
+        class:list={[
+          "pointer-events-none absolute -top-24 right-[-14%] w-[38rem] max-w-[80vw] sm:opacity-60",
+          post.data.cover ? "opacity-30" : "opacity-40",
+        ]}
+        aria-hidden="true"
+        transition:name={`sigil-${post.id}`}
+      >
+        {
+          post.data.cover ? (
+            /* Kapak varsa başlığın arkasında yumuşatılmış bir doku olarak
+               duruyor; asıl gösterimi kartlarda ve paylaşımlarda. */
+            <img
+              src={post.data.cover}
+              alt=""
+              class="aspect-square h-full w-full rounded-full object-cover blur-2xl saturate-150"
+            />
+          ) : (
+            <Sigil
+              seed={post.data.title}
+              detail={1.4}
+              weight={1.7}
+              class="h-full w-full animate-[drift_28s_ease-in-out_infinite_alternate]"
+            />
+          )
+        }
+      </div>
+
+      <div class="relative mx-auto grid max-w-[74rem] gap-12 lg:grid-cols-[minmax(0,1fr)_13rem]">
+        <div class="mx-auto w-full max-w-[42rem]">
+        <nav class="label flex flex-wrap items-center gap-2" aria-label="Konum">
+          <a href="/yazilar/" class="transition-colors hover:text-ember">Yazılar</a>
+          <span aria-hidden="true">/</span>
+          <span class="text-ink-soft">{formatDate(post.data.date)}</span>
+        </nav>
+
+        <h1 class="text-display mt-6 text-[clamp(2.25rem,6.5vw,4.5rem)]">
+          <span class="line-mask"><span style="--line-delay:120ms">{post.data.title}</span></span>
+        </h1>
+
+        <p class="rise mt-7 text-xl leading-relaxed text-ink-soft" style="--rise-delay:360ms">
+          {post.data.summary}
+        </p>
+
+        <div
+          class="rise mt-9 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-line/60 pt-6 text-sm text-ink-faint"
+          style="--rise-delay:460ms"
+        >
+          <a href={`/yazar/${post.data.author}/`} class="group flex items-center gap-2.5">
+            <span
+              class="grid h-9 w-9 place-items-center rounded-full border border-line text-base transition-colors group-hover:border-ember"
+              style={`color: oklch(72% 0.15 ${author.hue})`}
+              aria-hidden="true"
+            >
+              {author.glyph}
+            </span>
+            <span>
+              <span class="block text-ink-soft transition-colors group-hover:text-ink">{author.name}</span>
+              <span class="block text-xs">{author.role}</span>
+            </span>
+          </a>
+          <span class="h-px flex-1 bg-line"></span>
+          <span class="font-mono">{minutes} dk okuma</span>
+        </div>
+
+        {
+          post.data.tags.length > 0 && (
+            <div class="rise mt-5 flex flex-wrap gap-2" style="--rise-delay:520ms">
+              {post.data.tags.map((tag) => (
+                <a
+                  href={`/etiket/${tag}/`}
+                  class="label rounded-full border border-line/70 px-3 py-1 transition-colors hover:border-ember hover:text-ember"
+                >
+                  {tagLabel(tag)}
+                </a>
+              ))}
+            </div>
+          )
+        }
+        </div>
+      </div>
+    </header>
+
+    <!-- ————————————————————————— GÖVDE ————————————————————————— -->
+    <div class="px-5 sm:px-8">
+      <div class="mx-auto grid max-w-[74rem] gap-12 lg:grid-cols-[minmax(0,1fr)_13rem]">
+        <div class="prose mx-auto w-full max-w-[42rem]">
+          <Content />
+        </div>
+
+        {
+          toc.length > 1 && (
+            <aside class="order-first hidden lg:order-none lg:block">
+              <div class="sticky top-28">
+                <p class="label">İçindekiler</p>
+                <ol class="mt-4 space-y-2.5 border-l border-line/70 text-sm">
+                  {toc.map((heading) => (
+                    <li>
+                      <a
+                        href={`#${heading.slug}`}
+                        class="toc-link -ml-px block border-l border-transparent pl-4 text-ink-faint transition-colors hover:border-ember hover:text-ink"
+                        data-toc={heading.slug}
+                      >
+                        {heading.text}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </aside>
+          )
+        }
+      </div>
+    </div>
+
+    <!-- ————————————————————————— ALT ————————————————————————— -->
+    <div class="mt-24 px-5 sm:px-8">
+      <div class="mx-auto grid max-w-[74rem] gap-12 lg:grid-cols-[minmax(0,1fr)_13rem]">
+        <div class="mx-auto w-full max-w-[42rem] border-t border-line/60 pt-10">
+        <p class="text-sm leading-relaxed text-ink-soft">
+          <span class="text-ember" aria-hidden="true">{author.glyph}</span>
+          <strong class="text-ink">{author.name}</strong> — {author.bio}
+        </p>
+        <a href={`/yazar/${post.data.author}/`} class="link-underline label mt-4 inline-block text-ember">
+          Bu yazarın bütün yazıları →
+        </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  {
+    next && (
+      <a href={`/yazi/${next.id}/`} class="next group relative mt-24 block overflow-hidden border-y border-line/60">
+        <div class="next__art" aria-hidden="true">
+          <Sigil seed={next.data.title} detail={1.5} weight={1.7} class="h-full w-full" />
+        </div>
+
+        <div class="relative mx-auto flex max-w-[88rem] flex-col gap-6 px-5 py-16 sm:px-8 sm:py-24">
+          <span class="label flex items-center gap-3">
+            <span class="inline-block h-px w-10 bg-ember" />
+            Sıradaki
+          </span>
+
+          <h2 class="text-display max-w-4xl text-[clamp(1.9rem,5.5vw,4rem)] transition-colors duration-500 group-hover:text-ember">
+            {next.data.title}
+          </h2>
+
+          <span class="flex items-center gap-4 text-sm text-ink-faint">
+            <span>{authors[next.data.author].name}</span>
+            <span class="next__arrow text-ember">→</span>
+          </span>
+        </div>
+      </a>
+    )
+  }
+
+  {
+    related.length > 0 && (
+      <section class="px-5 pt-28 sm:px-8">
+        <div class="mx-auto max-w-[88rem]">
+          <h2 class="text-display reveal border-b border-line/60 pb-5 text-3xl">Bunlar da ilgini çekebilir</h2>
+          <div class="mt-10 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((item, index) => (
+              <PostCard post={item} index={index} size="sm" />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .reading-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    height: 2px;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .reading-bar span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--c-ember), var(--c-veil));
+    transform-origin: left;
+  }
+
+  /* Tarayıcı destekliyorsa çubuk doğrudan scroll'a bağlanır: JS yok. */
+  @supports (animation-timeline: scroll()) {
+    .reading-bar span {
+      width: 100%;
+      transform: scaleX(0);
+      animation: read-progress linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+
+  @keyframes read-progress {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  .toc-link[aria-current="true"] {
+    color: var(--c-ink);
+    border-left-color: var(--c-ember);
+  }
+
+  :global(.prose h2),
+  :global(.prose h3) {
+    scroll-margin-top: 7rem;
+  }
+
+  /* Sıradaki yazı bandı — sigil imlecin geldiği tarafta açılıyor */
+  .next__art {
+    position: absolute;
+    top: 50%;
+    right: 4%;
+    width: 26rem;
+    max-width: 55vw;
+    aspect-ratio: 1;
+    translate: 0 -50%;
+    opacity: 0.25;
+    transform: scale(0.82) rotate(-12deg);
+    transition:
+      opacity 0.8s var(--ease-out-expo),
+      transform 1s var(--ease-out-expo);
+  }
+
+  .next:hover .next__art {
+    opacity: 0.7;
+    transform: scale(1) rotate(0deg);
+  }
+
+  .next__arrow {
+    display: inline-block;
+    transition: transform 0.6s var(--ease-out-expo);
+  }
+
+  .next:hover .next__arrow {
+    transform: translateX(0.6rem);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .next__art,
+    .next__arrow {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const setupPost = () => {
+    // Scroll-driven animation yoksa ilerleme çubuğunu elle sür.
+    const fill = document.getElementById("reading-fill");
+    if (fill && !CSS.supports("animation-timeline: scroll()")) {
+      let frame = 0;
+      const update = () => {
+        frame = 0;
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        fill.style.width = `${max > 0 ? Math.min(1, window.scrollY / max) * 100 : 0}%`;
+      };
+      const onScroll = () => {
+        if (!frame) frame = requestAnimationFrame(update);
+      };
+      update();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll, { passive: true });
+    }
+
+    // İçindekiler: okunan başlığı işaretle
+    const links = [...document.querySelectorAll<HTMLAnchorElement>(".toc-link")];
+    if (!links.length) return;
+
+    const headings = links
+      .map((link) => document.getElementById(link.dataset.toc ?? ""))
+      .filter((el): el is HTMLElement => Boolean(el));
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          links.forEach((link) =>
+            link.setAttribute("aria-current", String(link.dataset.toc === entry.target.id)),
+          );
+        }
+      },
+      { rootMargin: "-15% 0px -70% 0px" },
+    );
+
+    headings.forEach((heading) => io.observe(heading));
+  };
+
+  setupPost();
+  document.addEventListener("astro:page-load", setupPost);
+</script>

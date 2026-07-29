@@ -1,0 +1,41 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+
+export async function getStaticPaths() {
+  const pages = await getCollection("pages");
+  return pages.map((entry) => ({ params: { sayfa: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const isDev = import.meta.env.DEV;
+---
+
+<Base title={entry.data.title} description={entry.data.lead ?? entry.data.title}>
+  <PageHead
+    eyebrow={entry.data.updated ? `Son güncelleme · ${entry.data.updated}` : "Sayfa"}
+    title={entry.data.title}
+    lead={entry.data.lead}
+  />
+
+  <section class="px-5 pb-24 sm:px-8">
+    <div class="mx-auto max-w-[42rem]">
+      {
+        entry.data.needsReview && isDev && (
+          <p class="mb-10 rounded-xl border border-ember/50 bg-ember/10 p-4 text-sm text-ink">
+            <strong>Gözden geçirilmedi.</strong> Bu metin eski siteden taşındı ve orada var olan
+            özellikleri (giriş, yorum, beğeni) anlatıyor. Yayına almadan önce güncelle ve
+            frontmatter'daki <code class="font-mono text-xs">needsReview</code> alanını kaldır.
+            Bu uyarı yalnızca geliştirmede görünür.
+          </p>
+        )
+      }
+
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  </section>
+</Base>

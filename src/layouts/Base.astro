@@ -1,0 +1,145 @@
+---
+import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+import { site } from "../site";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import Sky from "../components/Sky.astro";
+import CommandPalette from "../components/CommandPalette.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogType?: "website" | "article";
+  /** Paylaşım görselinin yolu; yazılarda kendi üretilen kartı gelir. */
+  image?: string;
+  /** Arka plandaki parçacık katmanı (gece yıldız, gündüz toz). */
+  particles?: boolean;
+}
+
+const {
+  title,
+  description = site.description,
+  ogType = "website",
+  image = "/og.png",
+  particles = true,
+} = Astro.props;
+
+const pageTitle = title ? `${title} — ${site.title}` : `${site.title} — ${site.tagline}`;
+const base = Astro.site ?? site.url;
+const canonical = new URL(Astro.url.pathname, base).toString();
+const ogImage = new URL(image, base).toString();
+---
+
+<!doctype html>
+<html lang="tr" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* Amblem favicon.svg'de; PNG türevleri scripts/make-icons.mjs üretiyor. */}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="alternate" type="application/rss+xml" title={site.title} href="/rss.xml" />
+    <link rel="canonical" href={canonical} />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:site_name" content={site.title} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title ?? site.title} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage} />
+    {/* Site karanlıkta başlar; açık temaya geçilirse ThemeToggle günceller. */}
+    <meta name="theme-color" content="#171722" />
+
+    <ClientRouter />
+
+    <script is:inline>
+      // Tema, ilk boyamadan önce uygulanır — yanıp sönme olmasın.
+      //
+      // Herkes karanlıkta başlar: bu sitenin tasarımı önce gece için kuruldu,
+      // ilk izlenim orada doğru. Sistemin açık tema tercihine bilerek
+      // bakmıyoruz. Kullanıcı düğmeye basarsa seçimi localStorage'a yazılır ve
+      // bundan sonra ona uyulur.
+      (() => {
+        const theme = localStorage.getItem("theme") === "light" ? "light" : "dark";
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+        if (theme === "light") {
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute("content", "#faf7f2");
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <a
+      href="#content"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-ember focus:px-5 focus:py-2 focus:text-sm focus:text-surface"
+    >
+      İçeriğe geç
+    </a>
+
+    <Sky particles={particles} />
+    <Nav />
+    <CommandPalette transition:persist="palette" />
+
+    <main id="content">
+      <slot />
+    </main>
+
+    <Footer />
+
+    <script is:inline>
+      // Scroll ile açılan bloklar. Bir kez görününce sabitlenir.
+      (() => {
+        const bind = () => {
+          const targets = document.querySelectorAll(".reveal:not(.is-seen)");
+          if (!targets.length) return;
+
+          if (!("IntersectionObserver" in window)) {
+            targets.forEach((el) => el.classList.add("is-seen"));
+            return;
+          }
+
+          const io = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                entry.target.classList.add("is-seen");
+                io.unobserve(entry.target);
+              }
+            },
+            { rootMargin: "0px 0px -12% 0px", threshold: 0.08 },
+          );
+
+          targets.forEach((el) => io.observe(el));
+        };
+
+        bind();
+        document.addEventListener("astro:page-load", bind);
+      })();
+    </script>
+
+    <script is:inline>
+      // Konsolu açan için küçük bir not.
+      console.log(
+        "%c☀%c  Gündüz ve gece eşit uzunlukta.\n%cAstro ile kuruldu · ⌘K ile arayabilirsin · kaynak: sametbasbug.dev",
+        "color:#ffb069;font-size:20px",
+        "color:#f4f1ea;font-size:14px;font-weight:600",
+        "color:#7d7b8c;font-size:12px",
+      );
+    </script>
+  </body>
+</html>

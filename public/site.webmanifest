@@ -1,6 +1,13 @@
 {
-  "name": "",
-  "short_name": "",
+  "name": "Samet Başbuğ — Equinox",
+  "short_name": "Equinox",
+  "description": "Yapay zekâ, web mimarisi ve dijital bahçecilik üzerine notlar. İnsan ve yapay zekânın birlikte yazdığı bir defter.",
+  "lang": "tr-TR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#171722",
+  "background_color": "#171722",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -13,9 +20,11 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
-  ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  ]
 }

@@ -1,0 +1,599 @@
+@import "tailwindcss";
+
+@import "@fontsource-variable/fraunces";
+/* Fraunces'in italik kesimi ayrı geliyor; alıntılarda ve vurgularda
+   kullanıldığı için yükleniyor. */
+@import "@fontsource-variable/fraunces/wght-italic.css";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+
+/* ------------------------------------------------------------------
+   Equinox tasarım sistemi
+   İki durum: gece (varsayılan) ve gündüz. Aynı token seti, farklı değerler.
+   ------------------------------------------------------------------ */
+
+@theme {
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --color-ink: var(--c-ink);
+  --color-ink-soft: var(--c-ink-soft);
+  --color-ink-faint: var(--c-ink-faint);
+  --color-surface: var(--c-surface);
+  --color-surface-raised: var(--c-surface-raised);
+  --color-line: var(--c-line);
+  --color-ember: var(--c-ember);
+  --color-veil: var(--c-veil);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-swift: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+:root {
+  color-scheme: dark;
+
+  /* gece */
+  --c-surface: oklch(15% 0.022 275);
+  --c-surface-raised: oklch(19.5% 0.026 275);
+  --c-ink: oklch(96% 0.008 90);
+  --c-ink-soft: oklch(78% 0.014 275);
+  --c-ink-faint: oklch(58% 0.018 275);
+  --c-line: oklch(30% 0.024 275);
+  --c-ember: oklch(78% 0.155 62);
+  --c-veil: oklch(66% 0.16 292);
+
+  --sky-1: oklch(17% 0.045 285);
+  --sky-2: oklch(13% 0.03 265);
+  --sky-3: oklch(24% 0.07 320);
+  --glow: 0.55;
+  --grain: 0.05;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* gündüz */
+  --c-surface: oklch(97.5% 0.012 85);
+  --c-surface-raised: oklch(99% 0.008 85);
+  --c-ink: oklch(21% 0.02 275);
+  --c-ink-soft: oklch(41% 0.02 275);
+  --c-ink-faint: oklch(58% 0.018 275);
+  --c-line: oklch(88% 0.016 80);
+  --c-ember: oklch(58% 0.17 45);
+  --c-veil: oklch(50% 0.17 292);
+
+  --sky-1: oklch(94% 0.04 70);
+  --sky-2: oklch(97% 0.02 90);
+  --sky-3: oklch(90% 0.06 40);
+  --glow: 0.32;
+  --grain: 0.035;
+}
+
+@layer base {
+  * {
+    border-color: var(--c-line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background: var(--c-surface);
+    color: var(--c-ink);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--c-ember);
+    color: var(--c-surface);
+  }
+
+  /* Kaydırma çubuğu — arka planla aynı zeminde duran ince bir çizgi,
+     dokununca ember'a dönüyor. Firefox standart özellikleri okuyor,
+     WebKit kendi sözde elemanlarını; ikisini de veriyoruz. */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-line) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--c-line);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    /* Kenarlık şeffaf; arka plan yalnızca içeriden boyansın diye. */
+    background-clip: content-box;
+    transition: background-color 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--c-ember);
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c-ember);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 120;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+  }
+
+  p { text-wrap: pretty; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+}
+
+/* ------------------------------------------------------------------
+   Yardımcı sınıflar
+   ------------------------------------------------------------------ */
+
+@utility text-display {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 144;
+  letter-spacing: -0.03em;
+  /* 0.92 idi ve çok satırlı başlıklarda üst satırın descender'ı alt satırın
+     harflerine değiyordu — Türkçede hem descender (ğ, ş, ç, p, y) hem aksanlı
+     büyük harf (İ, Ş) çok sık geçtiği için sürekli görünen bir kusurdu.
+     Fraunces'ta ölçülen değerler: descender 0.253em, İ/Ş ascender'ı 0.860em;
+     çakışmasız taban 1.113. Onun hemen üstünde duruyoruz. Daha sıkı bir
+     görünüm istenen tekil yerlerde leading-[…] ile override edilebilir. */
+  line-height: 1.12;
+}
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-ink-faint);
+}
+
+/* Metin içinde vurgu: ember rengiyle alttan dolan çizgi */
+@utility link-underline {
+  background-image: linear-gradient(var(--c-ember), var(--c-ember));
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size 0.45s var(--ease-out-expo);
+
+  &:hover {
+    background-size: 100% 1px;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Girişte ve scroll'da açılma.
+   ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(1.75rem);
+    transition:
+      opacity 0.7s var(--ease-out-expo),
+      transform 0.7s var(--ease-out-expo);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .reveal.is-seen {
+    opacity: 1;
+    transform: none;
+  }
+
+  .rise {
+    animation: rise 1.1s var(--ease-out-expo) both;
+    animation-delay: var(--rise-delay, 0ms);
+  }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(1.5rem); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(2%, -3%, 0) scale(1.08); }
+}
+
+/* Başlıklarda satır satır perde açılışı */
+@keyframes unveil {
+  from { transform: translateY(105%) rotate(3deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* Perde açılışı için taşmayı gizlerken alt uzantıları (g, ş, y) kesmemek
+   gerekiyor: aşağıdan pay verip aynı payı geri alıyoruz. */
+.line-mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.24em;
+  margin-bottom: -0.24em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .line-mask > span {
+    display: block;
+    animation: unveil 1.15s var(--ease-out-expo) both;
+    animation-delay: var(--line-delay, 0ms);
+  }
+}
+
+/* Tema anahtarındaki güneş/ay ikonları */
+.icon-sun,
+.icon-moon {
+  transform-origin: center;
+  transition:
+    transform 0.5s var(--ease-out-expo),
+    opacity 0.4s var(--ease-out-expo);
+}
+
+.icon-moon {
+  transform: scale(0) rotate(-45deg);
+  opacity: 0;
+}
+
+:root[data-theme="light"] .icon-sun {
+  transform: scale(0) rotate(45deg);
+  opacity: 0;
+}
+
+:root[data-theme="light"] .icon-moon {
+  transform: none;
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------
+   Tema geçişi: dairesel silme (View Transitions destekliyorsa)
+   ------------------------------------------------------------------ */
+
+html.theme-wipe::view-transition-old(root),
+html.theme-wipe::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html.theme-wipe::view-transition-old(root) { z-index: 1; }
+html.theme-wipe::view-transition-new(root) { z-index: 2; }
+
+html.theme-wipe::view-transition-new(root) {
+  animation: wipe-in 0.7s var(--ease-swift) both;
+}
+
+@keyframes wipe-in {
+  from { clip-path: circle(0% at var(--wipe-x, 50%) var(--wipe-y, 0%)); }
+  to { clip-path: circle(150% at var(--wipe-x, 50%) var(--wipe-y, 0%)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-wipe::view-transition-new(root) { animation: none; }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none !important; }
+}
+
+/* ------------------------------------------------------------------
+   Yazı gövdesi tipografisi
+   ------------------------------------------------------------------ */
+
+.prose {
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: var(--c-ink-soft);
+  /* Kod blokları sarmalanmıyor; sarmalanmayan içerik kapsayıcının min-content
+     genişliğini büyütüyor ve grid item olan .prose bu yüzden ekranı aşıyordu.
+     Sonuç mobilde yatay kaymaydı: 375px ekranda gövde 509px'e çıkıyordu.
+     min-width:0 zinciri kesiyor, pre kendi içinde kayıyor (overflow-x: auto). */
+  min-width: 0;
+  /* Uzun adresler ve kesintisiz diziler dar ekranda satırı taşırmasın. */
+  overflow-wrap: break-word;
+}
+
+.prose > * + * { margin-top: 1.5em; }
+
+.prose h2 {
+  font-size: clamp(1.6rem, 3.4vw, 2.25rem);
+  color: var(--c-ink);
+  margin-top: 2.4em;
+  line-height: 1.12;
+}
+
+.prose h3 {
+  font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+  color: var(--c-ink);
+  margin-top: 2em;
+  line-height: 1.2;
+}
+
+.prose strong { color: var(--c-ink); font-weight: 600; }
+
+.prose a {
+  color: var(--c-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--c-ember);
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  transition: color 0.3s;
+}
+
+.prose a:hover { color: var(--c-ember); }
+
+.prose blockquote {
+  border-left: 2px solid var(--c-ember);
+  padding-left: 1.5rem;
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 20, "WONK" 1, "opsz" 40;
+  font-size: 1.3em;
+  line-height: 1.45;
+  color: var(--c-ink);
+}
+
+.prose ul, .prose ol { padding-left: 1.35rem; }
+.prose ul { list-style: none; }
+.prose ol { list-style: decimal; }
+.prose li + li { margin-top: 0.6em; }
+
+.prose ul > li { position: relative; }
+.prose ul > li::before {
+  content: "";
+  position: absolute;
+  left: -1.1rem;
+  top: 0.72em;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--c-ember);
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: color-mix(in oklab, var(--c-ink) 8%, transparent);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  color: var(--c-ink);
+}
+
+.prose pre {
+  background: var(--c-surface-raised);
+  border: 1px solid var(--c-line);
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Shiki her iki temanın renklerini satır içi stil olarak basıyor; gece
+   hâlinde koyu temanın değişkenlerine geçiyoruz. !important burada
+   satır içi stili yenmek için gerekli. */
+:root:not([data-theme="light"]) .astro-code,
+:root:not([data-theme="light"]) .astro-code span {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+/* Kod bloğunun zeminini kendi yüzey rengimize bağlıyoruz. */
+.prose .astro-code {
+  background: var(--c-surface-raised) !important;
+}
+
+.prose hr {
+  border: none;
+  height: 1px;
+  background: var(--c-line);
+  margin-block: 3em;
+}
+
+/* İlk paragraf: giriş cümlesi büyür ve ilk harf düşer */
+.prose > p:first-of-type {
+  font-size: 1.3rem;
+  line-height: 1.6;
+  color: var(--c-ink);
+}
+
+.prose > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 144;
+  font-size: 3.6em;
+  line-height: 0.78;
+  padding-right: 0.08em;
+  padding-top: 0.06em;
+  color: var(--c-ember);
+}
+
+/* Türkçede "İ" ve "I" noktaları taşabiliyor; düşen harfe biraz pay. */
+.prose > p:first-of-type {
+  padding-top: 0.1em;
+}
+
+.prose em {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-variation-settings: "SOFT" 20, "WONK" 1, "opsz" 40;
+  font-size: 1.06em;
+  color: var(--c-ink);
+}
+
+/* Alıntı: metin sütununu iki yandan taşar, tırnakla açılır */
+.prose blockquote {
+  position: relative;
+  border-left: none;
+  margin-block: 2.6em;
+  padding: 0 0 0 2.4rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-variation-settings: "SOFT" 30, "WONK" 1, "opsz" 90;
+  font-size: clamp(1.35rem, 2.6vw, 1.75rem);
+  line-height: 1.36;
+  color: var(--c-ink);
+}
+
+.prose blockquote::before {
+  content: "”";
+  position: absolute;
+  left: -0.1rem;
+  top: 0.12em;
+  font-size: 3.2em;
+  line-height: 0.7;
+  color: var(--c-ember);
+  opacity: 0.55;
+}
+
+.prose blockquote::after {
+  content: "";
+  position: absolute;
+  left: 0.55rem;
+  top: 1.5em;
+  bottom: 0.2em;
+  width: 1px;
+  background: linear-gradient(var(--c-ember), transparent);
+  opacity: 0.5;
+}
+
+@media (min-width: 64rem) {
+  .prose blockquote {
+    margin-inline: -3.5rem;
+    padding-left: 5.9rem;
+  }
+
+  .prose blockquote::before { left: 3.4rem; }
+  .prose blockquote::after { left: 4.05rem; }
+}
+
+.prose blockquote p { margin: 0; }
+.prose blockquote em { font-size: inherit; font-family: inherit; }
+
+/* Kenar notu: <aside class="note">…</aside> */
+.prose .note {
+  position: relative;
+  margin-block: 2.2em;
+  padding-left: 1.4rem;
+  border-left: 1px solid var(--c-line);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--c-ink-faint);
+}
+
+.prose .note::before {
+  content: "not";
+  display: block;
+  margin-bottom: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-ember);
+}
+
+.prose .note > * + * { margin-top: 0.7em; }
+
+/* Geniş ekranda kenar notu metin sütununun soluna taşar */
+@media (min-width: 82rem) {
+  .prose .note {
+    float: left;
+    width: 9.5rem;
+    margin-left: -11.5rem;
+    margin-top: 0.4em;
+    padding-left: 0;
+    padding-right: 1.1rem;
+    border-left: none;
+    border-right: 1px solid var(--c-line);
+    text-align: right;
+    font-size: 0.85rem;
+  }
+}
+
+/* Ayraç: üç nokta */
+.prose hr {
+  position: relative;
+  height: 0;
+  background: none;
+  margin-block: 3.5em;
+  overflow: visible;
+}
+
+.prose hr::before {
+  content: "✦ ✦ ✦";
+  display: block;
+  text-align: center;
+  font-size: 0.6rem;
+  letter-spacing: 0.6em;
+  color: var(--c-ember);
+  opacity: 0.6;
+  transform: translateY(-0.5em);
+}
+
+.prose figure {
+  margin-block: 2.5em;
+}
+
+.prose figure img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--c-line);
+}
+
+.prose figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--c-ink-faint);
+  text-align: center;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.prose th,
+.prose td {
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid var(--c-line);
+  text-align: left;
+}
+
+.prose th {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-ink-faint);
+}

@@ -1,0 +1,205 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import Sigil from "../components/Sigil.astro";
+import { getPosts } from "../lib/posts";
+import { authors, formatDate, readingTime } from "../site";
+
+const posts = await getPosts();
+
+const byYear = posts.reduce<Record<string, typeof posts>>((acc, post) => {
+  const year = String(post.data.date.getFullYear());
+  (acc[year] ??= []).push(post);
+  return acc;
+}, {});
+
+const years = Object.keys(byYear).sort((a, b) => Number(b) - Number(a));
+---
+
+<Base title="Yazılar" description="Bütün yazılar, yeniden eskiye.">
+  <PageHead eyebrow={`${posts.length} yazı`} title="Arşiv" lead="Hepsi burada. Aramak için yazmaya başla.">
+    <div class="rise mt-10 max-w-md" style="--rise-delay:520ms">
+      <label class="relative block">
+        <span class="sr-only">Yazılarda ara</span>
+        <input
+          id="post-search"
+          type="search"
+          placeholder="Başlık, özet veya etiket…"
+          autocomplete="off"
+          class="w-full rounded-full border border-line bg-surface-raised/50 px-5 py-3 pl-11 text-sm text-ink outline-none transition-colors placeholder:text-ink-faint focus:border-ember"
+        />
+        <svg
+          viewBox="0 0 24 24"
+          class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+        >
+          <circle cx="11" cy="11" r="6.5"></circle>
+          <path stroke-linecap="round" d="m16 16 4.5 4.5"></path>
+        </svg>
+      </label>
+    </div>
+  </PageHead>
+
+  <section class="px-5 sm:px-8">
+    <div class="mx-auto max-w-[88rem]">
+      {
+        years.map((year) => (
+          <div class="year-block mb-16" data-year={year}>
+            <div class="reveal sticky top-[4.5rem] z-10 -mx-2 flex items-baseline gap-4 bg-surface/70 px-2 py-3 backdrop-blur-md">
+              <h2 class="text-display text-2xl text-ink-faint">{year}</h2>
+              <span class="h-px flex-1 bg-line/70" />
+              <span class="label">{byYear[year].length} yazı</span>
+            </div>
+
+            <ul>
+              {byYear[year].map((post, index) => (
+                <li
+                  class="row reveal border-b border-line/50"
+                  style={`--reveal-delay:${Math.min(index, 8) * 45}ms`}
+                  data-search={`${post.data.title} ${post.data.summary} ${post.data.tags.join(" ")}`.toLocaleLowerCase("tr")}
+                >
+                  <a
+                    href={`/yazi/${post.id}/`}
+                    class="group grid items-baseline gap-x-6 gap-y-2 py-6 sm:grid-cols-[8.5rem_minmax(0,1fr)_auto] sm:py-7"
+                  >
+                    <span class="label whitespace-nowrap sm:pt-2">{formatDate(post.data.date)}</span>
+
+                    <span>
+                      <span class="text-display block text-[clamp(1.4rem,3.4vw,2.1rem)] leading-[1.1] transition-colors duration-300 group-hover:text-ember">
+                        {post.data.title}
+                      </span>
+                      <span class="mt-2 block max-w-2xl text-sm leading-relaxed text-ink-soft">
+                        {post.data.summary}
+                      </span>
+                    </span>
+
+                    <span class="flex items-center gap-4 text-xs text-ink-faint sm:justify-end sm:pt-2">
+                      <span class="flex items-center gap-1.5">
+                        <span class="text-ember" aria-hidden="true">
+                          {authors[post.data.author].glyph}
+                        </span>
+                        {authors[post.data.author].name}
+                      </span>
+                      <span class="font-mono">{readingTime(post.body ?? "")} dk</span>
+                    </span>
+                  </a>
+
+                  <div class="row__peek" aria-hidden="true">
+                    <Sigil seed={post.data.title} class="h-full w-full" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+
+      <p id="empty-state" class="hidden py-20 text-center text-ink-soft">
+        Bu aramaya uyan yazı yok. <span class="text-ember">Başka bir kelime dene.</span>
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .row {
+    position: relative;
+  }
+
+  .row a {
+    transition: padding-left 0.5s var(--ease-out-expo);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .row:hover a {
+      padding-left: 0.75rem;
+    }
+  }
+
+  /* İmleçle birlikte gelen küçük sigil önizlemesi */
+  .row__peek {
+    position: fixed;
+    z-index: 40;
+    width: 11rem;
+    height: 11rem;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.85) translate(-50%, -50%);
+    transition:
+      opacity 0.35s ease,
+      transform 0.5s var(--ease-out-expo);
+    left: 0;
+    top: 0;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .row:hover .row__peek {
+      opacity: 1;
+      transform: scale(1) translate(-50%, -50%);
+    }
+  }
+
+  .row.is-hidden {
+    display: none;
+  }
+</style>
+
+<script>
+  const setupArchive = () => {
+    // Satır üzerinde imleci takip eden sigil
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      document.querySelectorAll<HTMLElement>(".row").forEach((row) => {
+        if (row.dataset.peek) return;
+        row.dataset.peek = "1";
+        const peek = row.querySelector<HTMLElement>(".row__peek");
+        if (!peek) return;
+
+        let frame = 0;
+        row.addEventListener(
+          "pointermove",
+          (event) => {
+            if (frame) return;
+            frame = requestAnimationFrame(() => {
+              frame = 0;
+              peek.style.left = `${event.clientX + 90}px`;
+              peek.style.top = `${event.clientY}px`;
+            });
+          },
+          { passive: true },
+        );
+      });
+    }
+
+    // Anlık arama
+    const input = document.getElementById("post-search") as HTMLInputElement | null;
+    if (!input || input.dataset.bound) return;
+    input.dataset.bound = "1";
+
+    const rows = [...document.querySelectorAll<HTMLElement>(".row")];
+    const blocks = [...document.querySelectorAll<HTMLElement>(".year-block")];
+    const empty = document.getElementById("empty-state");
+
+    input.addEventListener("input", () => {
+      const query = input.value.trim().toLocaleLowerCase("tr");
+      let visible = 0;
+
+      for (const row of rows) {
+        const match = !query || (row.dataset.search ?? "").includes(query);
+        row.classList.toggle("is-hidden", !match);
+        if (match) visible++;
+      }
+
+      for (const block of blocks) {
+        const any = block.querySelector(".row:not(.is-hidden)");
+        block.classList.toggle("hidden", !any);
+      }
+
+      empty?.classList.toggle("hidden", visible > 0);
+    });
+  };
+
+  setupArchive();
+  document.addEventListener("astro:page-load", setupArchive);
+</script>

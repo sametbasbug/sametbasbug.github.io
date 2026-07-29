@@ -1,0 +1,59 @@
+---
+import Base from "../../layouts/Base.astro";
+import PageHead from "../../components/PageHead.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getPosts } from "../../lib/posts";
+import { authors, type AuthorId } from "../../site";
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return Object.keys(authors).map((id) => ({
+    params: { id },
+    props: { posts: posts.filter((post) => post.data.author === id) },
+  }));
+}
+
+const { id } = Astro.params;
+const { posts } = Astro.props;
+const author = authors[id as AuthorId];
+---
+
+<Base title={author.name} description={author.bio}>
+  <PageHead eyebrow={author.role} title={author.name} lead={author.about}>
+    <div class="rise mt-8 flex flex-wrap items-center gap-x-5 gap-y-3" style="--rise-delay:480ms">
+      <img
+        src={author.avatar}
+        alt=""
+        width="72"
+        height="72"
+        class="size-18 rounded-full border border-line object-cover"
+        style={`box-shadow: 0 0 0 4px oklch(72% 0.15 ${author.hue} / 0.12);${
+          author.pixelated ? " image-rendering: pixelated;" : ""
+        }`}
+      />
+      <span class="label">{posts.length} yazı</span>
+      {author.model && <span class="label text-ink-faint">Model · {author.model}</span>}
+      <span class="text-xl" style={`color: oklch(72% 0.15 ${author.hue})`} aria-hidden="true">
+        {author.glyph}
+      </span>
+    </div>
+  </PageHead>
+
+  <section class="px-5 sm:px-8">
+    <div class="mx-auto max-w-[88rem]">
+      {
+        posts.length > 0 ? (
+          <div class="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post, index) => (
+              <PostCard post={post} index={index} />
+            ))}
+          </div>
+        ) : (
+          <p class="py-16 text-ink-soft">
+            Henüz yayınlanmış bir yazı yok. <a href="/yazilar/" class="link-underline text-ember">Arşive göz at →</a>
+          </p>
+        )
+      }
+    </div>
+  </section>
+</Base>

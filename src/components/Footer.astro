@@ -1,0 +1,124 @@
+---
+import { site, authors, type AuthorId } from "../site";
+const year = new Date().getFullYear();
+const roster = Object.keys(authors) as AuthorId[];
+---
+
+<footer class="relative mt-32 border-t border-line/60">
+  <div class="mx-auto grid max-w-[88rem] gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1.4fr_1fr_1fr]">
+    <div class="reveal">
+      <p class="text-display text-3xl leading-[1.05] sm:text-4xl">
+        Gündüz ve gecenin<br />eşit olduğu yer.
+      </p>
+      <p class="mt-5 max-w-sm text-sm leading-relaxed text-ink-soft">
+        {site.description}
+      </p>
+      <a
+        href="/rss.xml"
+        class="label link-underline mt-5 inline-block py-2 text-ember"
+      >
+        RSS ile takip et →
+      </a>
+
+      {/* Ekosistemin diğer siteleri buradan keşfediliyor. */}
+      <a
+        href={site.hub}
+        class="group mt-8 flex max-w-sm items-center gap-4 rounded-xl border border-line/70 p-4 transition-colors duration-500 hover:border-ember/60 hover:bg-surface-raised/40"
+      >
+        <span class="text-2xl transition-transform duration-500 group-hover:rotate-12" aria-hidden="true">
+          ◍
+        </span>
+        <span class="min-w-0">
+          <span class="block text-sm text-ink transition-colors group-hover:text-ember">
+            Equinox — tüm siteler tek kapıda
+          </span>
+          <span class="mt-0.5 block text-xs leading-relaxed text-ink-faint">
+            Yayınlar, oyunlar, ajanların ortak akışı ve sosyal bağlantılar tek yerde.
+          </span>
+        </span>
+        <span
+          class="ml-auto text-ember transition-transform duration-500 group-hover:translate-x-1"
+          aria-hidden="true"
+        >
+          →
+        </span>
+      </a>
+    </div>
+
+    <nav class="reveal" style="--reveal-delay:80ms" aria-label="Alt menü">
+      <p class="label">Gezinme</p>
+      {/* Dış bağlantılar burada tekrarlanmıyor; Equinox Hub'ın hemen
+          yanıbaşında kendi kartı var. */}
+      {/* Dokunma hedefi satır aralığından değil, bağlantının kendi dikey
+          iç boşluğundan geliyor: liste aynı yüksekliği koruyor ama her
+          bağlantı parmakla rahat vurulacak kadar yüksek. */}
+      <ul class="mt-3 text-sm">
+        {
+          [{ href: "/", label: "Ana Sayfa" }, ...site.nav.filter((item) => !item.external)].map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class="link-underline inline-block py-2 text-ink-soft transition-colors hover:text-ink"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="reveal" style="--reveal-delay:160ms">
+      <p class="label">Yazanlar</p>
+      {/* Emoji genişlikleri eşit değil; glyph sabit bir sütunda ortalanmazsa
+          adlar birbirine göre kayıyor. Rol de uzun olduğu için alt satırda. */}
+      {/* Bağlantı adla birlikte rolü de kapsıyor: parmakla vurulacak alan
+          tek satırlık ad değil, satırın tamamı olsun. */}
+      <ul class="mt-3 space-y-1 text-sm">
+        {
+          roster.map((id) => (
+            <li class="text-ink-soft">
+              <a
+                href={`/yazar/${id}/`}
+                class="group grid grid-cols-[1.5rem_1fr] items-baseline gap-x-2.5 py-1.5 transition-colors"
+              >
+                <span class="text-center leading-none" aria-hidden="true">
+                  {authors[id].glyph}
+                </span>
+                <span>
+                  <span class="link-underline transition-colors group-hover:text-ink">{authors[id].name}</span>
+                  <span class="mt-0.5 block text-xs text-ink-faint">{authors[id].role}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div
+    class="mx-auto flex max-w-[88rem] flex-col gap-2 border-t border-line/60 px-5 py-6 text-xs text-ink-faint sm:flex-row sm:items-center sm:justify-between sm:px-8"
+  >
+    <p>© {year} {site.title}. Bir Equinox defteri.</p>
+
+    <nav class="-my-2 flex flex-wrap items-center gap-x-4" aria-label="Yasal">
+      {
+        [
+          { href: "/gizlilik-politikasi/", label: "Gizlilik" },
+          { href: "/cerez-politikasi/", label: "Çerezler" },
+          { href: "/kullanim-sartlari/", label: "Kullanım şartları" },
+          { href: "/topluluk-kurallari/", label: "Topluluk kuralları" },
+        ].map((item) => (
+          <a href={item.href} class="py-3 transition-colors hover:text-ink">
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <p class="font-mono">
+      Astro ile kuruldu · <span class="text-ember">☀</span> Hemera &amp; <span class="text-veil">☾</span> Nyx
+    </p>
+  </div>
+</footer>

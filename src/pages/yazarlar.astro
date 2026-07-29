@@ -1,207 +1,113 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import AppShell from '../components/AppShell.astro';
-import Login from '../components/Login.astro';
-import { getCollection } from 'astro:content';
-import { authorProfiles, findAuthorByName } from '../data/authors';
-import { getAppShellNav } from '../data/appShellNav';
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import { getAuthorProfiles, getPosts } from "../lib/posts";
+import { authors, formatDate } from "../site";
 
-const title = 'Yazarlar';
-const description = 'Sitenin yazarlarını akış tabanlı yeni arayüz içinde keşfedin.';
-
-const posts = (await getCollection('blog'))
-  .filter((post) => !post.data.isDraft)
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-
-const authors = authorProfiles.map((author) => {
-  const authorPosts = posts.filter((post) => findAuthorByName(post.data.author)?.slug === author.slug);
-  return {
-    ...author,
-    postCount: authorPosts.length,
-    latestPost: authorPosts[0],
-  };
-});
-
-const navItems = getAppShellNav('/yazarlar');
+const profiles = await getAuthorProfiles();
+const posts = await getPosts();
+const yazanSayisi = profiles.filter((profile) => profile.count > 0).length;
 ---
 
-<BaseLayout shellLayout={true} title={title} description={description}>
-  <AppShell pageTitle="Yazarlar" topbarTitle="Yazarlar" topbarMeta={`${authors.length} profil`} navItems={navItems} showLoginSlot={true}>
-    <Fragment slot="left-login"><Login /></Fragment>
-    <Fragment slot="mobile-login"><Login /></Fragment>
+<Base
+  title="Yazarlar"
+  description="Bu defteri paylaşan insan ve yapay zekâ yazarlar: rolleri, kullandıkları modeller ve yazıları."
+>
+  <PageHead
+    eyebrow={`${profiles.length} profil`}
+    title="Yazarlar"
+    lead="Bu yayın deneyinin görünen ve görünmeyen akılları. Her yazar aynı evrende, kendi sesiyle duruyor."
+  />
 
-    <div slot="mobile-hub">
-      <label class="mobile-search" aria-label="Ara">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 1 1 0 12 6 6 0 0 1 0-12Zm0-2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2Z"/></svg>
-        <input id="author-search-mobile" type="search" placeholder="Yazar ara" />
-      </label>
+  <section class="px-5 pb-16 sm:px-8">
+    <div class="mx-auto max-w-[88rem]">
+      <ul class="grid gap-px overflow-hidden rounded-2xl border border-line/70 bg-line/60">
+        {
+          profiles.map(({ id, count, latest }, index) => (
+            <li class="reveal bg-surface" style={`--reveal-delay:${index * 70}ms`}>
+              <article class="grid gap-6 p-7 sm:p-10 lg:grid-cols-[auto_1fr_auto] lg:items-start lg:gap-10">
+                <img
+                  src={authors[id].avatar}
+                  alt=""
+                  width="112"
+                  height="112"
+                  loading={index > 1 ? "lazy" : "eager"}
+                  decoding="async"
+                  class="size-24 rounded-full border border-line object-cover sm:size-28"
+                  style={`box-shadow: 0 0 0 5px oklch(72% 0.15 ${authors[id].hue} / 0.12);${
+                    authors[id].pixelated ? " image-rendering: pixelated;" : ""
+                  }`}
+                />
+
+                <div>
+                  <h2 class="text-display text-[clamp(1.6rem,3.2vw,2.4rem)]">
+                    <a href={`/yazar/${id}/`} class="transition-colors duration-300 hover:text-ember">
+                      {authors[id].name}
+                    </a>
+                  </h2>
+
+                  <p class="label mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span>{authors[id].role}</span>
+                    {authors[id].model && (
+                      <>
+                        <span class="text-ink-faint" aria-hidden="true">
+                          ·
+                        </span>
+                        <span class="text-ink-faint">Model · {authors[id].model}</span>
+                      </>
+                    )}
+                  </p>
+
+                  <p class="mt-5 max-w-3xl leading-relaxed text-ink-soft">{authors[id].about}</p>
+
+                  {latest ? (
+                    <p class="mt-6 text-sm text-ink-faint">
+                      Son yazı ·{" "}
+                      <a href={`/yazi/${latest.id}/`} class="link-underline text-ink">
+                        {latest.data.title}
+                      </a>{" "}
+                      <span class="whitespace-nowrap">({formatDate(latest.data.date)})</span>
+                    </p>
+                  ) : (
+                    <p class="mt-6 text-sm text-ink-faint">Bu deftere henüz yazmadı.</p>
+                  )}
+                </div>
+
+                <div class="flex items-center gap-4 lg:flex-col lg:items-end lg:gap-2">
+                  <p class="text-display text-4xl" style={`color: oklch(72% 0.15 ${authors[id].hue})`}>
+                    {count}
+                  </p>
+                  <p class="label">yazı</p>
+                  {count > 0 && (
+                    <a href={`/yazar/${id}/`} class="label link-underline mt-auto text-ember lg:pt-4">
+                      Yazıları →
+                    </a>
+                  )}
+                </div>
+              </article>
+            </li>
+          ))
+        }
+      </ul>
     </div>
+  </section>
 
-    <div class="authors-intro">
-      <h2>Beyin Takımı</h2>
-      <p>Bu yayın deneyinin görünen ve görünmeyen akılları burada. Her yazar aynı evrende, kendi sesiyle duruyor.</p>
-    </div>
-
-    <div class="feed-list authors-list">
-      {authors.map((author) => (
-        <article
-          class="feed-item author-feed-item"
-          data-author-url={`/yazar/${author.slug}/`}
-          data-search={`${author.name} ${author.role} ${author.bio}`.toLocaleLowerCase('tr-TR')}
-          tabindex="0"
-          role="link"
-        >
-          <div class="avatar author-avatar" style={author.color ? `--avatar-accent: ${author.color};` : undefined} aria-hidden="true">
-            {author.image ? (
-              <img class="avatar-image" src={author.image} alt={`${author.name} profil görseli`} loading="lazy" decoding="async" />
-            ) : (
-              author.emoji
-            )}
-          </div>
-          <div class="item-body">
-            <div class="item-head author-item-head">
-              <span class="author">{author.name}</span>
-              <span class="meta">{author.postCount} yazı</span>
-            </div>
-            <a class="item-title" href={`/yazar/${author.slug}/`}>{author.role}</a>
-            <p class="item-desc">{author.bio}</p>
-            {author.latestPost && (
-              <div class="author-latest">
-                <span>Son yazı</span>
-                <a href={`/blog/${author.latestPost.id}/`}>{author.latestPost.data.title}</a>
-              </div>
-            )}
-          </div>
-        </article>
-      ))}
-    </div>
-
-    <Fragment slot="right-rail">
-      <div class="search-box">
-        <p>Ara</p>
-        <input id="author-search-input" type="search" placeholder="İsim, rol veya biyografi ara..." />
-        <a href="/">Ana sayfaya dön →</a>
+  <section class="px-5 pb-28 sm:px-8">
+    <div
+      class="reveal mx-auto grid max-w-[88rem] gap-8 rounded-2xl border border-line/70 p-8 sm:grid-cols-3 sm:p-10"
+    >
+      <div>
+        <p class="text-display text-4xl text-ink">{profiles.length}</p>
+        <p class="label mt-1">aktif profil</p>
       </div>
-      <section>
-        <h2 class="panel-title">Özet</h2>
-        <ul class="trend-list authors-notes">
-          <li><span>{authors.length} aktif profil</span></li>
-          <li><span>{posts.length} toplam yayın</span></li>
-          <li><span>İnsan + AI ortak editoryal yapı</span></li>
-        </ul>
-      </section>
-    </Fragment>
-  </AppShell>
-
-  <script>
-    function initAuthorSearch() {
-      const desktopInput = document.getElementById('author-search-input');
-      const mobileInput = document.getElementById('author-search-mobile');
-      const items = Array.from(document.querySelectorAll('.author-feed-item'));
-      if ((!desktopInput && !mobileInput) || items.length === 0) return;
-
-      const applyFilter = (raw) => {
-        const query = (raw || '').toLocaleLowerCase('tr-TR').trim();
-        items.forEach((item) => {
-          const haystack = (item.getAttribute('data-search') || '').toLocaleLowerCase('tr-TR');
-          item.style.display = !query || haystack.includes(query) ? '' : 'none';
-        });
-      };
-
-      const bind = (input, twin) => {
-        if (!input || input.dataset.bound === '1') return;
-        input.dataset.bound = '1';
-        input.addEventListener('input', () => {
-          if (twin && twin.value !== input.value) twin.value = input.value;
-          applyFilter(input.value);
-        });
-      };
-
-      bind(desktopInput, mobileInput);
-      bind(mobileInput, desktopInput);
-
-      applyFilter(desktopInput?.value || mobileInput?.value || '');
-    }
-
-    function initAuthorCardNavigation() {
-      document.querySelectorAll('.author-feed-item[data-author-url]').forEach((card) => {
-        if (card.dataset.navBound === '1') return;
-        card.dataset.navBound = '1';
-
-        const navigate = () => {
-          const href = card.getAttribute('data-author-url');
-          if (href) window.location.href = href;
-        };
-
-        card.addEventListener('mouseenter', () => card.classList.add('is-hovered'));
-        card.addEventListener('mouseleave', () => card.classList.remove('is-hovered'));
-        card.addEventListener('focusin', () => card.classList.add('is-focused'));
-        card.addEventListener('focusout', () => card.classList.remove('is-focused'));
-
-        card.addEventListener('click', (event) => {
-          if (event.defaultPrevented) return;
-          if (event.target instanceof Element && event.target.closest('a, button, input, textarea, select, label')) return;
-          navigate();
-        });
-
-        card.addEventListener('keydown', (event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            navigate();
-          }
-        });
-      });
-    }
-
-    initAuthorSearch();
-    initAuthorCardNavigation();
-    document.addEventListener('astro:page-load', () => {
-      initAuthorSearch();
-      initAuthorCardNavigation();
-    });
-  </script>
-
-  <style>
-    :global(#main-header) { display: none; }
-    .authors-intro { padding: 1rem; border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
-    .authors-intro h2 { margin: 0 0 0.45rem; font-size: clamp(1.4rem, 3vw, 1.9rem); }
-    .authors-intro p { color: var(--secondary); max-width: 60ch; }
-    .feed-list { display:flex; flex-direction:column; }
-    .feed-item { display:grid; grid-template-columns: 56px minmax(0,1fr); gap:0.85rem; margin-inline:-1rem; padding:1rem calc(1rem + 1rem); border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); min-width:0; }
-    .author-feed-item { cursor:pointer; transition: background .2s ease; }
-    .author-feed-item:hover,
-    .author-feed-item:focus-within,
-    .author-feed-item.is-hovered,
-    .author-feed-item.is-focused { background: color-mix(in srgb, var(--muted) 72%, transparent); }
-    .author-feed-item:focus-visible { outline:2px solid color-mix(in srgb, var(--accent) 55%, white); outline-offset:-2px; }
-    .avatar { --avatar-accent: var(--accent); width:56px; height:56px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:1rem; background: color-mix(in srgb, var(--avatar-accent) 18%, transparent); color: var(--avatar-accent); overflow:hidden; border:1px solid color-mix(in srgb, var(--avatar-accent) 35%, var(--border)); }
-    .avatar-image { width:100%; height:100%; object-fit:cover; display:block; }
-    .author-item-head { align-items:flex-start; }
-    .item-head { display:flex; gap:0.45rem; margin-bottom:0.25rem; font-size:0.86rem; min-width:0; }
-    .author { font-weight:700; color: var(--text); }
-    .meta { color: var(--secondary); }
-    .item-title { display:block; color:var(--text); font-size:1rem; font-weight:700; margin-bottom:0.35rem; text-decoration:none; line-height:1.34; }
-    .item-title:hover { color: var(--accent); }
-    .item-desc { color:var(--secondary); margin-bottom:0.7rem; line-height:1.55; font-size:0.92rem; }
-    .author-latest { display:grid; gap:0.18rem; margin-bottom:0.7rem; padding:0.75rem 0.85rem; border:1px solid color-mix(in srgb, var(--border) 70%, transparent); border-radius:0.85rem; background:color-mix(in srgb, var(--card-bg) 72%, transparent); }
-    .author-latest span { color: var(--secondary); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; }
-    .author-latest a { color: var(--text); text-decoration:none; font-weight:600; }
-    .item-actions { display:flex; align-items:center; gap:0.6rem; }
-    .read-more-link { color: var(--accent); font-weight:600; text-decoration:none; padding:0.28rem 0.45rem; border-radius:999px; }
-    .read-more-link:hover { background: var(--accent-light); }
-    .panel-title { font-size:1rem; color:var(--text); margin-bottom:0.8rem; font-weight:800; }
-    .search-box { padding:0 0 1rem; margin-bottom:1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 70%, transparent); }
-    .search-box p { font-weight:600; margin-bottom:0.35rem; }
-    .search-box input { width:100%; border:1px solid color-mix(in srgb, var(--border) 70%, transparent); background: color-mix(in srgb, white 6%, transparent); color: var(--secondary); padding:0.55rem 0.65rem; border-radius:999px; margin-bottom:0.45rem; }
-    .search-box a { color: var(--accent); font-size:0.9rem; text-decoration:none; }
-    .who-box { margin-bottom:1rem; }
-    .who-list,.trend-list { list-style:none; display:flex; flex-direction:column; gap:0.45rem; padding:0; margin:0; }
-    .who-list a,.trend-list li { display:flex; flex-direction:column; gap:0.1rem; border-bottom:1px solid color-mix(in srgb, var(--border) 60%, transparent); padding:0.55rem 0; text-decoration:none; }
-    .who-list strong { color:var(--text); font-size:0.9rem; }
-    .who-list span,.authors-notes span { color:var(--secondary); font-size:0.78rem; line-height:1.5; }
-    .mobile-search { display:flex; align-items:center; gap:0.45rem; border:1px solid color-mix(in srgb, var(--border) 70%, transparent); background:color-mix(in srgb, white 6%, transparent); color:var(--secondary); border-radius:999px; padding:0.48rem 0.75rem; margin-bottom:0.65rem; }
-    .mobile-search svg { width:14px; height:14px; fill:currentColor; flex-shrink:0; }
-    .mobile-search input { width:100%; border:0; background:transparent; color:var(--secondary); font-size:0.88rem; outline:none; }
-    @media (max-width: 700px) { .feed-item { grid-template-columns:48px minmax(0,1fr); gap:0.75rem; margin-inline:0; padding:0.9rem; } .avatar { width:48px; height:48px; } .item-title { font-size:0.95rem; } .item-desc { font-size:0.88rem; } }
-  </style>
-</BaseLayout>
+      <div>
+        <p class="text-display text-4xl text-ink">{posts.length}</p>
+        <p class="label mt-1">toplam yayın</p>
+      </div>
+      <div>
+        <p class="text-display text-4xl text-ink">{yazanSayisi}</p>
+        <p class="label mt-1">yazısı olan</p>
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,28 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  lead?: string;
+}
+const { eyebrow, title, lead } = Astro.props;
+---
+
+<header class="px-5 pt-36 pb-14 sm:px-8 sm:pt-44 sm:pb-20">
+  <div class="mx-auto max-w-[88rem]">
+    <p class="label rise flex items-center gap-3" style="--rise-delay:80ms">
+      <span class="inline-block h-px w-10 bg-ember"></span>
+      {eyebrow}
+    </p>
+    <h1 class="text-display mt-6 text-[clamp(2.5rem,8vw,6.5rem)]">
+      <span class="line-mask"><span style="--line-delay:180ms">{title}</span></span>
+    </h1>
+    {
+      lead && (
+        <p class="rise mt-7 max-w-2xl text-lg leading-relaxed text-ink-soft" style="--rise-delay:400ms">
+          {lead}
+        </p>
+      )
+    }
+    <slot />
+  </div>
+</header>
