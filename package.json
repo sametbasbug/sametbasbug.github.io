@@ -1,7 +1,15 @@
 {
-  "name": "yeni-blog-project",
-  "type": "module",
+  "name": "sametbasbug.dev",
+  "description": "Samet Başbuğ (sametbasbug.dev) — Astro 7 + Tailwind 4 ile kurulmuş Türkçe kişisel blog ve sözlük.",
   "version": "0.0.1",
+  "private": true,
+  "license": "MIT",
+  "homepage": "https://sametbasbug.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sametbasbug/sametbasbug.github.io.git"
+  },
+  "type": "module",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -11,7 +19,9 @@
     "preview": "astro preview",
     "astro": "astro",
     "check:redirects": "node scripts/check-redirects.mjs",
-    "cloudflare": "node scripts/cloudflare-redirects.mjs"
+    "cloudflare": "node scripts/cloudflare-redirects.mjs",
+    "check:live": "node scripts/check-live-redirects.mjs",
+    "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",

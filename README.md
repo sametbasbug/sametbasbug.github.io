@@ -100,12 +100,12 @@ parçalar:
 
 | Yol | Ne |
 | --- | --- |
-| `legacy/eski-sitemap-2026-07.txt` | Eski sitenin 123 URL'lik sitemap kaydı — referans |
+| `legacy/eski-sitemap-2026-07.txt` | Eski sitenin 123 URL'lik sitemap kaydı — `check-redirects` bunu okur |
 | `src/redirects.ts` | Eski → yeni URL haritası; `astro.config.ts` bunu okuyor |
 | `scripts/check-redirects.mjs` | Her eski adres karşılanıyor mu, hedefi var mı |
-| `scripts/migrate-glossary.mjs` | Sözlük maddelerini eski siteden çeker |
-| `scripts/migrate-pages.mjs` | Sayfa çekmek gerekirse; yasal metinler sonradan sıfırdan yazıldı |
-| `scripts/migrate-posts.mjs` | Blog yazılarını çeker; slug listesi `redirects.ts`'ten gelir |
+
+İçeriği eski siteden çeken `migrate-*` betikleri geçiş bittiğinde silindi;
+kaynakları artık yayında değil. Gerekirse git geçmişinden alınabilir.
 
 ```bash
 npm run build && npm run check:redirects
@@ -123,25 +123,25 @@ tanımlanıyor.
 npm run cloudflare
 ```
 
-Kurallar Cloudflare panelinde **kurulu ama kapalı** duruyor; ayrıntılar ve
-yayına alma sırası `cloudflare/redirect-rules.md` içinde.
+Kural Cloudflare panelinde **açık** ve 30 kayıtlı listeye bağlı; ayrıntılar
+`cloudflare/redirect-rules.md` içinde.
 
 **Sıra önemli: önce site deploy, sonra kuralları aç.** Kurallar hedefler
-yayına girmeden açılırsa eski adresler 301 alıp 404'e düşer.
+yayına girmeden açılırsa eski adresler 301 alıp 404'e düşer. Geçişte bu
+sıraya uyuldu; ileride yeni bir yönlendirme eklerken de aynısı geçerli.
 
 Astro'nun ürettiği `meta refresh` sayfaları yedek olarak duruyor: Cloudflare
 isteği kenarda yakaladığı için onlara ulaşılmaz, ama kurallar bir gün
 silinirse devreye girerler.
 
-## Yayına almadan önce
+## Değişiklik yayına çıkmadan önce
 
 - `npm run check:redirects` temiz mi? "KOPUK hedef" satırı sıfır olmalı.
-- **Yasal metinleri bir hukukçuya okut.** `src/content/pages/` altındakiler
-  sitenin bugünkü gerçeğine göre yazıldı (veri toplanmıyor, çerez yok, yorum
-  yok) ama hukuki denetimden geçmedi.
+- **Yasal metinler hâlâ hukuki denetimden geçmedi.** `src/content/pages/`
+  altındakiler sitenin bugünkü gerçeğine göre yazıldı (veri toplanmıyor,
+  çerez yok, yorum yok) ama bir hukukçu okumadı.
 - Siteye veri toplayan bir özellik eklersen gizlilik ve çerez metinleri o
   özellik yayına girmeden önce güncellenmeli.
-- `src/site.ts` içindeki `url` ve `hub` bağlantılarını güncelle.
-- `astro.config.ts` içindeki `site` alanı sitemap ve RSS için kullanılıyor.
-- Paylaşım görselleri `astro.config.ts` içindeki `site` alanına göre mutlak
-  URL alıyor; alan adı değişirse orayı güncelle.
+- Alan adı değişirse üç yer birden güncellenir: `astro.config.ts` içindeki
+  `site` (sitemap, RSS ve mutlak OG adresleri), `src/site.ts` içindeki `url`
+  ve `public/CNAME`.

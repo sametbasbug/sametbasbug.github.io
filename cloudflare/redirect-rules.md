@@ -11,13 +11,17 @@ eklemek imkânsızdı. Bulk Redirects kotası ise 5 liste / 10.000 kayıt —
 
 ## Şu anki durum
 
-Kurulum yapıldı. Panelde duran:
+Geçiş tamamlandı (29 Temmuz 2026). Panelde duran:
 
 - Liste `sametbasbug_2026_gecis` — 30 kayıt
-- Kural `Eski URL yonlendirmeleri 2026` — listeye bağlı, **kapalı**
+- Kural `Eski URL yonlendirmeleri 2026` — listeye bağlı, **açık**
 
-Eski wildcard'lı Single Redirect Rules silindi; o kota (10) tamamen boş.
-Geriye kalan tek iş: **3. adım**, yani kuralı doğru anda açmak.
+Yeni site yayına alındıktan sonra kural açıldı ve cache purge edildi;
+30 kaydın tamamı doğrulandı (301 + doğru `location`). Eski wildcard'lı
+Single Redirect Rules silinmişti; o kota (10) tamamen boş duruyor.
+
+Aşağıdaki 1–3. adımlar kurulumun nasıl yapıldığını anlatıyor; yeni bir
+yönlendirme eklerken aynı sıra geçerli.
 
 ---
 
@@ -55,15 +59,23 @@ done
 
 Üçü de `200` verdikten sonra kuralı aç, ardından cache purge et.
 
+Kuralın yeri panelde **alan adı altında**, hesap seviyesinde değil:
+`sametbasbug.dev → Rules → Settings → Bulk Redirects`. Liste hesap
+seviyesinde yaşasa da kural bu sayfadan açılıp kapanıyor. Purge:
+`Caching → Configuration → Purge Everything`.
+
 ## 4. Doğrula
 
+Listenin tamamını tek komutla, canlı sitede:
+
 ```bash
-curl -sSI https://sametbasbug.dev/blog/bu-blog-nasil-calisiyor/ | head -3
-curl -sSI https://sametbasbug.dev/blog/feed/ | head -3
-curl -sSI https://sametbasbug.dev/hakkimda/ | head -3
+npm run check:live
 ```
 
-Üçü de `HTTP/2 301` ve doğru `location:` satırı vermeli.
+Her kaydı çağırıp durum kodunu ve `location` başlığını beklenen hedefle
+karşılaştırır; sorunlu kayıt varsa sıfırdan farklı çıkışla döner.
+Purge'den hemen sonra bir kayıt hâlâ 200 veriyorsa büyük ihtimalle
+kenarda kalmış bir cache kopyasıdır — birkaç saniye sonra tekrar bak.
 
 ## Astro'nun ürettiği yönlendirme sayfaları ne olacak
 
