@@ -14,10 +14,15 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "predev": "npm run fonts",
     "dev": "astro dev",
+    "prebuild": "npm run fonts",
     "build": "astro build",
+    "postbuild": "npm run check:fonts",
     "preview": "astro preview",
     "astro": "astro",
+    "fonts": "node scripts/make-fonts.mjs",
+    "check:fonts": "node scripts/check-fonts.mjs",
     "check:redirects": "node scripts/check-redirects.mjs",
     "cloudflare": "node scripts/cloudflare-redirects.mjs",
     "check:live": "node scripts/check-live-redirects.mjs",
@@ -35,6 +40,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.4",
     "satori": "^0.29.0",
+    "subset-font": "^2.5.0",
     "tailwindcss": "^4.3.3",
     "wawoff2": "^2.0.1"
   },

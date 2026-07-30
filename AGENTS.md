@@ -7,6 +7,8 @@ tema, sayfa başına ~16 KB JavaScript. Kullanıcıya dönük her metin Türkçe
 npm run dev                   # http://localhost:4321
 npm run build                 # dist/
 npm run check:redirects       # eski adresler hâlâ karşılanıyor mu
+npm run check:fonts           # budanmış fontta eksik glif kaldı mı (build kendi çağırır)
+npm run fonts                 # yazı tiplerini yeniden buda (dev/build kendi çağırır)
 npm run cloudflare            # Cloudflare bulk redirect CSV'sini üretir
 node scripts/make-icons.mjs   # favicon.svg'den PNG türevleri + manifest
 ```
@@ -43,6 +45,15 @@ Alan boşsa başlıktan türetilen sigil kullanılır.
 **Tek yazar listesi var:** `src/site.ts` → `authors`. Yazar sayısı,
 gezinme ve alt bilgi oradan türüyor; sayıları elle yazma.
 
+**Yazı tipleri üretiliyor, paketten gelmiyor.** `src/fonts/` ve
+`src/styles/fonts.css` `scripts/make-fonts.mjs`'in çıktısıdır; git'e
+girmez, `predev`/`prebuild` her koşuda yeniden üretir. Elle düzenlemeyin,
+Fontsource CSS'ini doğrudan `@import` etmeyin — başlıklar ve alıntılar
+Fraunces'ın opsz/SOFT/WONK eksenlerini kullanıyor ve bu eksenler yalnızca
+paketin `full` kesitinde var. Karakter kümesi `src/` taramasından çıkıyor;
+kullanıcıya dönen metin her zaman `src/` içinde durduğu sürece tarama
+yeterlidir.
+
 ## Bilinen tuzaklar
 
 - **resvg WebP okuyamıyor** ve hata da vermiyor, görseli sessizce boş
@@ -51,6 +62,13 @@ gezinme ve alt bilgi oradan türüyor; sayıları elle yazma.
 - **Kod blokları `.prose`'u şişirir.** `pre` sarmalanmadığı için
   kapsayıcının min-content genişliğini büyütüyor ve mobilde yatay kaymaya
   yol açıyordu; `global.css`'teki `.prose { min-width: 0 }` bunu tutuyor.
+- **Budanmış fontta eksik glif tofu çizer, yedeğe düşmez.** `unicode-range`
+  eşleştiği için tarayıcı o fontu kullanmayı sürdürür. Taramanın göremediği
+  bir karakter render edilirse (build sırasında türetilen metin gibi) boş
+  kutu çıkar. `postbuild` bunu her build'de denetler ve eksik varsa build'i
+  kırar — CI'da da, çünkü `withastro/action` derlemeyi `npm run build` ile
+  çağırıyor. Build "EKSİK" listesiyle durursa çare, o karakterleri
+  `make-fonts.mjs` içindeki `BASE` listesine eklemek.
 - **Site gece temasında açılır**, sistem tercihine bilerek bakılmaz.
   Kullanıcı düğmeye basarsa seçimi `localStorage`'a yazılır.
 - `.reveal` animasyonları IntersectionObserver'a bağlı; tarayıcı sekmesi
@@ -66,6 +84,7 @@ gezinme ve alt bilgi oradan türüyor; sayıları elle yazma.
 | `src/redirects.ts` | Eski → yeni adres eşlemesi; Cloudflare CSV'si buradan üretilir |
 | `src/lib/sigil.ts` | Başlıktan türeyen prosedürel kapak deseni |
 | `src/lib/og.ts` | Build sırasında OG görseli üretimi (satori + resvg) |
+| `scripts/make-fonts.mjs` | Yazı tiplerini `src/` taramasına göre budar; `src/fonts/` + `src/styles/fonts.css` üretir |
 | `cloudflare/` | Yönlendirme listesi ve kurulum notu |
 | `legacy/` | Eski sitemap — `check:redirects` bunu okur, silme |
 

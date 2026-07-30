@@ -2,6 +2,9 @@
 dist/
 # generated types
 .astro/
+# budanmış yazı tipleri — scripts/make-fonts.mjs üretir (npm run fonts)
+src/fonts/
+src/styles/fonts.css
 
 # dependencies
 node_modules/

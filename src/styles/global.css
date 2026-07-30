@@ -1,11 +1,13 @@
 @import "tailwindcss";
 
-@import "@fontsource-variable/fraunces";
-/* Fraunces'in italik kesimi ayrı geliyor; alıntılarda ve vurgularda
-   kullanıldığı için yükleniyor. */
-@import "@fontsource-variable/fraunces/wght-italic.css";
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/jetbrains-mono";
+/* Üç aile de Fontsource'un hazır CSS'i yerine `scripts/make-fonts.mjs` ile
+   üretiliyor. Sebep: aşağıdaki başlık ve alıntı kuralları Fraunces'ın opsz,
+   SOFT ve WONK eksenlerini kullanıyor; bu eksenler yalnızca paketin `full`
+   kesitinde var. Hazır `index.css` sadece wght taşıdığı için ayarlar
+   sessizce yok sayılıyordu. `full` ham hâlde ağır olduğundan sitenin
+   gerçekten kullandığı karakterlere budanıyor. Üretilmiş dosya; git'e
+   girmez, `prebuild` ve `predev` her koşuda yeniden üretir. */
+@import "./fonts.css";
 
 /* ------------------------------------------------------------------
    Equinox tasarım sistemi
@@ -344,16 +346,6 @@ html.theme-wipe::view-transition-new(root) {
 }
 
 .prose a:hover { color: var(--c-ember); }
-
-.prose blockquote {
-  border-left: 2px solid var(--c-ember);
-  padding-left: 1.5rem;
-  font-family: var(--font-display);
-  font-variation-settings: "SOFT" 20, "WONK" 1, "opsz" 40;
-  font-size: 1.3em;
-  line-height: 1.45;
-  color: var(--c-ink);
-}
 
 .prose ul, .prose ol { padding-left: 1.35rem; }
 .prose ul { list-style: none; }
