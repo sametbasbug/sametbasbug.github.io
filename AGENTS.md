@@ -62,6 +62,15 @@ orta çizgisinde belli oluyor. SOFT ve WONK puntodan bağımsız, onlar
 `font-variation-settings` içinde kalır. Bir kez altı ayrı yerde
 sabitleyip bütün başlıkları, alıntıları ve düşen harfi böyle bozduk.
 
+**SOFT ve WONK'un gerçekte ne yaptığı ölçüldü.** `WONK 1` yalnızca
+italikte görünüyor: `g` ve `y` kıvrık kuyruk alıyor — alıntıların ve
+`em`in havası bundan geliyor. Düz metinde farkı gözle ayırt etmek
+mümkün değil. `SOFT` uçlardaki keskinliği yumuşatıyor; 0 ile 100
+arasında fark belli ama 20 ile 30 arasında değil, o yüzden italikte tek
+değer (`SOFT 30`) kullanılıyor. **`SOFT 0` yazılmaz** — eksenin
+varsayılanı zaten o, yazılması hiçbir şey yapmadan "burada bir ayar var"
+izlenimi verir.
+
 ## Bilinen tuzaklar
 
 - **resvg WebP okuyamıyor** ve hata da vermiyor, görseli sessizce boş

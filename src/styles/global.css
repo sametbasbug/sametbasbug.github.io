@@ -142,10 +142,14 @@
      birlikte gezdiriyor. Sabitlenirse h4 gibi küçük başlıklar da 120 punto
      için çizilmiş ince, gergin harflerle geliyor; Fraunces'ta bu en çok
      K'nın kolunda ve H'nin orta çizgisinde belli oluyor. SOFT ve WONK
-     puntodan bağımsız, onlar elde kalıyor. */
+     puntodan bağımsız, onlar elde kalıyor.
+
+     `SOFT` burada yazılmıyor çünkü 0 zaten eksenin varsayılanı — yazılsa
+     hiçbir şey yapmadan "ayar var" izlenimi verirdi. WONK düz metinde
+     gözle ayırt edilemiyor ama italikle aynı ailede kalsın diye duruyor. */
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    font-variation-settings: "SOFT" 0, "WONK" 1;
+    font-variation-settings: "WONK" 1;
     font-optical-sizing: auto;
     letter-spacing: -0.022em;
     text-wrap: balance;
@@ -164,8 +168,9 @@
 
 @utility text-display {
   font-family: var(--font-display);
-  /* Bkz. h1–h4: opsz elle sabitlenmiyor, punto ile birlikte geziyor. */
-  font-variation-settings: "SOFT" 0, "WONK" 1;
+  /* Bkz. h1–h4: opsz elle sabitlenmiyor, SOFT 0 varsayılan olduğu için
+     yazılmıyor. */
+  font-variation-settings: "WONK" 1;
   font-optical-sizing: auto;
   letter-spacing: -0.03em;
   /* 0.92 idi ve çok satırlı başlıklarda üst satırın descender'ı alt satırın
@@ -429,7 +434,7 @@ html.theme-wipe::view-transition-new(root) {
 .prose > p:first-of-type::first-letter {
   float: left;
   font-family: var(--font-display);
-  font-variation-settings: "SOFT" 0, "WONK" 1;
+  font-variation-settings: "WONK" 1;
   font-optical-sizing: auto;
   font-size: 3.6em;
   line-height: 0.78;
@@ -446,7 +451,10 @@ html.theme-wipe::view-transition-new(root) {
 .prose em {
   font-family: var(--font-display);
   font-style: italic;
-  font-variation-settings: "SOFT" 20, "WONK" 1;
+  /* İtalikte WONK gözle görünür: g ve y kıvrık kuyruk alıyor. SOFT ise
+     uçları yumuşatıyor; em ve alıntı için tek değer, çünkü 20 ile 30
+     arasındaki fark ayırt edilemiyordu. */
+  font-variation-settings: "SOFT" 30, "WONK" 1;
   font-optical-sizing: auto;
   font-size: 1.06em;
   color: var(--c-ink);
