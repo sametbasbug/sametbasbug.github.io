@@ -54,6 +54,14 @@ paketin `full` kesitinde var. Karakter kümesi `src/` taramasından çıkıyor;
 kullanıcıya dönen metin her zaman `src/` içinde durduğu sürece tarama
 yeterlidir.
 
+**`opsz` elle yazılmaz.** `font-optical-sizing: auto` (varsayılan) optik
+boyut eksenini punto ile birlikte gezdiriyor. `font-variation-settings`
+içinde sabitlenirse 20 px'lik bir metin de 144 punto için çizilmiş ince,
+gergin harflerle geliyor; Fraunces'ta bu en çok K'nın kolunda ve H'nin
+orta çizgisinde belli oluyor. SOFT ve WONK puntodan bağımsız, onlar
+`font-variation-settings` içinde kalır. Bir kez altı ayrı yerde
+sabitleyip bütün başlıkları, alıntıları ve düşen harfi böyle bozduk.
+
 ## Bilinen tuzaklar
 
 - **resvg WebP okuyamıyor** ve hata da vermiyor, görseli sessizce boş
