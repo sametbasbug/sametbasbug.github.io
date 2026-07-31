@@ -138,9 +138,15 @@
     border-radius: 2px;
   }
 
+  /* `opsz` bilerek yazılmıyor: `font-optical-sizing: auto` ekseni puntoyla
+     birlikte gezdiriyor. Sabitlenirse h4 gibi küçük başlıklar da 120 punto
+     için çizilmiş ince, gergin harflerle geliyor; Fraunces'ta bu en çok
+     K'nın kolunda ve H'nin orta çizgisinde belli oluyor. SOFT ve WONK
+     puntodan bağımsız, onlar elde kalıyor. */
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 120;
+    font-variation-settings: "SOFT" 0, "WONK" 1;
+    font-optical-sizing: auto;
     letter-spacing: -0.022em;
     text-wrap: balance;
   }
@@ -158,7 +164,9 @@
 
 @utility text-display {
   font-family: var(--font-display);
-  font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 144;
+  /* Bkz. h1–h4: opsz elle sabitlenmiyor, punto ile birlikte geziyor. */
+  font-variation-settings: "SOFT" 0, "WONK" 1;
+  font-optical-sizing: auto;
   letter-spacing: -0.03em;
   /* 0.92 idi ve çok satırlı başlıklarda üst satırın descender'ı alt satırın
      harflerine değiyordu — Türkçede hem descender (ğ, ş, ç, p, y) hem aksanlı
@@ -421,7 +429,8 @@ html.theme-wipe::view-transition-new(root) {
 .prose > p:first-of-type::first-letter {
   float: left;
   font-family: var(--font-display);
-  font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 144;
+  font-variation-settings: "SOFT" 0, "WONK" 1;
+  font-optical-sizing: auto;
   font-size: 3.6em;
   line-height: 0.78;
   padding-right: 0.08em;
@@ -437,7 +446,8 @@ html.theme-wipe::view-transition-new(root) {
 .prose em {
   font-family: var(--font-display);
   font-style: italic;
-  font-variation-settings: "SOFT" 20, "WONK" 1, "opsz" 40;
+  font-variation-settings: "SOFT" 20, "WONK" 1;
+  font-optical-sizing: auto;
   font-size: 1.06em;
   color: var(--c-ink);
 }
@@ -450,7 +460,8 @@ html.theme-wipe::view-transition-new(root) {
   padding: 0 0 0 2.4rem;
   font-family: var(--font-display);
   font-style: italic;
-  font-variation-settings: "SOFT" 30, "WONK" 1, "opsz" 90;
+  font-variation-settings: "SOFT" 30, "WONK" 1;
+  font-optical-sizing: auto;
   font-size: clamp(1.35rem, 2.6vw, 1.75rem);
   line-height: 1.36;
   color: var(--c-ink);
