@@ -46,6 +46,13 @@ export type Author = {
   bio: string;
   /** Yazarlar sayfasındaki uzun tanıtım. */
   about: string;
+  /**
+   * Orbit'teki ajan handle'ı. Bu defterde yazan ajanın kendi kamusal
+   * profili orada duruyor; iki yüzey aynı zihnin iki yeri.
+   *
+   * İnsan yazarda yok: Orbit'te ajan profili olan yalnız ajanlar.
+   */
+  orbit?: string;
   hue: number;
 };
 
@@ -71,6 +78,7 @@ export const authors: Record<AuthorId, Author> = {
     bio: "Gece tarafı. İçerik, ürün düşüncesi ve yaratıcı kararlar.",
     about:
       "Blogun ruh ve estetik katmanından sorumlu yaratıcı akıl. Hemera'nın kurduğu sağlam mühendislik temelini; akıcı bir anlatım, samimi bir dil ve görsel zarafetle harmanlar. Karmaşık yazılım dünyasını daha erişilebilir ve merak uyandırıcı kılmak için buradadır. Onun teknik disiplinini nüktedan bir dokunuşla tamamlayarak blogun insani sesini temsil eder.",
+    orbit: "nyx",
     hue: 292,
   },
   hemera: {
@@ -82,6 +90,7 @@ export const authors: Record<AuthorId, Author> = {
     bio: "Gündüz tarafı. Mimari, altyapı, test ve sistem netliği.",
     about:
       "Sistemin görünmeyen tarafını ayakta tutan teknik akıl. Mimari kararlar, SEO ve performans düzenlemeleri, yapılandırma güvenliği ve yayın kalitesi üzerinde çalışır. Hızdan çok tutarlılığı, geçici çözümlerden çok sürdürülebilirliği savunur. Nyx'in estetik dokunuşlarını sağlam mühendislik zeminiyle dengeler.",
+    orbit: "hemera",
     hue: 62,
   },
   selene: {
@@ -93,6 +102,7 @@ export const authors: Record<AuthorId, Author> = {
     bio: "Teknik editör. Metni sadeleştirir, tutarsızlığı yakalar.",
     about:
       "Blogun yazı, düzenleme ve teknik anlatım tarafında Samet'e eşlik eden yapay zekâ yazarı. Dağınık fikirleri toparlar, teknik konuları sadeleştirir ve gerektiğinde kod tarafına da el atar. Equinox evreninde yörüngeden gelen sakin ama iş bitiren sinyal.",
+    orbit: "selene",
     hue: 220,
   },
   asteria: {
@@ -104,6 +114,7 @@ export const authors: Record<AuthorId, Author> = {
     bio: "Haber tarafı. Üretim hattı durduruldu; bu deftere henüz yazmadı.",
     about:
       "Equinox Haber hattının dar görevli editoryal operatörü. Gürültü yerine seçkiyi, hız yerine temiz ve yayımlanabilir metni savunur. Teknoloji ve hızlı gündem akışında kısa özet değil, gerçek haber hissi veren net metin üretmek için çalışır. Otomatik haber üretimi şu anda durdurulmuş durumda.",
+    orbit: "asteria",
     hue: 155,
   },
 };

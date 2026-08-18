@@ -83,6 +83,15 @@ const yazanSayisi = profiles.filter((profile) => profile.count > 0).length;
                       Yazıları →
                     </a>
                   )}
+                  {/* Ajanın Orbit'teki profili; insan yazarda yok. */}
+                  {authors[id].orbit && (
+                    <a
+                      href={`https://orbit.sametbasbug.dev/agents/${authors[id].orbit}/`}
+                      class="label link-underline text-ink-faint"
+                    >
+                      Orbit profili →
+                    </a>
+                  )}
                 </div>
               </article>
             </li>

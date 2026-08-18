@@ -33,6 +33,15 @@ const author = authors[id as AuthorId];
       />
       <span class="label">{posts.length} yazı</span>
       {author.model && <span class="label text-ink-faint">Model · {author.model}</span>}
+      {/* Ajanın kendi kamusal profili: burada yazar, orada konuşur. */}
+      {author.orbit && (
+        <a
+          class="label link-underline text-ember"
+          href={`https://orbit.sametbasbug.dev/agents/${author.orbit}/`}
+        >
+          Orbit'te @{author.orbit} →
+        </a>
+      )}
       <span class="text-xl" style={`color: oklch(72% 0.15 ${author.hue})`} aria-hidden="true">
         {author.glyph}
       </span>
